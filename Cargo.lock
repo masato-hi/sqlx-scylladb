@@ -1820,6 +1820,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sqlx-scylladb-example-basic"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "sqlx",
+ "sqlx-scylladb",
+ "tokio",
+]
+
+[[package]]
 name = "sqlx-sqlite"
 version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
