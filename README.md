@@ -41,6 +41,37 @@ async fn main() -> anyhow::Result<()> {
 }
 ```
 
+## URL
+
+### Full example
+
+```url
+scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,example2.test:9043&tcp_nodelay&tcp_keepalive=40&compression=lz4&replication_strategy=SimpleStrategy&replication_factor=2&page_size=10
+```
+
+### Basic
+
+| Part     | Required | Example     | Explanation                                   |
+|----------|----------|-------------|-----------------------------------------------|
+| schema   | Required | scylladb    | Only `scylladb` can be specified.             |
+| username | Optional | myname      | Specify the username for user authentication. |
+| password | Optional | mypassword  | Specify the password for user authentication. |
+| host     | Required | localhost   | Specify the hostname of the primary node.     |
+| port     | Optional | 9042        | Specify the port number. The default is 9042. |
+| path     | Required | my_keyspace | Specify the keyspace.                         |
+
+### Query parameters
+
+| Name                 | Example                         | Explanation                                                                                                                      |
+|----------------------|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| nodes                | example.test,example2.test:9043 | Specify additional nodes separated by commas.                                                                                    |
+| tcp_nodelay          |                                 | When using tcp_nodelay, specify the key. No value is required.                                                                   |
+| tcp_keepalive        | 40                              | When using tcp_keepalive, specify the keepalive interval in seconds.                                                             |
+| compression          | lz4                             | Specify when compressing communication data. Supported values are `lz4` or `snappy`.                                             |
+| replication_strategy | SimpleStrategy                  | Specifies the replication strategy when creating a keyspace. Supported values are `SimpleStrategy` or `NetworkTopologyStrategy`. |
+| replication_factor   | 2                               | Specify the replication factor when creating a keyspace.                                                                         |
+| page_size            | 10                              | Specify the number of results to retrieve per page when receiving query results.                                                 |
+
 ## Features
 
 ### Basic type binding
@@ -99,7 +130,7 @@ To avoid additional memory allocation, only borrowing is supported.
 
 Currently, only manual implementation is supported.
 
-- [ ] Manual implementation.
+- [x] Manual implementation.
 - [ ] Derive macro.
 
 ### Testing
@@ -111,3 +142,9 @@ Currently, only manual implementation is supported.
 - [x] Support migrations in #[sqlx::test] macro.
 - [x] sqlx::migrate::Migrator
 - [ ] CLI
+
+### TLS
+
+Currently not supported.
+
+- [ ] TLS
