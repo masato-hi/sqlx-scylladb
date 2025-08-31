@@ -1,2 +1,2 @@
 -- Add down migration script here
-DROP TABLE test_collection;
+DROP TABLE my_tests

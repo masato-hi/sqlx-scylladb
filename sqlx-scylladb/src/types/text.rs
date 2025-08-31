@@ -3,7 +3,7 @@ use std::borrow::Cow;
 use sqlx::{Decode, Encode, Type, encode::IsNull, error::BoxDynError};
 
 use crate::{
-    ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef,
+    ScyllaDB, ScyllaDBHasArrayType, ScyllaDBTypeInfo, ScyllaDBValueRef,
     arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer},
 };
 
@@ -55,6 +55,30 @@ impl Decode<'_, ScyllaDB> for String {
     fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
         let val: Self = value.deserialize()?;
         Ok(val)
+    }
+}
+
+impl ScyllaDBHasArrayType for &str {
+    fn array_type_info() -> crate::ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::TextArray
+    }
+}
+
+impl<'r> Encode<'r, ScyllaDB> for &'r [&'r str] {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer<'r>) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::TextRefArray(self);
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
+impl<'r, const N: usize> Encode<'r, ScyllaDB> for &'r [&'r str; N] {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer<'r>) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::TextRefArray(*self);
+        buf.push(argument);
+
+        Ok(IsNull::No)
     }
 }
 

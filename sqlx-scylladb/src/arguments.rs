@@ -13,7 +13,7 @@ use scylla::{
         value::SerializeValue,
         writers::{CellWriter, RowWriter, WrittenCellProof},
     },
-    value::CqlTimeuuid,
+    value::{CqlDate, CqlTime, CqlTimestamp, CqlTimeuuid},
 };
 use sqlx::Arguments;
 use uuid::Uuid;
@@ -112,6 +112,7 @@ pub enum ScyllaDBArgument<'q> {
     DoubleArray(&'q [f64]),
     Text(Cow<'q, str>),
     TextArray(&'q [String]),
+    TextRefArray(&'q [&'q str]),
     Blob(Cow<'q, [u8]>),
     Uuid(Uuid),
     UuidArray(&'q [Uuid]),
@@ -123,6 +124,8 @@ pub enum ScyllaDBArgument<'q> {
     BigDecimal(bigdecimal_04::BigDecimal),
     #[cfg(feature = "bigdecimal-04")]
     BigDecimalArray(&'q [bigdecimal_04::BigDecimal]),
+    CqlTimestamp(CqlTimestamp),
+    CqlTimestampArray(&'q [CqlTimestamp]),
     #[cfg(feature = "time-03")]
     OffsetDateTime(time_03::OffsetDateTime),
     #[cfg(feature = "time-03")]
@@ -131,6 +134,8 @@ pub enum ScyllaDBArgument<'q> {
     ChronoDateTimeUTC(chrono_04::DateTime<chrono_04::Utc>),
     #[cfg(feature = "chrono-04")]
     ChronoDateTimeUTCArray(&'q [chrono_04::DateTime<chrono_04::Utc>]),
+    CqlDate(CqlDate),
+    CqlDateArray(&'q [CqlDate]),
     #[cfg(feature = "time-03")]
     Date(time_03::Date),
     #[cfg(feature = "time-03")]
@@ -139,6 +144,8 @@ pub enum ScyllaDBArgument<'q> {
     ChronoNaiveDate(chrono_04::NaiveDate),
     #[cfg(feature = "chrono-04")]
     ChronoNaiveDateArray(&'q [chrono_04::NaiveDate]),
+    CqlTime(CqlTime),
+    CqlTimeArray(&'q [CqlTime]),
     #[cfg(feature = "time-03")]
     Time(time_03::Time),
     #[cfg(feature = "time-03")]
@@ -179,65 +186,70 @@ impl<'q> SerializeValue for ScyllaDBArgument<'q> {
         match self {
             Self::Null => Ok(writer.set_null()),
             Self::Boolean(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::BooleanArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::BooleanArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::TinyInt(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TinyIntArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::TinyIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::SmallInt(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::SmallIntArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::SmallIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Int(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::IntArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::IntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::BigInt(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::BigIntArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::BigIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Float(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::FloatArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::FloatArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Double(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::DoubleArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::DoubleArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Text(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
-            Self::TextArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::TextArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextRefArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Blob(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
             Self::Uuid(uuid) => <_ as SerializeValue>::serialize(uuid, typ, writer),
-            Self::UuidArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::UuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Timeuuid(timeuuid) => <_ as SerializeValue>::serialize(timeuuid, typ, writer),
-            Self::TimeuuidArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::TimeuuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::IpAddr(ip_addr) => <_ as SerializeValue>::serialize(ip_addr, typ, writer),
-            Self::IpAddrArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::IpAddrArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "bigdecimal-04")]
             Self::BigDecimal(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "bigdecimal-04")]
-            Self::BigDecimalArray(value) => {
-                <_ as SerializeValue>::serialize(&&**value, typ, writer)
-            }
+            Self::BigDecimalArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::CqlTimestamp(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::CqlTimestampArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "time-03")]
             Self::OffsetDateTime(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "time-03")]
             Self::OffsetDateTimeArray(value) => {
-                <_ as SerializeValue>::serialize(&&**value, typ, writer)
+                <_ as SerializeValue>::serialize(value, typ, writer)
             }
             #[cfg(feature = "chrono-04")]
             Self::ChronoDateTimeUTC(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "chrono-04")]
             Self::ChronoDateTimeUTCArray(value) => {
-                <_ as SerializeValue>::serialize(&&**value, typ, writer)
+                <_ as SerializeValue>::serialize(value, typ, writer)
             }
+            Self::CqlTime(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::CqlTimeArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "time-03")]
             Self::Time(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "time-03")]
-            Self::TimeArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::TimeArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "chrono-04")]
             Self::ChronoNaiveTime(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "chrono-04")]
             Self::ChronoNaiveTimeArray(value) => {
-                <_ as SerializeValue>::serialize(&&**value, typ, writer)
+                <_ as SerializeValue>::serialize(value, typ, writer)
             }
+            Self::CqlDate(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::CqlDateArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "time-03")]
             Self::Date(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "time-03")]
-            Self::DateArray(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::DateArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "chrono-04")]
             Self::ChronoNaiveDate(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "chrono-04")]
             Self::ChronoNaiveDateArray(value) => {
-                <_ as SerializeValue>::serialize(&&**value, typ, writer)
+                <_ as SerializeValue>::serialize(value, typ, writer)
             }
             Self::Tuple(dynamic) => <_ as SerializeValue>::serialize(dynamic, typ, writer),
             Self::UserDefinedType(value) => <_ as SerializeValue>::serialize(value, typ, writer),

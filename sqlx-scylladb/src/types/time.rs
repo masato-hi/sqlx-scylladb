@@ -1,31 +1,39 @@
-use time_03::{Date, OffsetDateTime, Time};
+use scylla::value::CqlTime;
 
 use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
 
+impl_type!(CqlTime, ScyllaDBTypeInfo::Time, ScyllaDBArgument::CqlTime);
+
+impl_array_type!(
+    CqlTime,
+    ScyllaDBTypeInfo::TimeArray,
+    ScyllaDBArgument::CqlTimeArray
+);
+
+#[cfg(feature = "chrono-04")]
 impl_type!(
-    OffsetDateTime,
-    ScyllaDBTypeInfo::Timestamp,
-    ScyllaDBArgument::OffsetDateTime
+    chrono_04::NaiveTime,
+    ScyllaDBTypeInfo::Time,
+    ScyllaDBArgument::ChronoNaiveTime
 );
 
+#[cfg(feature = "chrono-04")]
 impl_array_type!(
-    OffsetDateTime,
-    ScyllaDBTypeInfo::TimestampArray,
-    ScyllaDBArgument::OffsetDateTimeArray
+    chrono_04::NaiveTime,
+    ScyllaDBTypeInfo::TimeArray,
+    ScyllaDBArgument::ChronoNaiveTimeArray
 );
 
-impl_type!(Date, ScyllaDBTypeInfo::Date, ScyllaDBArgument::Date);
-
-impl_array_type!(
-    Date,
-    ScyllaDBTypeInfo::DateArray,
-    ScyllaDBArgument::DateArray
+#[cfg(feature = "time-03")]
+impl_type!(
+    time_03::Time,
+    ScyllaDBTypeInfo::Time,
+    ScyllaDBArgument::Time
 );
 
-impl_type!(Time, ScyllaDBTypeInfo::Time, ScyllaDBArgument::Time);
-
+#[cfg(feature = "time-03")]
 impl_array_type!(
-    Time,
+    time_03::Time,
     ScyllaDBTypeInfo::TimeArray,
     ScyllaDBArgument::TimeArray
 );

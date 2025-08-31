@@ -1795,6 +1795,7 @@ name = "sqlx-scylladb"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base64",
  "bigdecimal",
  "bytes",
  "chrono",
@@ -1806,6 +1807,7 @@ dependencies = [
  "log",
  "scylla",
  "scylla-cql",
+ "sha2",
  "sqlx",
  "sqlx-core",
  "sqlx-macros",

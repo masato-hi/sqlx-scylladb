@@ -128,8 +128,7 @@ macro_rules! impl_map_type {
 pub mod array;
 pub mod blob;
 pub mod bool;
-#[cfg(feature = "chrono-04")]
-pub mod chrono;
+pub mod date;
 #[cfg(feature = "bigdecimal-04")]
 pub mod decimal;
 pub mod float;
@@ -137,7 +136,7 @@ pub mod int;
 pub mod ipaddr;
 pub mod map;
 pub mod text;
-#[cfg(feature = "time-03")]
 pub mod time;
+pub mod timestamp;
 pub mod tuple;
 pub mod uuid;

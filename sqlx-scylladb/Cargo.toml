@@ -40,6 +40,9 @@ crc = { version = "3", optional = true }
 chrono-04 = { version = "0.4", package = "chrono", optional = true }
 time-03 = { version = "0.3", package = "time", optional = true }
 bigdecimal-04 = { version = "0.4", package = "bigdecimal", optional = true }
+base64 = "0.22.1"
+sha2 = { version = "0.10.9", default-features = false }
+dotenvy = "0.15"
 
 [dev-dependencies]
 tokio = { version = "1", features = ["rt"] }
@@ -47,7 +50,6 @@ anyhow = { version = "1" }
 sqlx = { version = "0.8", features = ["uuid", "runtime-tokio", "macros"] }
 sqlx-macros = "0.8"
 env_logger = "0.11"
-dotenvy = "0.15"
 
 [[test]]
 name = "scylladb-migrate"

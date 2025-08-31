@@ -11,6 +11,7 @@ mod options;
 mod query_result;
 mod row;
 mod statement;
+mod testing;
 mod transaction;
 mod type_info;
 pub mod types;

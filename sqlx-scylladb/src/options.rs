@@ -104,7 +104,7 @@ impl ScyllaDBConnectOptions {
         self
     }
 
-    fn keyspace(mut self, keyspace: &str) -> Self {
+    pub(crate) fn keyspace(mut self, keyspace: &str) -> Self {
         self.keyspace = Some(keyspace.to_owned());
         self
     }

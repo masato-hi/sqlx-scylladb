@@ -1,11 +1,11 @@
-use sqlx::Type;
+use sqlx::{Type, TypeInfo};
 
 use crate::{ScyllaDB, ScyllaDBTypeInfo};
 
 pub trait ScyllaDBHasArrayType {
     fn array_type_info() -> ScyllaDBTypeInfo;
     fn array_compatible(ty: &ScyllaDBTypeInfo) -> bool {
-        *ty == Self::array_type_info()
+        Self::array_type_info().type_compatible(ty)
     }
 }
 

@@ -24,30 +24,23 @@ impl ScyllaDBConnection {
     ) -> Result<QueryResult, ScyllaDBError> {
         if persistent {
             let query_result = if let Some(arguments) = arguments {
-                self.caching_session
-                    .execute_unpaged(sql, arguments)
-                    .await
-                    .unwrap()
+                self.caching_session.execute_unpaged(sql, arguments).await?
             } else {
-                self.caching_session.execute_unpaged(sql, ()).await.unwrap()
+                self.caching_session.execute_unpaged(sql, ()).await?
             };
 
             Ok(query_result)
         } else {
             let session = self.caching_session.get_session();
             let statement = Statement::new(sql);
-            let prepared_statement = session.prepare(statement).await.unwrap();
+            let prepared_statement = session.prepare(statement).await?;
 
             let query_result = if let Some(arguments) = arguments {
                 session
                     .execute_unpaged(&prepared_statement, arguments)
-                    .await
-                    .unwrap()
+                    .await?
             } else {
-                session
-                    .execute_unpaged(&prepared_statement, ())
-                    .await
-                    .unwrap()
+                session.execute_unpaged(&prepared_statement, ()).await?
             };
 
             Ok(query_result)
@@ -93,12 +86,6 @@ impl ScyllaDBConnection {
 
                         r#yield!(Either::Right(ScyllaDBRow::new(columns, metadata.clone())))
                     }
-                    // let rows = rows_result.rows::<Row>().map_err(ScyllaDBError::RowsError)?;
-                    // for row in rows {
-                    //     let row = row.map_err(ScyllaDBError::DeserializationError)?;
-
-                    //     r#yield!(Either::Right(ScyllaDBRow::new(row, metadata.clone())))
-                    // }
                 } else {
                     r#yield!(Either::Left(ScyllaDBQueryResult {rows_affected: 0}))
                 }

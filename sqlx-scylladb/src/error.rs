@@ -28,22 +28,23 @@ pub enum ScyllaDBError {
 
 impl DatabaseError for ScyllaDBError {
     fn message(&self) -> &str {
-        todo!()
+        // TODO: impl message
+        ""
     }
 
     fn as_error(&self) -> &(dyn StdError + Send + Sync + 'static) {
-        todo!()
+        self
     }
 
     fn as_error_mut(&mut self) -> &mut (dyn StdError + Send + Sync + 'static) {
-        todo!()
+        self
     }
 
     fn into_error(self: Box<Self>) -> Box<dyn StdError + Send + Sync + 'static> {
-        todo!()
+        self
     }
 
     fn kind(&self) -> ErrorKind {
-        todo!()
+        ErrorKind::Other
     }
 }
