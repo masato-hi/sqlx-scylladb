@@ -3,10 +3,11 @@ use std::time::SystemTime;
 use std::{ops::Deref, str::FromStr, sync::OnceLock, time::Duration};
 
 use base64::{Engine, prelude::BASE64_URL_SAFE};
+use futures_core::future::BoxFuture;
 use scylla::value::CqlTimestamp;
 use sha2::{Digest, Sha512};
 use sqlx::{Connection as _, Error, Executor, Pool, pool::PoolOptions};
-use sqlx_core::testing::{TestArgs, TestContext, TestSupport};
+use sqlx_core::testing::{FixtureSnapshot, TestArgs, TestContext, TestSupport};
 
 use crate::{ScyllaDB, ScyllaDBConnectOptions, ScyllaDBConnection};
 
@@ -14,16 +15,11 @@ use crate::{ScyllaDB, ScyllaDBConnectOptions, ScyllaDBConnection};
 static MASTER_POOL: OnceLock<Pool<ScyllaDB>> = OnceLock::new();
 
 impl TestSupport for ScyllaDB {
-    fn test_context(
-        args: &sqlx_core::testing::TestArgs,
-    ) -> futures_core::future::BoxFuture<
-        '_,
-        Result<sqlx_core::testing::TestContext<Self>, sqlx::Error>,
-    > {
+    fn test_context(args: &TestArgs) -> BoxFuture<'_, Result<TestContext<Self>, Error>> {
         Box::pin(async move { test_context(args).await })
     }
 
-    fn cleanup_test(db_name: &str) -> futures_core::future::BoxFuture<'_, Result<(), sqlx::Error>> {
+    fn cleanup_test(db_name: &str) -> BoxFuture<'_, Result<(), Error>> {
         Box::pin(async move {
             let mut conn = MASTER_POOL
                 .get()
@@ -35,17 +31,13 @@ impl TestSupport for ScyllaDB {
         })
     }
 
-    fn cleanup_test_dbs()
-    -> futures_core::future::BoxFuture<'static, Result<Option<usize>, sqlx::Error>> {
+    fn cleanup_test_dbs() -> BoxFuture<'static, Result<Option<usize>, Error>> {
         Box::pin(async move { cleanup_test_dbs().await })
     }
 
     fn snapshot(
         _conn: &mut Self::Connection,
-    ) -> futures_core::future::BoxFuture<
-        '_,
-        Result<sqlx_core::testing::FixtureSnapshot<Self>, sqlx::Error>,
-    > {
+    ) -> BoxFuture<'_, Result<FixtureSnapshot<Self>, Error>> {
         todo!()
     }
 

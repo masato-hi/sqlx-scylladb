@@ -5,13 +5,15 @@ use scylla::client::{
 };
 use sqlx::Error;
 
-use crate::{ScyllaDBConnectOptions, ScyllaDBConnection};
+use crate::{ScyllaDBConnectOptions, ScyllaDBConnection, ScyllaDBError};
 
 impl ScyllaDBConnection {
     pub(crate) async fn establish(options: &ScyllaDBConnectOptions) -> Result<Self, Error> {
-        let mut builder = SessionBuilder::new()
-            .known_nodes(&options.nodes)
-            .pool_size(PoolSize::PerHost(NonZeroUsize::new(1).unwrap()));
+        let mut builder = SessionBuilder::new().known_nodes(&options.nodes);
+
+        if let Some(pool_size_per_host) = NonZeroUsize::new(1) {
+            builder = builder.pool_size(PoolSize::PerHost(pool_size_per_host));
+        }
 
         if let Some(authentication_options) = &options.authentication_options {
             builder = builder.user(
@@ -30,10 +32,16 @@ impl ScyllaDBConnection {
             builder = builder.tcp_nodelay(true);
         }
 
-        let session = builder.build().await.unwrap();
+        let session = builder
+            .build()
+            .await
+            .map_err(ScyllaDBError::NewSessionError)?;
 
         if let Some(keyspace) = &options.keyspace {
-            session.use_keyspace(keyspace, true).await.unwrap();
+            session
+                .use_keyspace(keyspace, true)
+                .await
+                .map_err(ScyllaDBError::UseKeyspaceError)?;
         }
 
         let mut builder = CachingSessionBuilder::new(session);
@@ -42,6 +50,7 @@ impl ScyllaDBConnection {
 
         let conn = ScyllaDBConnection {
             caching_session: session,
+            page_size: options.page_size,
             transaction: None,
         };
 

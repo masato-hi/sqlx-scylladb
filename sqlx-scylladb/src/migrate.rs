@@ -17,9 +17,20 @@ fn parse_for_maintenance(
 ) -> Result<(ScyllaDBConnectOptions, ScyllaDBReplicationOptions, String), Error> {
     let mut options = ScyllaDBConnectOptions::from_str(url)?;
 
-    let replication_options = options.replication_options.clone().unwrap();
+    let replication_options = if let Some(replication_options) = &options.replication_options {
+        replication_options.clone()
+    } else {
+        return Err(Error::Configuration(
+            "replication_strategy is required.".into(),
+        ));
+    };
 
-    let keyspace = options.keyspace.clone().unwrap();
+    let keyspace = if let Some(keyspace) = &options.keyspace {
+        keyspace.clone()
+    } else {
+        return Err(Error::Configuration("keyspace is required.".into()));
+    };
+
     options.keyspace = None;
 
     Ok((options, replication_options, keyspace))
@@ -153,7 +164,9 @@ impl Migrate for ScyllaDBConnection {
             "#;
             self.execute(CREATE_LOCK_TABLE_QUERY).await?;
 
-            let keyspace = self.get_keyspace().unwrap();
+            let keyspace = self
+                .get_keyspace()
+                .ok_or_else(|| Error::Configuration("keyspace is required.".into()))?;
 
             let lock_id = generate_lock_id(&keyspace);
 
@@ -179,7 +192,9 @@ impl Migrate for ScyllaDBConnection {
 
     fn unlock(&mut self) -> BoxFuture<'_, Result<(), sqlx::migrate::MigrateError>> {
         Box::pin(async {
-            let keyspace = self.get_keyspace().unwrap();
+            let keyspace = self
+                .get_keyspace()
+                .ok_or_else(|| Error::Configuration("keyspace is required.".into()))?;
 
             let lock_id = generate_lock_id(&keyspace);
 

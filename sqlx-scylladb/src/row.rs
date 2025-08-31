@@ -42,7 +42,14 @@ impl Row for ScyllaDBRow {
         I: sqlx::ColumnIndex<Self>,
     {
         let index = index.index(self)?;
-        let column_metadata = self.metadata.columns.get(index).unwrap();
+        let column_metadata =
+            self.metadata
+                .columns
+                .get(index)
+                .ok_or_else(|| Error::ColumnIndexOutOfBounds {
+                    index: index,
+                    len: self.metadata.columns.len(),
+                })?;
         let column_name = column_metadata.name.clone();
         let column_type = &column_metadata.column_type;
         let type_info = column_metadata.type_info.clone();

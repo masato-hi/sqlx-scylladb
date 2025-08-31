@@ -11,6 +11,7 @@ use crate::{ScyllaDB, ScyllaDBConnectOptions, connection::transaction::ScyllaDBT
 #[derive(Debug)]
 pub struct ScyllaDBConnection {
     pub(crate) caching_session: CachingSession,
+    pub(crate) page_size: i32,
     pub(crate) transaction: Option<ScyllaDBTransaction>,
 }
 

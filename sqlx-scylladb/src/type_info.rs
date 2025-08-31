@@ -155,6 +155,14 @@ impl TypeInfo for ScyllaDBTypeInfo {
     }
 }
 
+macro_rules! column_type_not_supported {
+    ($column_type:ident) => {
+        return Err(ScyllaDBError::ColumnTypeNotSupportedError(
+            $column_type.clone().into_owned(),
+        ))
+    };
+}
+
 impl ScyllaDBTypeInfo {
     pub(crate) fn from_column_type(column_type: &ColumnType) -> Result<Self, ScyllaDBError> {
         let type_info = match column_type {
@@ -179,19 +187,19 @@ impl ScyllaDBTypeInfo {
                 NativeType::Timeuuid => Self::Timeuuid,
                 NativeType::Uuid => Self::Uuid,
                 NativeType::Varint => Self::Variant,
-                _ => todo!(),
+                _ => column_type_not_supported!(column_type),
             },
             ColumnType::Collection { frozen: _, typ } => match typ {
                 CollectionType::List(inner) | CollectionType::Set(inner) => match &**inner {
                     ColumnType::Native(native_type) => match native_type {
                         NativeType::Ascii => Self::AsciiArray,
                         NativeType::Boolean => Self::BooleanArray,
-                        NativeType::Blob => todo!(),
-                        NativeType::Counter => todo!(),
+                        NativeType::Blob => column_type_not_supported!(column_type),
+                        NativeType::Counter => column_type_not_supported!(column_type),
                         NativeType::Date => Self::DateArray,
                         NativeType::Decimal => Self::DecimalArray,
                         NativeType::Double => Self::DoubleArray,
-                        NativeType::Duration => todo!(),
+                        NativeType::Duration => column_type_not_supported!(column_type),
                         NativeType::Float => Self::FloatArray,
                         NativeType::Int => Self::IntArray,
                         NativeType::BigInt => Self::BigIntArray,
@@ -203,8 +211,8 @@ impl ScyllaDBTypeInfo {
                         NativeType::Time => Self::TimeArray,
                         NativeType::Timeuuid => Self::TimeuuidArray,
                         NativeType::Uuid => Self::UuidArray,
-                        NativeType::Varint => todo!(),
-                        _ => todo!(),
+                        NativeType::Varint => column_type_not_supported!(column_type),
+                        _ => column_type_not_supported!(column_type),
                     },
                     ColumnType::UserDefinedType {
                         frozen: _,
@@ -214,7 +222,7 @@ impl ScyllaDBTypeInfo {
                         let type_name = UStr::new(&type_name);
                         Self::UserDefinedType(type_name)
                     }
-                    _ => todo!(),
+                    _ => column_type_not_supported!(column_type),
                 },
                 CollectionType::Map(key_type, value_type) => match &**key_type {
                     ColumnType::Native(key_native_type) => match key_native_type {
@@ -229,9 +237,9 @@ impl ScyllaDBTypeInfo {
                                 NativeType::SmallInt => Self::TextSmallIntMap,
                                 NativeType::TinyInt => Self::TextTinyIntMap,
                                 NativeType::Timeuuid | NativeType::Uuid => Self::TextUuidMap,
-                                _ => todo!(),
+                                _ => column_type_not_supported!(column_type),
                             },
-                            _ => todo!(),
+                            _ => column_type_not_supported!(column_type),
                         },
                         NativeType::Timeuuid | NativeType::Uuid => match &**value_type {
                             ColumnType::Native(value_native_type) => match value_native_type {
@@ -244,15 +252,15 @@ impl ScyllaDBTypeInfo {
                                 NativeType::SmallInt => Self::UuidSmallIntMap,
                                 NativeType::TinyInt => Self::UuidTinyIntMap,
                                 NativeType::Timeuuid | NativeType::Uuid => Self::UuidUuidMap,
-                                _ => todo!(),
+                                _ => column_type_not_supported!(column_type),
                             },
-                            _ => todo!(),
+                            _ => column_type_not_supported!(column_type),
                         },
-                        _ => todo!(),
+                        _ => column_type_not_supported!(column_type),
                     },
-                    _ => todo!(),
+                    _ => column_type_not_supported!(column_type),
                 },
-                _ => todo!(),
+                _ => column_type_not_supported!(column_type),
             },
             ColumnType::Vector {
                 typ: _,
@@ -274,7 +282,7 @@ impl ScyllaDBTypeInfo {
                 let type_name = tuple_type_name(&type_infos);
                 Self::Tuple(type_name)
             }
-            _ => todo!(),
+            _ => column_type_not_supported!(column_type),
         };
 
         Ok(type_info)

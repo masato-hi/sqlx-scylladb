@@ -88,8 +88,7 @@ impl ScyllaDBConnection {
             let prepared_statement = self
                 .caching_session
                 .add_prepared_statement(&statement)
-                .await
-                .unwrap();
+                .await?;
 
             let column_specs = prepared_statement.get_variable_col_specs();
             let mut column_types = Vec::with_capacity(column_specs.len());
@@ -101,7 +100,7 @@ impl ScyllaDBConnection {
 
             let ctx = RowSerializationContext::from_specs(column_specs.as_slice());
             let serialized_values = if let Some(arguments) = &arguments {
-                SerializedValues::from_serializable(&ctx, arguments).unwrap()
+                SerializedValues::from_serializable(&ctx, arguments)?
             } else {
                 SerializedValues::new()
             };
@@ -114,7 +113,7 @@ impl ScyllaDBConnection {
                     serialized_values,
                 });
         } else {
-            todo!()
+            return Err(ScyllaDBError::TransactionNotStarted);
         }
 
         Ok(())
@@ -128,9 +127,18 @@ impl SerializeRow for ScyllaDBTransactionalValue {
         writer: &mut scylla_cql::serialize::RowWriter,
     ) -> Result<(), SerializationError> {
         for (i, column) in ctx.columns().iter().enumerate() {
-            let column_type = self.column_types.get(i).unwrap();
+            let column_type = self.column_types.get(i).ok_or(SerializationError::new(
+                ScyllaDBError::ColumnIndexOutOfBounds {
+                    index: i,
+                    len: self.column_types.len(),
+                },
+            ))?;
+
             if column_type != column.typ() {
-                todo!()
+                return Err(SerializationError::new(ScyllaDBError::ColumnTypeError {
+                    expect: column.typ().clone().into_owned(),
+                    actual: column_type.clone(),
+                }));
             }
         }
 
@@ -139,7 +147,9 @@ impl SerializeRow for ScyllaDBTransactionalValue {
             match raw_value {
                 RawValue::Null => cell_writer.set_null(),
                 RawValue::Unset => cell_writer.set_unset(),
-                RawValue::Value(items) => cell_writer.set_value(items).unwrap(),
+                RawValue::Value(items) => cell_writer
+                    .set_value(items)
+                    .map_err(|err| SerializationError::new(err))?,
             };
         }
 

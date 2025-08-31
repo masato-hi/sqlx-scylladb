@@ -1,10 +1,12 @@
-use std::{borrow::Cow, pin::pin};
+use std::{borrow::Cow, ops::ControlFlow, pin::pin};
 
 use bytes::Bytes;
 use futures_core::{Stream, future::BoxFuture, stream::BoxStream};
 use futures_util::TryStreamExt;
 use scylla::{
-    deserialize::row::ColumnIterator, response::query_result::QueryResult, statement::Statement,
+    deserialize::row::ColumnIterator,
+    response::{PagingState, PagingStateResponse, query_result::QueryResult},
+    statement::Statement,
 };
 use sqlx::{Describe, Either, Error, Executor};
 use sqlx_core::{ext::ustr::UStr, try_stream};
@@ -16,34 +18,39 @@ use crate::{
 };
 
 impl ScyllaDBConnection {
-    async fn execute_unpaged<'e, 'c: 'e, 'q: 'e, 'r: 'e>(
+    async fn execute_single_page<'e, 'c: 'e, 'q: 'e, 'r: 'e>(
         &'c mut self,
-        sql: &'q str,
-        arguments: Option<ScyllaDBArguments<'r>>,
+        statement: Statement,
+        arguments: &Option<ScyllaDBArguments<'r>>,
         persistent: bool,
-    ) -> Result<QueryResult, ScyllaDBError> {
+        paging_state: PagingState,
+    ) -> Result<(QueryResult, PagingStateResponse), ScyllaDBError> {
         if persistent {
-            let query_result = if let Some(arguments) = arguments {
-                self.caching_session.execute_unpaged(sql, arguments).await?
-            } else {
-                self.caching_session.execute_unpaged(sql, ()).await?
-            };
-
-            Ok(query_result)
-        } else {
-            let session = self.caching_session.get_session();
-            let statement = Statement::new(sql);
-            let prepared_statement = session.prepare(statement).await?;
-
-            let query_result = if let Some(arguments) = arguments {
-                session
-                    .execute_unpaged(&prepared_statement, arguments)
+            let (query_result, paging_state_response) = if let Some(arguments) = arguments {
+                self.caching_session
+                    .execute_single_page(statement, arguments, paging_state)
                     .await?
             } else {
-                session.execute_unpaged(&prepared_statement, ()).await?
+                self.caching_session
+                    .execute_single_page(statement, (), paging_state)
+                    .await?
             };
 
-            Ok(query_result)
+            Ok((query_result, paging_state_response))
+        } else {
+            let session = self.caching_session.get_session();
+
+            let (query_result, paging_state_response) = if let Some(arguments) = arguments {
+                session
+                    .query_single_page(statement, arguments, paging_state)
+                    .await?
+            } else {
+                session
+                    .query_single_page(statement, (), paging_state)
+                    .await?
+            };
+
+            Ok((query_result, paging_state_response))
         }
     }
 
@@ -59,12 +66,18 @@ impl ScyllaDBConnection {
         Ok(try_stream! {
             if self.in_transaction(){
                 self.insert_transactional(sql, arguments).await?;
-            } else{
-                let query_result = self.execute_unpaged(sql, arguments, persistent).await?;
+            } else {
+                let mut paging_state = PagingState::start();
+                let statement = Statement::new(sql).with_page_size(self.page_size);
 
-                if query_result.is_rows() {
+                loop {
+                    let (query_result, paging_state_response) = self.execute_single_page(statement.clone(), &arguments, persistent, paging_state.clone()).await?;
+
+                    if !query_result.is_rows() {
+                        break;
+                    }
+
                     let rows_result = query_result.into_rows_result().map_err(ScyllaDBError::IntoRowsResultError)?;
-
                     let column_specs = rows_result.column_specs();
                     let metadata = ScyllaDBStatementMetadata::from_column_specs(column_specs)?;
 
@@ -86,8 +99,15 @@ impl ScyllaDBConnection {
 
                         r#yield!(Either::Right(ScyllaDBRow::new(columns, metadata.clone())))
                     }
-                } else {
-                    r#yield!(Either::Left(ScyllaDBQueryResult {rows_affected: 0}))
+
+                    match paging_state_response.into_paging_control_flow() {
+                        ControlFlow::Break(()) => {
+                            break;
+                        }
+                        ControlFlow::Continue(new_paging_state) => {
+                            paging_state = new_paging_state
+                        }
+                    }
                 }
             }
 
@@ -185,7 +205,7 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
                 .caching_session
                 .add_prepared_statement(&statement)
                 .await
-                .unwrap();
+                .map_err(ScyllaDBError::PrepareError)?;
             let column_specs = prepared_statement.get_result_set_col_specs();
 
             let capacity = column_specs.len();

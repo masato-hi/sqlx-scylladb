@@ -30,7 +30,7 @@ impl Decode<'_, ScyllaDB> for Ipv4Addr {
         if let IpAddr::V4(val) = val {
             Ok(val)
         } else {
-            Err(Box::new(ScyllaDBError::MismatchedTypeError(
+            Err(Box::new(ScyllaDBError::MismatchedColumnTypeError(
                 value.column_name(),
                 value.column_type(),
             )))
@@ -62,7 +62,7 @@ impl Decode<'_, ScyllaDB> for Ipv6Addr {
         if let IpAddr::V6(val) = val {
             Ok(val)
         } else {
-            Err(Box::new(ScyllaDBError::MismatchedTypeError(
+            Err(Box::new(ScyllaDBError::MismatchedColumnTypeError(
                 value.column_name(),
                 value.column_type(),
             )))
