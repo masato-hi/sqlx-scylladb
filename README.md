@@ -94,7 +94,7 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 - [x] INET (std::net::IpAddr)
 - [x] DECIMAL (bigdecimal::Decimal)
   - [ ] scylla::value::CqlDecimal
-- [ ] Counter
+- [x] Counter (deserialize only) (scylla::value::Counter)
 - [ ] Duration
 - [ ] Varint
 
