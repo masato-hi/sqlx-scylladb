@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, rc::Rc, sync::Arc};
 
 use sqlx::{Decode, Encode, Type, encode::IsNull, error::BoxDynError};
 
@@ -14,8 +14,8 @@ impl Type<ScyllaDB> for &str {
 }
 
 impl<'r> Encode<'r, ScyllaDB> for &'r str {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer<'r>) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Cow::Borrowed(self));
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -37,14 +37,14 @@ impl Type<ScyllaDB> for String {
 
 impl Encode<'_, ScyllaDB> for String {
     fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Cow::Owned(self));
+        let argument = ScyllaDBArgument::Text(Arc::new(self));
         buf.push(argument);
 
         Ok(IsNull::No)
     }
 
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Cow::Owned(self.clone()));
+        let argument = ScyllaDBArgument::Text(Arc::new(self.clone()));
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -58,24 +58,105 @@ impl Decode<'_, ScyllaDB> for String {
     }
 }
 
-impl ScyllaDBHasArrayType for &str {
-    fn array_type_info() -> crate::ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::TextArray
+impl Type<ScyllaDB> for Arc<str> {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Text
     }
 }
 
-impl<'r> Encode<'r, ScyllaDB> for &'r [&'r str] {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer<'r>) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::TextRefArray(self);
+impl<'r> Encode<'r, ScyllaDB> for Arc<str> {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
         buf.push(argument);
 
         Ok(IsNull::No)
     }
 }
 
-impl<'r, const N: usize> Encode<'r, ScyllaDB> for &'r [&'r str; N] {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer<'r>) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::TextRefArray(*self);
+impl Type<ScyllaDB> for Rc<str> {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Text
+    }
+}
+
+impl<'r> Encode<'r, ScyllaDB> for Rc<str> {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
+impl Type<ScyllaDB> for Cow<'_, str> {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Text
+    }
+}
+
+impl<'r> Encode<'r, ScyllaDB> for Cow<'_, str> {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
+impl Type<ScyllaDB> for Box<str> {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Text
+    }
+}
+
+impl<'r> Encode<'r, ScyllaDB> for Box<str> {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
+impl ScyllaDBHasArrayType for &str {
+    fn array_type_info() -> crate::ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::TextArray
+    }
+}
+
+impl Encode<'_, ScyllaDB> for &[&str] {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let mut strings = Vec::with_capacity(self.len());
+        for value in self.iter() {
+            strings.push(value.to_string());
+        }
+        let argument = ScyllaDBArgument::TextArray(Arc::new(strings));
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
+impl<const N: usize> Encode<'_, ScyllaDB> for [&str; N] {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let mut strings = Vec::with_capacity(self.len());
+        for value in self.iter() {
+            strings.push(value.to_string());
+        }
+        let argument = ScyllaDBArgument::TextArray(Arc::new(strings));
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
+impl Encode<'_, ScyllaDB> for Vec<&str> {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let mut strings = Vec::with_capacity(self.len());
+        for value in self.iter() {
+            strings.push(value.to_string());
+        }
+        let argument = ScyllaDBArgument::TextArray(Arc::new(strings));
         buf.push(argument);
 
         Ok(IsNull::No)

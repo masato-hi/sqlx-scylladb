@@ -10,8 +10,8 @@ async fn it_can_select_smallint(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let _ = sqlx::query("INSERT INTO smallint_tests(my_id, my_smallint, my_smallint_list, my_smallint_set) VALUES(?, ?, ?, ?)")
         .bind(id)
         .bind(117i16)
-        .bind(&[11i16, 4, 7,11])
-        .bind(&[11i16, 4, 7, 11])
+        .bind([11i16, 4, 7,11])
+        .bind([11i16, 4, 7, 11])
         .execute(&pool)
         .await?;
 

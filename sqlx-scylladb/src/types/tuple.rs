@@ -15,13 +15,23 @@ macro_rules! impl_tuple {
             }
         }
 
-        impl<'t, $($typs), *> sqlx::Encode<'t, crate::ScyllaDB> for ($($typs,)*)
-        where $($typs: 't + scylla::serialize::value::SerializeValue + Clone + Send + Sync,)* {
+        impl<$($typs), *> sqlx::Encode<'_, crate::ScyllaDB> for ($($typs,)*)
+        where $($typs: scylla::serialize::value::SerializeValue + Clone + Send + Sync + 'static,)* {
+            fn encode(
+                self,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
+            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+                let argument = crate::ScyllaDBArgument::Tuple(std::sync::Arc::new(self));
+                buf.push(argument);
+
+                Ok(sqlx::encode::IsNull::No)
+            }
+
             fn encode_by_ref(
                 &self,
-                buf: &mut crate::ScyllaDBArgumentBuffer<'t>,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = crate::ScyllaDBArgument::Tuple(Box::new(self.clone()));
+                let argument = crate::ScyllaDBArgument::Tuple(std::sync::Arc::new(self.clone()));
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)

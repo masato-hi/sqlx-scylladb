@@ -7,6 +7,16 @@ macro_rules! impl_type {
         }
 
         impl sqlx::Encode<'_, crate::ScyllaDB> for $typ {
+            fn encode(
+                self,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
+            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+                let argument = $arg_typ(self);
+                buf.push(argument);
+
+                Ok(sqlx::encode::IsNull::No)
+            }
+
             fn encode_by_ref(
                 &self,
                 buf: &mut crate::ScyllaDBArgumentBuffer,
@@ -37,22 +47,13 @@ macro_rules! impl_array_type {
             }
         }
 
-        impl<'r, const N: usize> sqlx::Encode<'r, crate::ScyllaDB> for &'r [$typ; N] {
-            fn encode(
-                self,
-                buf: &mut crate::ScyllaDBArgumentBuffer<'r>,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(self);
-                buf.push(argument);
-
-                Ok(sqlx::encode::IsNull::No)
-            }
-
+        impl<const N: usize> sqlx::Encode<'_, crate::ScyllaDB> for [$typ; N] {
+            #[inline(always)]
             fn encode_by_ref(
                 &self,
-                buf: &mut crate::ScyllaDBArgumentBuffer<'r>,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(*self);
+                let argument = $arg_typ(std::sync::Arc::new(self.to_vec()));
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -60,11 +61,24 @@ macro_rules! impl_array_type {
         }
 
         impl<'r> sqlx::Encode<'r, crate::ScyllaDB> for &'r [$typ] {
+            #[inline(always)]
+            fn encode_by_ref(
+                &self,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
+            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+                let argument = $arg_typ(std::sync::Arc::new(self.to_vec()));
+                buf.push(argument);
+
+                Ok(sqlx::encode::IsNull::No)
+            }
+        }
+
+        impl sqlx::Encode<'_, crate::ScyllaDB> for Vec<$typ> {
             fn encode(
                 self,
-                buf: &mut crate::ScyllaDBArgumentBuffer<'r>,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(self);
+                let argument = $arg_typ(std::sync::Arc::new(self));
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -72,9 +86,22 @@ macro_rules! impl_array_type {
 
             fn encode_by_ref(
                 &self,
-                buf: &mut crate::ScyllaDBArgumentBuffer<'r>,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(*self);
+                let argument = $arg_typ(std::sync::Arc::new(self.clone()));
+                buf.push(argument);
+
+                Ok(sqlx::encode::IsNull::No)
+            }
+        }
+
+        impl sqlx::Encode<'_, crate::ScyllaDB> for std::sync::Arc<Vec<$typ>> {
+            #[inline(always)]
+            fn encode_by_ref(
+                &self,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
+            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+                let argument = $arg_typ(self.clone());
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -100,14 +127,22 @@ macro_rules! impl_map_type {
             }
         }
 
-        impl<'r> sqlx::Encode<'r, crate::ScyllaDB>
-            for &'r std::collections::HashMap<$key_typ, $value_typ>
-        {
+        impl sqlx::Encode<'_, crate::ScyllaDB> for std::collections::HashMap<$key_typ, $value_typ> {
+            fn encode(
+                self,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
+            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+                let argument = $arg_typ(std::sync::Arc::new(self));
+                buf.push(argument);
+
+                Ok(sqlx::encode::IsNull::No)
+            }
+
             fn encode_by_ref(
                 &self,
-                buf: &mut crate::ScyllaDBArgumentBuffer<'r>,
+                buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(self);
+                let argument = $arg_typ(std::sync::Arc::new(self.clone()));
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -132,8 +167,8 @@ pub mod date;
 #[cfg(feature = "bigdecimal-04")]
 pub mod decimal;
 pub mod float;
+pub mod inet;
 pub mod int;
-pub mod ipaddr;
 pub mod map;
 pub mod text;
 pub mod time;

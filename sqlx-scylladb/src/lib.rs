@@ -45,7 +45,7 @@ impl<'c, T: Executor<'c, Database = ScyllaDB>> ScyllaDBExecutor<'c> for T {}
 
 pub type ScyllaDBTransaction<'c> = Transaction<'c, ScyllaDB>;
 
-impl_into_arguments_for_arguments!(ScyllaDBArguments<'q>);
+impl_into_arguments_for_arguments!(ScyllaDBArguments);
 impl_acquire!(ScyllaDB, ScyllaDBConnection);
 impl_column_index_for_row!(ScyllaDBRow);
 impl_column_index_for_statement!(ScyllaDBStatement);

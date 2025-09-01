@@ -13,13 +13,13 @@ async fn it_can_select_cql_timestamp(pool: ScyllaDBPool) -> anyhow::Result<()> {
     )
     .bind(id)
     .bind(CqlTimestamp(1756625358255))
-    .bind(&[
+    .bind([
         CqlTimestamp(1756625358255),
         CqlTimestamp(1756625378304),
         CqlTimestamp(1756625399100),
         CqlTimestamp(1756625404348),
     ])
-    .bind(&[
+    .bind([
         CqlTimestamp(1756625358255),
         CqlTimestamp(1756625399100),
         CqlTimestamp(1756625378304),
@@ -106,13 +106,13 @@ async fn it_can_select_chrono_datetime(pool: ScyllaDBPool) -> anyhow::Result<()>
     )
     .bind(id)
     .bind(DateTime::parse_from_rfc3339("2025-08-31T16:44:34+00:00")?.to_utc())
-    .bind(&[
+    .bind([
         DateTime::parse_from_rfc3339("2025-08-31T16:44:34+00:00")?.to_utc(),
         DateTime::parse_from_rfc3339("2006-01-02T15:04:05+00:00")?.to_utc(),
         DateTime::parse_from_rfc3339("1994-03-19T15:07:38+00:00")?.to_utc(),
         DateTime::parse_from_rfc3339("2059-06-12T19:54:23+00:00")?.to_utc(),
     ])
-    .bind(&[
+    .bind([
         DateTime::parse_from_rfc3339("2025-08-31T16:44:34+00:00")?.to_utc(),
         DateTime::parse_from_rfc3339("2006-01-02T15:04:05+00:00")?.to_utc(),
         DateTime::parse_from_rfc3339("1994-03-19T15:07:38+00:00")?.to_utc(),
@@ -205,13 +205,13 @@ async fn it_can_select_time_offset_date_time(pool: ScyllaDBPool) -> anyhow::Resu
     )
     .bind(id)
     .bind(OffsetDateTime::from_unix_timestamp(1756626921)?)
-    .bind(&[
+    .bind([
         OffsetDateTime::from_unix_timestamp(1756626948)?,
         OffsetDateTime::from_unix_timestamp(1756626953)?,
         OffsetDateTime::from_unix_timestamp(1756626963)?,
         OffsetDateTime::from_unix_timestamp(1756626968)?,
     ])
-    .bind(&[
+    .bind([
         OffsetDateTime::from_unix_timestamp(1756626948)?,
         OffsetDateTime::from_unix_timestamp(1756626953)?,
         OffsetDateTime::from_unix_timestamp(1756626963)?,

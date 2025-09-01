@@ -13,13 +13,13 @@ async fn it_can_select_uuid(pool: ScyllaDBPool) -> anyhow::Result<()> {
     )
     .bind(id)
     .bind(Uuid::from_str("c53954ff-13aa-412c-844a-b97faca10ef6")?)
-    .bind(&[
+    .bind([
         Uuid::from_str("7d814b8f-1894-4b97-927c-83e82cb6735b")?,
         Uuid::from_str("f8e9f4c2-3f5d-4437-920a-8644efb72676")?,
         Uuid::from_str("faab8e0b-9093-4819-86a1-145b66d317c7")?,
         Uuid::from_str("dea32754-e72d-4981-bbf7-3285da65970b")?,
     ])
-    .bind(&[
+    .bind([
         Uuid::from_str("7d814b8f-1894-4b97-927c-83e82cb6735b")?,
         Uuid::from_str("faab8e0b-9093-4819-86a1-145b66d317c7")?,
         Uuid::from_str("f8e9f4c2-3f5d-4437-920a-8644efb72676")?,

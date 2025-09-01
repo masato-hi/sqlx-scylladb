@@ -18,10 +18,10 @@ use crate::{
 };
 
 impl ScyllaDBConnection {
-    async fn execute_single_page<'e, 'c: 'e, 'q: 'e, 'r: 'e>(
+    async fn execute_single_page<'e, 'c: 'e, 'q: 'e>(
         &'c mut self,
         statement: Statement,
-        arguments: &Option<ScyllaDBArguments<'r>>,
+        arguments: &Option<ScyllaDBArguments>,
         persistent: bool,
         paging_state: PagingState,
     ) -> Result<(QueryResult, PagingStateResponse), ScyllaDBError> {
@@ -54,10 +54,10 @@ impl ScyllaDBConnection {
         }
     }
 
-    pub(crate) async fn run<'e, 'c: 'e, 'q: 'e, 'r: 'e>(
+    pub(crate) async fn run<'e, 'c: 'e, 'q: 'e>(
         &'c mut self,
         sql: &'q str,
-        arguments: Option<ScyllaDBArguments<'r>>,
+        arguments: Option<ScyllaDBArguments>,
         persistent: bool,
     ) -> Result<
         impl Stream<Item = Result<Either<ScyllaDBQueryResult, ScyllaDBRow>, Error>> + 'e,

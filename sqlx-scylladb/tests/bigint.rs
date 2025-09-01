@@ -10,8 +10,8 @@ async fn it_can_select_bigint(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let _ = sqlx::query("INSERT INTO bigint_tests(my_id, my_bigint, my_bigint_list, my_bigint_set) VALUES(?, ?, ?, ?)")
         .bind(id)
         .bind(117i64)
-        .bind(&[11i64, 4, 7,11])
-        .bind(&[11i64, 4, 7, 11])
+        .bind([11i64, 4, 7,11])
+        .bind([11i64, 4, 7, 11])
         .execute(&pool)
         .await?;
 

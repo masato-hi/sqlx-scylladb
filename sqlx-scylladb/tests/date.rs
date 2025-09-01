@@ -13,13 +13,13 @@ async fn it_can_select_cql_date(pool: ScyllaDBPool) -> anyhow::Result<()> {
     )
     .bind(id)
     .bind(CqlDate(20330))
-    .bind(&[
+    .bind([
         CqlDate(20330),
         CqlDate(13149),
         CqlDate(8842),
         CqlDate(32668),
     ])
-    .bind(&[
+    .bind([
         CqlDate(20330),
         CqlDate(13149),
         CqlDate(8842),
@@ -98,13 +98,13 @@ async fn it_can_select_chrono_datetime(pool: ScyllaDBPool) -> anyhow::Result<()>
     )
     .bind(id)
     .bind(NaiveDate::from_ymd_opt(2025, 8, 31).unwrap())
-    .bind(&[
+    .bind([
         NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(),
         NaiveDate::from_ymd_opt(2006, 1, 2).unwrap(),
         NaiveDate::from_ymd_opt(1994, 3, 19).unwrap(),
         NaiveDate::from_ymd_opt(2059, 6, 12).unwrap(),
     ])
-    .bind(&[
+    .bind([
         NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(),
         NaiveDate::from_ymd_opt(2006, 1, 2).unwrap(),
         NaiveDate::from_ymd_opt(1994, 3, 19).unwrap(),
@@ -198,13 +198,13 @@ async fn it_can_select_time_offset_date_time(pool: ScyllaDBPool) -> anyhow::Resu
     )
     .bind(id)
     .bind(Date::from_calendar_date(2025, August, 31)?)
-    .bind(&[
+    .bind([
         Date::from_calendar_date(2025, August, 31)?,
         Date::from_calendar_date(2006, January, 2)?,
         Date::from_calendar_date(1994, March, 19)?,
         Date::from_calendar_date(2059, June, 12)?,
     ])
-    .bind(&[
+    .bind([
         Date::from_calendar_date(2025, August, 31)?,
         Date::from_calendar_date(2006, January, 2)?,
         Date::from_calendar_date(1994, March, 19)?,

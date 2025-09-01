@@ -10,8 +10,8 @@ async fn it_can_select_tinyint(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let _ = sqlx::query("INSERT INTO tinyint_tests(my_id, my_tinyint, my_tinyint_list, my_tinyint_set) VALUES(?, ?, ?, ?)")
         .bind(id)
         .bind(117i8)
-        .bind(&[11i8, 4, 7,11])
-        .bind(&[11i8, 4, 7, 11])
+        .bind([11i8, 4, 7,11])
+        .bind([11i8, 4, 7, 11])
         .execute(&pool)
         .await?;
 

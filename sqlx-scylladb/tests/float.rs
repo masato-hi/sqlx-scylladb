@@ -12,8 +12,8 @@ async fn it_can_select_float(pool: ScyllaDBPool) -> anyhow::Result<()> {
     )
     .bind(id)
     .bind(117.5f32)
-    .bind(&[11.5f32, 4.25, 7.125, 11.5])
-    .bind(&[11.5f32, 4.25, 7.125, 11.5])
+    .bind([11.5f32, 4.25, 7.125, 11.5])
+    .bind([11.5f32, 4.25, 7.125, 11.5])
     .execute(&pool)
     .await?;
 

@@ -78,10 +78,10 @@ impl ScyllaDBConnection {
         self.transaction.is_some()
     }
 
-    pub(crate) async fn insert_transactional<'e, 'c: 'e, 'q: 'e, 'r: 'e>(
+    pub(crate) async fn insert_transactional<'e, 'c: 'e, 'q: 'e>(
         &'c mut self,
         sql: &'q str,
-        arguments: Option<ScyllaDBArguments<'r>>,
+        arguments: Option<ScyllaDBArguments>,
     ) -> Result<(), ScyllaDBError> {
         if let Some(transaction) = &mut self.transaction {
             let statement = Statement::new(sql);

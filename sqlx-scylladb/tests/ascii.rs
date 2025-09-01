@@ -12,8 +12,8 @@ async fn it_can_select_ascii(pool: ScyllaDBPool) -> anyhow::Result<()> {
     )
     .bind(id)
     .bind("Hello!")
-    .bind(&["Hello!", "Good morning!", "Bye.", "Good night."])
-    .bind(&["Hello!", "Good morning!", "Bye.", "Hello!"])
+    .bind(["Hello!", "Good morning!", "Bye.", "Good night."])
+    .bind(["Hello!", "Good morning!", "Bye.", "Hello!"])
     .execute(&pool)
     .await?;
 

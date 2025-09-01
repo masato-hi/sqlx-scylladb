@@ -1,4 +1,4 @@
-use std::{borrow::Cow, pin::pin};
+use std::{borrow::Cow, pin::pin, sync::Arc};
 
 use futures_core::{future::BoxFuture, stream::BoxStream};
 use futures_util::{StreamExt, TryFutureExt, TryStreamExt};
@@ -240,7 +240,7 @@ impl<'a> TryFrom<&'a ScyllaDBRow> for AnyRow {
     }
 }
 
-fn map_arguments(args: AnyArguments<'_>) -> ScyllaDBArguments<'_> {
+fn map_arguments(args: AnyArguments<'_>) -> ScyllaDBArguments {
     let capacity = args.values.0.capacity();
     let mut types = Vec::with_capacity(capacity);
     let mut buffer = Vec::with_capacity(capacity);
@@ -256,8 +256,14 @@ fn map_arguments(args: AnyArguments<'_>) -> ScyllaDBArguments<'_> {
             AnyValueKind::BigInt(i) => (ScyllaDBTypeInfo::BigInt, ScyllaDBArgument::BigInt(i)),
             AnyValueKind::Real(r) => (ScyllaDBTypeInfo::Float, ScyllaDBArgument::Float(r)),
             AnyValueKind::Double(d) => (ScyllaDBTypeInfo::Double, ScyllaDBArgument::Double(d)),
-            AnyValueKind::Text(t) => (ScyllaDBTypeInfo::Text, ScyllaDBArgument::Text(t)),
-            AnyValueKind::Blob(b) => (ScyllaDBTypeInfo::Blob, ScyllaDBArgument::Blob(b)),
+            AnyValueKind::Text(t) => (
+                ScyllaDBTypeInfo::Text,
+                ScyllaDBArgument::Text(Arc::new(t.to_string())),
+            ),
+            AnyValueKind::Blob(b) => (
+                ScyllaDBTypeInfo::Blob,
+                ScyllaDBArgument::Blob(Arc::new(b.to_vec())),
+            ),
             // AnyValueKind is `#[non_exhaustive]` but we should have covered everything
             _ => unreachable!("BUG: missing mapping for {val:?}"),
         };

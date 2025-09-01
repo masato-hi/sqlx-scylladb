@@ -10,8 +10,8 @@ async fn it_can_select_boolean(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let _ = sqlx::query("INSERT INTO boolean_tests(my_id, my_boolean, my_boolean_list, my_boolean_set) VALUES(?, ?, ?, ?)")
         .bind(id)
         .bind(true)
-        .bind(&[true, false, true])
-        .bind(&[true, false, true])
+        .bind([true, false, true])
+        .bind([true, false, true])
         .execute(&pool)
         .await?;
 

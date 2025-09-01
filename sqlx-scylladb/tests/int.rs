@@ -12,8 +12,8 @@ async fn it_can_select_int(pool: ScyllaDBPool) -> anyhow::Result<()> {
     )
     .bind(id)
     .bind(117i32)
-    .bind(&[11i32, 4, 7, 11])
-    .bind(&[11i32, 4, 7, 11])
+    .bind([11i32, 4, 7, 11])
+    .bind([11i32, 4, 7, 11])
     .execute(&pool)
     .await?;
 

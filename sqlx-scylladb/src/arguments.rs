@@ -1,8 +1,8 @@
 use std::{
-    borrow::Cow,
     collections::HashMap,
     net::IpAddr,
     ops::{Deref, DerefMut},
+    sync::Arc,
 };
 
 use scylla::{
@@ -21,12 +21,12 @@ use uuid::Uuid;
 use crate::{ScyllaDB, ScyllaDBTypeInfo};
 
 #[derive(Default)]
-pub struct ScyllaDBArguments<'q> {
+pub struct ScyllaDBArguments {
     pub(crate) types: Vec<ScyllaDBTypeInfo>,
-    pub(crate) buffer: ScyllaDBArgumentBuffer<'q>,
+    pub(crate) buffer: ScyllaDBArgumentBuffer,
 }
 
-impl<'q> Arguments<'q> for ScyllaDBArguments<'q> {
+impl<'q> Arguments<'q> for ScyllaDBArguments {
     type Database = ScyllaDB;
 
     fn reserve(&mut self, additional: usize, size: usize) {
@@ -39,7 +39,7 @@ impl<'q> Arguments<'q> for ScyllaDBArguments<'q> {
         T: 'q + sqlx::Encode<'q, Self::Database> + sqlx::Type<Self::Database>,
     {
         let ty = value.produces().unwrap_or_else(T::type_info);
-        let _ = value.encode_by_ref(&mut self.buffer)?;
+        let _ = value.encode(&mut self.buffer)?;
         self.types.push(ty);
 
         Ok(())
@@ -51,7 +51,7 @@ impl<'q> Arguments<'q> for ScyllaDBArguments<'q> {
     }
 }
 
-impl<'q> SerializeRow for ScyllaDBArguments<'q> {
+impl SerializeRow for ScyllaDBArguments {
     fn serialize(
         &self,
         ctx: &RowSerializationContext<'_>,
@@ -76,108 +76,107 @@ impl<'q> SerializeRow for ScyllaDBArguments<'q> {
 }
 
 #[derive(Default)]
-pub struct ScyllaDBArgumentBuffer<'q> {
-    pub(crate) buffer: Vec<ScyllaDBArgument<'q>>,
+pub struct ScyllaDBArgumentBuffer {
+    pub(crate) buffer: Vec<ScyllaDBArgument>,
 }
 
-impl<'q> Deref for ScyllaDBArgumentBuffer<'q> {
-    type Target = Vec<ScyllaDBArgument<'q>>;
+impl Deref for ScyllaDBArgumentBuffer {
+    type Target = Vec<ScyllaDBArgument>;
 
     fn deref(&self) -> &Self::Target {
         &self.buffer
     }
 }
 
-impl<'q> DerefMut for ScyllaDBArgumentBuffer<'q> {
+impl<'q> DerefMut for ScyllaDBArgumentBuffer {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.buffer
     }
 }
 
-pub enum ScyllaDBArgument<'q> {
+pub enum ScyllaDBArgument {
     Null,
     Boolean(bool),
-    BooleanArray(&'q [bool]),
+    BooleanArray(Arc<Vec<bool>>),
     TinyInt(i8),
-    TinyIntArray(&'q [i8]),
+    TinyIntArray(Arc<Vec<i8>>),
     SmallInt(i16),
-    SmallIntArray(&'q [i16]),
+    SmallIntArray(Arc<Vec<i16>>),
     Int(i32),
-    IntArray(&'q [i32]),
+    IntArray(Arc<Vec<i32>>),
     BigInt(i64),
-    BigIntArray(&'q [i64]),
+    BigIntArray(Arc<Vec<i64>>),
     Float(f32),
-    FloatArray(&'q [f32]),
+    FloatArray(Arc<Vec<f32>>),
     Double(f64),
-    DoubleArray(&'q [f64]),
-    Text(Cow<'q, str>),
-    TextArray(&'q [String]),
-    TextRefArray(&'q [&'q str]),
-    Blob(Cow<'q, [u8]>),
+    DoubleArray(Arc<Vec<f64>>),
+    Text(Arc<String>),
+    TextArray(Arc<Vec<String>>),
+    Blob(Arc<Vec<u8>>),
     Uuid(Uuid),
-    UuidArray(&'q [Uuid]),
+    UuidArray(Arc<Vec<Uuid>>),
     Timeuuid(CqlTimeuuid),
-    TimeuuidArray(&'q [CqlTimeuuid]),
+    TimeuuidArray(Arc<Vec<CqlTimeuuid>>),
     IpAddr(IpAddr),
-    IpAddrArray(&'q [IpAddr]),
+    IpAddrArray(Arc<Vec<IpAddr>>),
     #[cfg(feature = "bigdecimal-04")]
     BigDecimal(bigdecimal_04::BigDecimal),
     #[cfg(feature = "bigdecimal-04")]
-    BigDecimalArray(&'q [bigdecimal_04::BigDecimal]),
+    BigDecimalArray(Arc<Vec<bigdecimal_04::BigDecimal>>),
     CqlTimestamp(CqlTimestamp),
-    CqlTimestampArray(&'q [CqlTimestamp]),
+    CqlTimestampArray(Arc<Vec<CqlTimestamp>>),
     #[cfg(feature = "time-03")]
     OffsetDateTime(time_03::OffsetDateTime),
     #[cfg(feature = "time-03")]
-    OffsetDateTimeArray(&'q [time_03::OffsetDateTime]),
+    OffsetDateTimeArray(Arc<Vec<time_03::OffsetDateTime>>),
     #[cfg(feature = "chrono-04")]
     ChronoDateTimeUTC(chrono_04::DateTime<chrono_04::Utc>),
     #[cfg(feature = "chrono-04")]
-    ChronoDateTimeUTCArray(&'q [chrono_04::DateTime<chrono_04::Utc>]),
+    ChronoDateTimeUTCArray(Arc<Vec<chrono_04::DateTime<chrono_04::Utc>>>),
     CqlDate(CqlDate),
-    CqlDateArray(&'q [CqlDate]),
+    CqlDateArray(Arc<Vec<CqlDate>>),
     #[cfg(feature = "time-03")]
     Date(time_03::Date),
     #[cfg(feature = "time-03")]
-    DateArray(&'q [time_03::Date]),
+    DateArray(Arc<Vec<time_03::Date>>),
     #[cfg(feature = "chrono-04")]
     ChronoNaiveDate(chrono_04::NaiveDate),
     #[cfg(feature = "chrono-04")]
-    ChronoNaiveDateArray(&'q [chrono_04::NaiveDate]),
+    ChronoNaiveDateArray(Arc<Vec<chrono_04::NaiveDate>>),
     CqlTime(CqlTime),
-    CqlTimeArray(&'q [CqlTime]),
+    CqlTimeArray(Arc<Vec<CqlTime>>),
     #[cfg(feature = "time-03")]
     Time(time_03::Time),
     #[cfg(feature = "time-03")]
-    TimeArray(&'q [time_03::Time]),
+    TimeArray(Arc<Vec<time_03::Time>>),
     #[cfg(feature = "chrono-04")]
     ChronoNaiveTime(chrono_04::NaiveTime),
     #[cfg(feature = "chrono-04")]
-    ChronoNaiveTimeArray(&'q [chrono_04::NaiveTime]),
-    Tuple(Box<dyn SerializeValue + Send + Sync + 'q>),
-    UserDefinedType(&'q (dyn SerializeValue + Send + Sync)),
-    UserDefinedTypeArray(&'q (dyn SerializeValue + Send + Sync)),
-    TextTextMap(&'q HashMap<String, String>),
-    TextBooleanMap(&'q HashMap<String, bool>),
-    TextTinyIntMap(&'q HashMap<String, i8>),
-    TextSmallIntMap(&'q HashMap<String, i16>),
-    TextIntMap(&'q HashMap<String, i32>),
-    TextBigIntMap(&'q HashMap<String, i64>),
-    TextFloatMap(&'q HashMap<String, f32>),
-    TextDoubleMap(&'q HashMap<String, f64>),
-    TextUuidMap(&'q HashMap<String, Uuid>),
-    UuidTextMap(&'q HashMap<Uuid, String>),
-    UuidBooleanMap(&'q HashMap<Uuid, bool>),
-    UuidTinyIntMap(&'q HashMap<Uuid, i8>),
-    UuidSmallIntMap(&'q HashMap<Uuid, i16>),
-    UuidIntMap(&'q HashMap<Uuid, i32>),
-    UuidBigIntMap(&'q HashMap<Uuid, i64>),
-    UuidFloatMap(&'q HashMap<Uuid, f32>),
-    UuidDoubleMap(&'q HashMap<Uuid, f64>),
-    UuidUuidMap(&'q HashMap<Uuid, Uuid>),
+    ChronoNaiveTimeArray(Arc<Vec<chrono_04::NaiveTime>>),
+    Tuple(Arc<dyn SerializeValue + Send + Sync>),
+    UserDefinedType(Arc<dyn SerializeValue + Send + Sync>),
+    UserDefinedTypeArray(Arc<dyn SerializeValue + Send + Sync>),
+    TextTextMap(Arc<HashMap<String, String>>),
+    TextBooleanMap(Arc<HashMap<String, bool>>),
+    TextTinyIntMap(Arc<HashMap<String, i8>>),
+    TextSmallIntMap(Arc<HashMap<String, i16>>),
+    TextIntMap(Arc<HashMap<String, i32>>),
+    TextBigIntMap(Arc<HashMap<String, i64>>),
+    TextFloatMap(Arc<HashMap<String, f32>>),
+    TextDoubleMap(Arc<HashMap<String, f64>>),
+    TextUuidMap(Arc<HashMap<String, Uuid>>),
+    UuidTextMap(Arc<HashMap<Uuid, String>>),
+    UuidBooleanMap(Arc<HashMap<Uuid, bool>>),
+    UuidTinyIntMap(Arc<HashMap<Uuid, i8>>),
+    UuidSmallIntMap(Arc<HashMap<Uuid, i16>>),
+    UuidIntMap(Arc<HashMap<Uuid, i32>>),
+    UuidBigIntMap(Arc<HashMap<Uuid, i64>>),
+    UuidFloatMap(Arc<HashMap<Uuid, f32>>),
+    UuidDoubleMap(Arc<HashMap<Uuid, f64>>),
+    UuidUuidMap(Arc<HashMap<Uuid, Uuid>>),
 }
 
-impl<'q> SerializeValue for ScyllaDBArgument<'q> {
+impl SerializeValue for ScyllaDBArgument {
     fn serialize<'b>(
         &self,
         typ: &ColumnType,
@@ -199,10 +198,9 @@ impl<'q> SerializeValue for ScyllaDBArgument<'q> {
             Self::FloatArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Double(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::DoubleArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::Text(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::Text(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::TextArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextRefArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::Blob(value) => <_ as SerializeValue>::serialize(&&**value, typ, writer),
+            Self::Blob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Uuid(uuid) => <_ as SerializeValue>::serialize(uuid, typ, writer),
             Self::UuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Timeuuid(timeuuid) => <_ as SerializeValue>::serialize(timeuuid, typ, writer),
@@ -251,29 +249,29 @@ impl<'q> SerializeValue for ScyllaDBArgument<'q> {
             Self::ChronoNaiveDateArray(value) => {
                 <_ as SerializeValue>::serialize(value, typ, writer)
             }
-            Self::Tuple(dynamic) => <_ as SerializeValue>::serialize(dynamic, typ, writer),
+            Self::Tuple(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::UserDefinedType(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::UserDefinedTypeArray(value) => {
                 <_ as SerializeValue>::serialize(value, typ, writer)
             }
-            Self::TextTextMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::TextBooleanMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::TextTinyIntMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::TextSmallIntMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::TextIntMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::TextBigIntMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::TextFloatMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::TextDoubleMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::TextUuidMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::UuidTextMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::UuidBooleanMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::UuidTinyIntMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::UuidSmallIntMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::UuidIntMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::UuidBigIntMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::UuidFloatMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::UuidDoubleMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
-            Self::UuidUuidMap(value) => <_ as SerializeValue>::serialize(&**value, typ, writer),
+            Self::TextTextMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextBooleanMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextTinyIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextSmallIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextBigIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextFloatMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextDoubleMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextUuidMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::UuidTextMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::UuidBooleanMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::UuidTinyIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::UuidSmallIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::UuidIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::UuidBigIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::UuidFloatMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::UuidDoubleMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::UuidUuidMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
         }
     }
 }

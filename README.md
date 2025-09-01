@@ -76,12 +76,8 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 ### Basic type binding
 
-- [x] ASCII (&str, String)
-  - [ ] Box\<str>
-  - [ ] Arc\<str>
-- [x] TEXT (&str, String)
-  - [ ] Box\<str>
-  - [ ] Arc\<str>
+- [x] ASCII (&str, String, Box\<str>, Cow\<'_, str>, Rc\<str>, Arc\<str>)
+- [x] TEXT (&str, String, Box\<str>, Cow\<'_, str>, Rc\<str>, Arc\<str>)
 - [x] BOOLEAN (bool)
 - [x] TINYINT (i8)
 - [x] SMALLINT (i16)
@@ -89,7 +85,7 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 - [x] BIGINT (i64)
 - [x] FLOAT (f32)
 - [x] DOUBLE (f64)
-- [x] BLOB (&[u8], Vec\<u8>)
+- [x] BLOB (Vec\<u8>, Vec\<u8>)
 - [x] UUID (uuid::Uuid)
 - [x] TIMEUUID (scylla::value::CqlTimeuuid)
 - [x] TIMESTAMP (scylla::value::CqlTimestamp, chrono::DateTime\<Utc>, time::OffsetDateTime)
@@ -104,24 +100,22 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 ### List or Set type binding
 
-To avoid additional memory allocation, only borrowing is supported.
-
-- [x] LIST\<ASCII>, SET\<ASCII> (&[&str], &[String])
-- [x] LIST\<TEXT>, SET\<TEXT> (&[&str], &[String])
-- [x] LIST\<BOOLEAN>, SET\<BOOLEAN> (&[bool])
-- [x] LIST\<TINYINT>, SET\<TINYINT> (&[i8])
-- [x] LIST\<SMALLINT>, SET\<SMALLINT> (&[i16])
-- [x] LIST\<INT>, SET\<INT> (&[i32])
-- [x] LIST\<BIGINT>, SET\<BIGINT> (&[i64])
-- [x] LIST\<FLOAT>, SET\<FLOAT> (&[f32])
-- [x] LIST\<DOUBLE>, SET\<DOUBLE> (&[f64])
-- [x] LIST\<UUID>, SET\<UUID> (&[uuid::Uuid])
-- [x] LIST\<TIMEUUID>, SET\<TIMEUUID> (&[scylla::value::CqlTimeuuid])
-- [x] LIST\<TIMESTAMP>, SET\<TIMESTAMP> (&[scylla::value::CqlTimestamp], &[chrono::DateTime\<Utc>], &[time::OffsetDateTime])
-- [x] LIST\<DATE>, SET\<DATE> (&[scylla::value::CqlDate], &[chrono::NaiveDate], &[time::Date])
-- [x] LIST\<TIME>, SET\<TIME> (&[scylla::value::CqlTime], &[chrono::NaiveTime], &[time::Time])
-- [ ] LIST\<INET>, SET\<INET> (&[std::net::IpAddr])
-- [x] LIST\<DECIMAL>, SET\<DECIMAL> (&[bigdecimal::Decimal])
+- [x] LIST\<ASCII>, SET\<ASCII> ([&str], Vec\<String>)
+- [x] LIST\<TEXT>, SET\<TEXT> ([&str], Vec\<String>)
+- [x] LIST\<BOOLEAN>, SET\<BOOLEAN> (Vec\<bool>)
+- [x] LIST\<TINYINT>, SET\<TINYINT> (Vec\<i8>)
+- [x] LIST\<SMALLINT>, SET\<SMALLINT> (Vec\<i16>)
+- [x] LIST\<INT>, SET\<INT> (Vec\<i32>)
+- [x] LIST\<BIGINT>, SET\<BIGINT> (Vec\<i64>)
+- [x] LIST\<FLOAT>, SET\<FLOAT> (Vec\<f32>)
+- [x] LIST\<DOUBLE>, SET\<DOUBLE> (Vec\<f64>)
+- [x] LIST\<UUID>, SET\<UUID> (Vec\<uuid::Uuid>)
+- [x] LIST\<TIMEUUID>, SET\<TIMEUUID> (Vec\<scylla::value::CqlTimeuuid>)
+- [x] LIST\<TIMESTAMP>, SET\<TIMESTAMP> (Vec\<scylla::value::CqlTimestamp>, Vec\<chrono::DateTime\<Utc>>, Vec\<time::OffsetDateTime>)
+- [x] LIST\<DATE>, SET\<DATE> (Vec\<scylla::value::CqlDate>, Vec\<chrono::NaiveDate>, Vec\<time::Date>)
+- [x] LIST\<TIME>, SET\<TIME> (Vec\<scylla::value::CqlTime>, Vec\<chrono::NaiveTime>, Vec\<time::Time>)
+- [x] LIST\<INET>, SET\<INET> (Vec\<std::net::IpAddr>)
+- [x] LIST\<DECIMAL>, SET\<DECIMAL> (Vec\<bigdecimal::Decimal>)
   - [ ] scylla::value::CqlDecimal
 - [ ] Duration
 - [ ] Varint

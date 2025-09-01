@@ -13,13 +13,13 @@ async fn it_can_select_cql_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     )
     .bind(id)
     .bind(CqlTime(27874))
-    .bind(&[
+    .bind([
         CqlTime(27874),
         CqlTime(21845),
         CqlTime(22058),
         CqlTime(39263),
     ])
-    .bind(&[
+    .bind([
         CqlTime(27874),
         CqlTime(21845),
         CqlTime(22058),
@@ -98,13 +98,13 @@ async fn it_can_select_chrono_timetime(pool: ScyllaDBPool) -> anyhow::Result<()>
     )
     .bind(id)
     .bind(NaiveTime::from_hms_opt(16, 44, 34).unwrap())
-    .bind(&[
+    .bind([
         NaiveTime::from_hms_opt(16, 44, 34).unwrap(),
         NaiveTime::from_hms_opt(15, 04, 05).unwrap(),
         NaiveTime::from_hms_opt(15, 07, 38).unwrap(),
         NaiveTime::from_hms_opt(19, 54, 23).unwrap(),
     ])
-    .bind(&[
+    .bind([
         NaiveTime::from_hms_opt(16, 44, 34).unwrap(),
         NaiveTime::from_hms_opt(15, 04, 05).unwrap(),
         NaiveTime::from_hms_opt(15, 07, 38).unwrap(),
@@ -195,13 +195,13 @@ async fn it_can_select_time_offset_time_time(pool: ScyllaDBPool) -> anyhow::Resu
     )
     .bind(id)
     .bind(Time::from_hms(16, 44, 34)?)
-    .bind(&[
+    .bind([
         Time::from_hms(16, 44, 34)?,
         Time::from_hms(15, 04, 05)?,
         Time::from_hms(15, 07, 38)?,
         Time::from_hms(19, 54, 23)?,
     ])
-    .bind(&[
+    .bind([
         Time::from_hms(15, 04, 05)?,
         Time::from_hms(15, 07, 38)?,
         Time::from_hms(16, 44, 34)?,

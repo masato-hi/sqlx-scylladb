@@ -26,9 +26,9 @@ impl Database for ScyllaDB {
 
     type ValueRef<'r> = ScyllaDBValueRef<'r>;
 
-    type Arguments<'q> = ScyllaDBArguments<'q>;
+    type Arguments<'q> = ScyllaDBArguments;
 
-    type ArgumentBuffer<'q> = ScyllaDBArgumentBuffer<'q>;
+    type ArgumentBuffer<'q> = ScyllaDBArgumentBuffer;
 
     type Statement<'q> = ScyllaDBStatement<'q>;
 

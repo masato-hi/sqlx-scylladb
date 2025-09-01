@@ -12,8 +12,8 @@ async fn it_can_select_text(pool: ScyllaDBPool) -> anyhow::Result<()> {
     )
     .bind(id)
     .bind("こんにちは")
-    .bind(&["こんにちは", "おはよう", "さようなら", "おやすみ"])
-    .bind(&["こんにちは", "おはよう", "さようなら", "こんにちは"])
+    .bind(["こんにちは", "おはよう", "さようなら", "おやすみ"])
+    .bind(["こんにちは", "おはよう", "さようなら", "こんにちは"])
     .execute(&pool)
     .await?;
 
