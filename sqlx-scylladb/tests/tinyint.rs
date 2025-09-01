@@ -49,6 +49,67 @@ async fn it_can_select_tinyint(pool: ScyllaDBPool) -> anyhow::Result<()> {
 }
 
 #[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_tinyint_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO tinyint_tests(my_id, my_tinyint, my_tinyint_list, my_tinyint_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<i8>)
+    .bind(None::<Vec<i8>>)
+    .bind(None::<Vec<i8>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_tinyint, my_tinyint_list, my_tinyint_set): (
+        Uuid,
+        Option<i8>,
+        Option<Vec<i8>>,
+        Option<Vec<i8>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_tinyint, my_tinyint_list, my_tinyint_set FROM tinyint_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_tinyint.is_none());
+    assert!(my_tinyint_list.is_none());
+    assert!(my_tinyint_set.is_none());
+
+    let _ = sqlx::query(
+        "INSERT INTO tinyint_tests(my_id, my_tinyint, my_tinyint_list, my_tinyint_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some(117i8))
+    .bind(Some([11i8, 4, 7, 11]))
+    .bind(Some([11i8, 4, 7, 11]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_tinyint, my_tinyint_list, my_tinyint_set): (
+        Uuid,
+        Option<i8>,
+        Option<Vec<i8>>,
+        Option<Vec<i8>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_tinyint, my_tinyint_list, my_tinyint_set FROM tinyint_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(117, my_tinyint.unwrap());
+    assert_eq!(vec![11, 4, 7, 11], my_tinyint_list.unwrap());
+    assert_eq!(vec![4, 7, 11], my_tinyint_set.unwrap());
+
+    Ok(())
+}
+
+#[sqlx::test(migrations = "tests/types_migrations")]
 async fn describe_tinyint(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
     let conn = conn.acquire().await?;

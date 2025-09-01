@@ -39,7 +39,11 @@ impl<'q> Arguments<'q> for ScyllaDBArguments {
         T: 'q + sqlx::Encode<'q, Self::Database> + sqlx::Type<Self::Database>,
     {
         let ty = value.produces().unwrap_or_else(T::type_info);
-        let _ = value.encode(&mut self.buffer)?;
+        let is_null = value.encode(&mut self.buffer)?;
+        if is_null.is_null() {
+            self.buffer.push(ScyllaDBArgument::Null);
+        }
+
         self.types.push(ty);
 
         Ok(())

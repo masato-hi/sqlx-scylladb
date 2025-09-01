@@ -86,9 +86,91 @@ async fn it_can_select_cql_date(pool: ScyllaDBPool) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_cql_date_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO date_tests(my_id, my_date, my_date_list, my_date_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<CqlDate>)
+    .bind(None::<Vec<CqlDate>>)
+    .bind(None::<Vec<CqlDate>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_date, my_date_list, my_date_set): (
+        Uuid,
+        Option<CqlDate>,
+        Option<Vec<CqlDate>>,
+        Option<Vec<CqlDate>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_date.is_none());
+    assert!(my_date_list.is_none());
+    assert!(my_date_set.is_none());
+
+    let _ = sqlx::query(
+        "INSERT INTO date_tests(my_id, my_date, my_date_list, my_date_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some(CqlDate(20330)))
+    .bind(Some([
+        CqlDate(20330),
+        CqlDate(13149),
+        CqlDate(8842),
+        CqlDate(32668),
+    ]))
+    .bind(Some([
+        CqlDate(20330),
+        CqlDate(13149),
+        CqlDate(8842),
+        CqlDate(20330),
+    ]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_date, my_date_list, my_date_set): (
+        Uuid,
+        Option<CqlDate>,
+        Option<Vec<CqlDate>>,
+        Option<Vec<CqlDate>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(CqlDate(20330), my_date.unwrap());
+    assert_eq!(
+        vec![
+            CqlDate(20330),
+            CqlDate(13149),
+            CqlDate(8842),
+            CqlDate(32668),
+        ],
+        my_date_list.unwrap()
+    );
+    assert_eq!(
+        vec![CqlDate(8842), CqlDate(13149), CqlDate(20330),],
+        my_date_set.unwrap()
+    );
+
+    Ok(())
+}
+
 #[cfg(feature = "chrono-04")]
 #[sqlx::test(migrations = "tests/types_migrations")]
-async fn it_can_select_chrono_datetime(pool: ScyllaDBPool) -> anyhow::Result<()> {
+async fn it_can_select_chrono_04_datetime(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use chrono_04::NaiveDate;
 
     let id = Uuid::new_v4();
@@ -183,9 +265,100 @@ async fn it_can_select_chrono_datetime(pool: ScyllaDBPool) -> anyhow::Result<()>
     Ok(())
 }
 
+#[cfg(feature = "chrono-04")]
+#[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_chrono_04_naive_date_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    use chrono_04::NaiveDate;
+
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO date_tests(my_id, my_date, my_date_list, my_date_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<NaiveDate>)
+    .bind(None::<Vec<NaiveDate>>)
+    .bind(None::<Vec<NaiveDate>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_date, my_date_list, my_date_set): (
+        Uuid,
+        Option<NaiveDate>,
+        Option<Vec<NaiveDate>>,
+        Option<Vec<NaiveDate>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_date.is_none());
+    assert!(my_date_list.is_none());
+    assert!(my_date_set.is_none());
+    let _ = sqlx::query(
+        "INSERT INTO date_tests(my_id, my_date, my_date_list, my_date_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some(NaiveDate::from_ymd_opt(2025, 8, 31).unwrap()))
+    .bind(Some([
+        NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(),
+        NaiveDate::from_ymd_opt(2006, 1, 2).unwrap(),
+        NaiveDate::from_ymd_opt(1994, 3, 19).unwrap(),
+        NaiveDate::from_ymd_opt(2059, 6, 12).unwrap(),
+    ]))
+    .bind(Some([
+        NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(),
+        NaiveDate::from_ymd_opt(2006, 1, 2).unwrap(),
+        NaiveDate::from_ymd_opt(1994, 3, 19).unwrap(),
+        NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(),
+    ]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_date, my_date_list, my_date_set): (
+        Uuid,
+        Option<NaiveDate>,
+        Option<Vec<NaiveDate>>,
+        Option<Vec<NaiveDate>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(
+        NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(),
+        my_date.unwrap()
+    );
+    assert_eq!(
+        vec![
+            NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(),
+            NaiveDate::from_ymd_opt(2006, 1, 2).unwrap(),
+            NaiveDate::from_ymd_opt(1994, 3, 19).unwrap(),
+            NaiveDate::from_ymd_opt(2059, 6, 12).unwrap(),
+        ],
+        my_date_list.unwrap()
+    );
+    assert_eq!(
+        vec![
+            NaiveDate::from_ymd_opt(1994, 3, 19).unwrap(),
+            NaiveDate::from_ymd_opt(2006, 1, 2).unwrap(),
+            NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(),
+        ],
+        my_date_set.unwrap()
+    );
+
+    Ok(())
+}
+
 #[cfg(feature = "time-03")]
 #[sqlx::test(migrations = "tests/types_migrations")]
-async fn it_can_select_time_offset_date_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
+async fn it_can_select_time_03_date(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use time_03::{
         Date,
         Month::{August, January, June, March},
@@ -274,6 +447,101 @@ async fn it_can_select_time_offset_date_time(pool: ScyllaDBPool) -> anyhow::Resu
             Date::from_calendar_date(2025, August, 31)?,
         ],
         row.my_date_set
+    );
+
+    Ok(())
+}
+
+#[cfg(feature = "time-03")]
+#[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_time_03_date_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    use time_03::{
+        Date,
+        Month::{August, January, June, March},
+    };
+
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO date_tests(my_id, my_date, my_date_list, my_date_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<Date>)
+    .bind(None::<Vec<Date>>)
+    .bind(None::<Vec<Date>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_date, my_date_list, my_date_set): (
+        Uuid,
+        Option<Date>,
+        Option<Vec<Date>>,
+        Option<Vec<Date>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_date.is_none());
+    assert!(my_date_list.is_none());
+    assert!(my_date_set.is_none());
+
+    let _ = sqlx::query(
+        "INSERT INTO date_tests(my_id, my_date, my_date_list, my_date_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some(Date::from_calendar_date(2025, August, 31)?))
+    .bind(Some([
+        Date::from_calendar_date(2025, August, 31)?,
+        Date::from_calendar_date(2006, January, 2)?,
+        Date::from_calendar_date(1994, March, 19)?,
+        Date::from_calendar_date(2059, June, 12)?,
+    ]))
+    .bind(Some([
+        Date::from_calendar_date(2025, August, 31)?,
+        Date::from_calendar_date(2006, January, 2)?,
+        Date::from_calendar_date(1994, March, 19)?,
+        Date::from_calendar_date(2025, August, 31)?,
+    ]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_date, my_date_list, my_date_set): (
+        Uuid,
+        Option<Date>,
+        Option<Vec<Date>>,
+        Option<Vec<Date>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(
+        Date::from_calendar_date(2025, August, 31)?,
+        my_date.unwrap()
+    );
+    assert_eq!(
+        vec![
+            Date::from_calendar_date(2025, August, 31)?,
+            Date::from_calendar_date(2006, January, 2)?,
+            Date::from_calendar_date(1994, March, 19)?,
+            Date::from_calendar_date(2059, June, 12)?,
+        ],
+        my_date_list.unwrap()
+    );
+    assert_eq!(
+        vec![
+            Date::from_calendar_date(1994, March, 19)?,
+            Date::from_calendar_date(2006, January, 2)?,
+            Date::from_calendar_date(2025, August, 31)?,
+        ],
+        my_date_set.unwrap()
     );
 
     Ok(())

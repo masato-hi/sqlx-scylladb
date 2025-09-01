@@ -49,6 +49,67 @@ async fn it_can_select_smallint(pool: ScyllaDBPool) -> anyhow::Result<()> {
 }
 
 #[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_smallint_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO smallint_tests(my_id, my_smallint, my_smallint_list, my_smallint_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<i16>)
+    .bind(None::<Vec<i16>>)
+    .bind(None::<Vec<i16>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_smallint, my_smallint_list, my_smallint_set): (
+        Uuid,
+        Option<i16>,
+        Option<Vec<i16>>,
+        Option<Vec<i16>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_smallint, my_smallint_list, my_smallint_set FROM smallint_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_smallint.is_none());
+    assert!(my_smallint_list.is_none());
+    assert!(my_smallint_set.is_none());
+
+    let _ = sqlx::query(
+        "INSERT INTO smallint_tests(my_id, my_smallint, my_smallint_list, my_smallint_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some(117i16))
+    .bind(Some([11i16, 4, 7, 11]))
+    .bind(Some([11i16, 4, 7, 11]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_smallint, my_smallint_list, my_smallint_set): (
+        Uuid,
+        Option<i16>,
+        Option<Vec<i16>>,
+        Option<Vec<i16>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_smallint, my_smallint_list, my_smallint_set FROM smallint_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(117, my_smallint.unwrap());
+    assert_eq!(vec![11, 4, 7, 11], my_smallint_list.unwrap());
+    assert_eq!(vec![4, 7, 11], my_smallint_set.unwrap());
+
+    Ok(())
+}
+
+#[sqlx::test(migrations = "tests/types_migrations")]
 async fn describe_smallint(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
     let conn = conn.acquire().await?;

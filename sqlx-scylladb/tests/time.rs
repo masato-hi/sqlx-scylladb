@@ -86,9 +86,91 @@ async fn it_can_select_cql_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_cql_time_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO time_tests(my_id, my_time, my_time_list, my_time_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<CqlTime>)
+    .bind(None::<Vec<CqlTime>>)
+    .bind(None::<Vec<CqlTime>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_time, my_time_list, my_time_set): (
+        Uuid,
+        Option<CqlTime>,
+        Option<Vec<CqlTime>>,
+        Option<Vec<CqlTime>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_time.is_none());
+    assert!(my_time_list.is_none());
+    assert!(my_time_set.is_none());
+
+    let _ = sqlx::query(
+        "INSERT INTO time_tests(my_id, my_time, my_time_list, my_time_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some(CqlTime(27874)))
+    .bind(Some([
+        CqlTime(27874),
+        CqlTime(21845),
+        CqlTime(22058),
+        CqlTime(39263),
+    ]))
+    .bind(Some([
+        CqlTime(27874),
+        CqlTime(21845),
+        CqlTime(22058),
+        CqlTime(27874),
+    ]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_time, my_time_list, my_time_set): (
+        Uuid,
+        Option<CqlTime>,
+        Option<Vec<CqlTime>>,
+        Option<Vec<CqlTime>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(CqlTime(27874), my_time.unwrap());
+    assert_eq!(
+        vec![
+            CqlTime(27874),
+            CqlTime(21845),
+            CqlTime(22058),
+            CqlTime(39263),
+        ],
+        my_time_list.unwrap()
+    );
+    assert_eq!(
+        vec![CqlTime(21845), CqlTime(22058), CqlTime(27874),],
+        my_time_set.unwrap()
+    );
+
+    Ok(())
+}
+
 #[cfg(feature = "chrono-04")]
 #[sqlx::test(migrations = "tests/types_migrations")]
-async fn it_can_select_chrono_timetime(pool: ScyllaDBPool) -> anyhow::Result<()> {
+async fn it_can_select_chrono_04_naive_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use chrono_04::NaiveTime;
 
     let id = Uuid::new_v4();
@@ -183,9 +265,101 @@ async fn it_can_select_chrono_timetime(pool: ScyllaDBPool) -> anyhow::Result<()>
     Ok(())
 }
 
+#[cfg(feature = "chrono-04")]
+#[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_chrono_04_naive_time_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    use chrono_04::NaiveTime;
+
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO time_tests(my_id, my_time, my_time_list, my_time_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<NaiveTime>)
+    .bind(None::<Vec<NaiveTime>>)
+    .bind(None::<Vec<NaiveTime>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_time, my_time_list, my_time_set): (
+        Uuid,
+        Option<NaiveTime>,
+        Option<Vec<NaiveTime>>,
+        Option<Vec<NaiveTime>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_time.is_none());
+    assert!(my_time_list.is_none());
+    assert!(my_time_set.is_none());
+
+    let _ = sqlx::query(
+        "INSERT INTO time_tests(my_id, my_time, my_time_list, my_time_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some(NaiveTime::from_hms_opt(16, 44, 34).unwrap()))
+    .bind(Some([
+        NaiveTime::from_hms_opt(16, 44, 34).unwrap(),
+        NaiveTime::from_hms_opt(15, 04, 05).unwrap(),
+        NaiveTime::from_hms_opt(15, 07, 38).unwrap(),
+        NaiveTime::from_hms_opt(19, 54, 23).unwrap(),
+    ]))
+    .bind(Some([
+        NaiveTime::from_hms_opt(16, 44, 34).unwrap(),
+        NaiveTime::from_hms_opt(15, 04, 05).unwrap(),
+        NaiveTime::from_hms_opt(15, 07, 38).unwrap(),
+        NaiveTime::from_hms_opt(16, 44, 34).unwrap(),
+    ]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_time, my_time_list, my_time_set): (
+        Uuid,
+        Option<NaiveTime>,
+        Option<Vec<NaiveTime>>,
+        Option<Vec<NaiveTime>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(
+        NaiveTime::from_hms_opt(16, 44, 34).unwrap(),
+        my_time.unwrap()
+    );
+    assert_eq!(
+        vec![
+            NaiveTime::from_hms_opt(16, 44, 34).unwrap(),
+            NaiveTime::from_hms_opt(15, 04, 05).unwrap(),
+            NaiveTime::from_hms_opt(15, 07, 38).unwrap(),
+            NaiveTime::from_hms_opt(19, 54, 23).unwrap(),
+        ],
+        my_time_list.unwrap()
+    );
+    assert_eq!(
+        vec![
+            NaiveTime::from_hms_opt(15, 04, 05).unwrap(),
+            NaiveTime::from_hms_opt(15, 07, 38).unwrap(),
+            NaiveTime::from_hms_opt(16, 44, 34).unwrap(),
+        ],
+        my_time_set.unwrap()
+    );
+
+    Ok(())
+}
+
 #[cfg(feature = "time-03")]
 #[sqlx::test(migrations = "tests/types_migrations")]
-async fn it_can_select_time_offset_time_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
+async fn it_can_select_time_03_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use time_03::Time;
 
     let id = Uuid::new_v4();
@@ -270,6 +444,95 @@ async fn it_can_select_time_offset_time_time(pool: ScyllaDBPool) -> anyhow::Resu
             Time::from_hms(16, 44, 34)?,
         ],
         row.my_time_set
+    );
+
+    Ok(())
+}
+
+#[cfg(feature = "time-03")]
+#[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_time_03_time_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    use time_03::Time;
+
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO time_tests(my_id, my_time, my_time_list, my_time_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<Time>)
+    .bind(None::<Vec<Time>>)
+    .bind(None::<Vec<Time>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_time, my_time_list, my_time_set): (
+        Uuid,
+        Option<Time>,
+        Option<Vec<Time>>,
+        Option<Vec<Time>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_time.is_none());
+    assert!(my_time_list.is_none());
+    assert!(my_time_set.is_none());
+
+    let _ = sqlx::query(
+        "INSERT INTO time_tests(my_id, my_time, my_time_list, my_time_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some(Time::from_hms(16, 44, 34)?))
+    .bind(Some([
+        Time::from_hms(16, 44, 34)?,
+        Time::from_hms(15, 04, 05)?,
+        Time::from_hms(15, 07, 38)?,
+        Time::from_hms(19, 54, 23)?,
+    ]))
+    .bind(Some([
+        Time::from_hms(16, 44, 34)?,
+        Time::from_hms(15, 04, 05)?,
+        Time::from_hms(15, 07, 38)?,
+        Time::from_hms(16, 44, 34)?,
+    ]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_time, my_time_list, my_time_set): (
+        Uuid,
+        Option<Time>,
+        Option<Vec<Time>>,
+        Option<Vec<Time>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(Time::from_hms(16, 44, 34)?, my_time.unwrap());
+    assert_eq!(
+        vec![
+            Time::from_hms(16, 44, 34)?,
+            Time::from_hms(15, 04, 05)?,
+            Time::from_hms(15, 07, 38)?,
+            Time::from_hms(19, 54, 23)?,
+        ],
+        my_time_list.unwrap()
+    );
+    assert_eq!(
+        vec![
+            Time::from_hms(15, 04, 05)?,
+            Time::from_hms(15, 07, 38)?,
+            Time::from_hms(16, 44, 34)?,
+        ],
+        my_time_set.unwrap()
     );
 
     Ok(())

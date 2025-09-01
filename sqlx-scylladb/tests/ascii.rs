@@ -60,6 +60,73 @@ async fn it_can_select_ascii(pool: ScyllaDBPool) -> anyhow::Result<()> {
 }
 
 #[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_ascii_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO ascii_tests(my_id, my_ascii, my_ascii_list, my_ascii_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<String>)
+    .bind(None::<Vec<String>>)
+    .bind(None::<Vec<String>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_ascii, my_ascii_list, my_ascii_set): (
+        Uuid,
+        Option<String>,
+        Option<Vec<String>>,
+        Option<Vec<String>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_ascii, my_ascii_list, my_ascii_set FROM ascii_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_ascii.is_none());
+    assert!(my_ascii_list.is_none());
+    assert!(my_ascii_set.is_none());
+
+    let _ = sqlx::query(
+        "INSERT INTO ascii_tests(my_id, my_ascii, my_ascii_list, my_ascii_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some("Hello!"))
+    .bind(Some(["Hello!", "Good morning!", "Bye.", "Good night."]))
+    .bind(Some(["Hello!", "Good morning!", "Bye.", "Hello!"]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_ascii, my_ascii_list, my_ascii_set): (
+        Uuid,
+        Option<String>,
+        Option<Vec<String>>,
+        Option<Vec<String>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_ascii, my_ascii_list, my_ascii_set FROM ascii_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!("Hello!", my_ascii.unwrap());
+    assert_eq!(
+        vec!["Hello!", "Good morning!", "Bye.", "Good night."],
+        my_ascii_list.unwrap()
+    );
+    assert_eq!(
+        vec!["Bye.", "Good morning!", "Hello!",],
+        my_ascii_set.unwrap()
+    );
+
+    Ok(())
+}
+
+#[sqlx::test(migrations = "tests/types_migrations")]
 async fn describe_ascii(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
     let conn = conn.acquire().await?;

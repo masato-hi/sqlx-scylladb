@@ -54,6 +54,67 @@ async fn it_can_select_double(pool: ScyllaDBPool) -> anyhow::Result<()> {
 }
 
 #[sqlx::test(migrations = "tests/types_migrations")]
+async fn it_can_select_double_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query(
+        "INSERT INTO double_tests(my_id, my_double, my_double_list, my_double_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(None::<f64>)
+    .bind(None::<Vec<f64>>)
+    .bind(None::<Vec<f64>>)
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_double, my_double_list, my_double_set): (
+        Uuid,
+        Option<f64>,
+        Option<Vec<f64>>,
+        Option<Vec<f64>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_double, my_double_list, my_double_set FROM double_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert!(my_double.is_none());
+    assert!(my_double_list.is_none());
+    assert!(my_double_set.is_none());
+
+    let _ = sqlx::query(
+        "INSERT INTO double_tests(my_id, my_double, my_double_list, my_double_set) VALUES(?, ?, ?, ?)",
+    )
+    .bind(id)
+    .bind(Some(117.5f64))
+    .bind(Some([11.5f64, 4.25, 7.125, 11.5]))
+    .bind(Some([11.5f64, 4.25, 7.125, 11.5]))
+    .execute(&pool)
+    .await?;
+
+    let (my_id, my_double, my_double_list, my_double_set): (
+        Uuid,
+        Option<f64>,
+        Option<Vec<f64>>,
+        Option<Vec<f64>>,
+    ) = sqlx::query_as(
+        "SELECT my_id, my_double, my_double_list, my_double_set FROM double_tests WHERE my_id = ?",
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(117.5f64, my_double.unwrap());
+    assert_eq!(vec![11.5f64, 4.25, 7.125, 11.5], my_double_list.unwrap());
+    assert_eq!(vec![4.25f64, 7.125, 11.5], my_double_set.unwrap());
+
+    Ok(())
+}
+
+#[sqlx::test(migrations = "tests/types_migrations")]
 async fn describe_double(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
     let conn = conn.acquire().await?;
