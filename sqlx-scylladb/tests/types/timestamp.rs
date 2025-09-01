@@ -4,7 +4,7 @@ use sqlx_macros::FromRow;
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_cql_timestamp(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
 
@@ -94,7 +94,7 @@ async fn it_can_select_cql_timestamp(pool: ScyllaDBPool) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_cql_timestamp_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
 
@@ -181,7 +181,7 @@ async fn it_can_select_cql_timestamp_optional(pool: ScyllaDBPool) -> anyhow::Res
 }
 
 #[cfg(feature = "chrono-04")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_chrono_04_datetime(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use chrono_04::{DateTime, Utc};
 
@@ -280,7 +280,7 @@ async fn it_can_select_chrono_04_datetime(pool: ScyllaDBPool) -> anyhow::Result<
 }
 
 #[cfg(feature = "chrono-04")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_chrono_04_datetime_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use chrono_04::{DateTime, Utc};
 
@@ -372,7 +372,7 @@ async fn it_can_select_chrono_04_datetime_optional(pool: ScyllaDBPool) -> anyhow
 }
 
 #[cfg(feature = "time-03")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_time_03_offset_date_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use time_03::OffsetDateTime;
 
@@ -471,7 +471,7 @@ async fn it_can_select_time_03_offset_date_time(pool: ScyllaDBPool) -> anyhow::R
 }
 
 #[cfg(feature = "time-03")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_time_03_offset_date_time_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use time_03::OffsetDateTime;
 
@@ -562,7 +562,7 @@ async fn it_can_select_time_03_offset_date_time_optional(pool: ScyllaDBPool) -> 
     Ok(())
 }
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn describe_timestamp(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
     let conn = conn.acquire().await?;

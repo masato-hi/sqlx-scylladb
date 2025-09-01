@@ -52,71 +52,71 @@ sqlx-macros = "0.8"
 env_logger = "0.11"
 
 [[test]]
-name = "test-ascii"
-path = "tests/ascii.rs"
+name = "test-types-ascii"
+path = "tests/types/ascii.rs"
 required-features = ["migrate"]
 
 [[test]]
-name = "test-bigint"
-path = "tests/bigint.rs"
+name = "test-types-bigint"
+path = "tests/types/bigint.rs"
 required-features = ["migrate"]
 
 [[test]]
-name = "test-boolean"
-path = "tests/boolean.rs"
+name = "test-types-boolean"
+path = "tests/types/boolean.rs"
 required-features = ["migrate"]
 
 [[test]]
-name = "test-date"
-path = "tests/date.rs"
+name = "test-types-date"
+path = "tests/types/date.rs"
 required-features = ["migrate"]
 
 [[test]]
-name = "test-double"
-path = "tests/double.rs"
+name = "test-types-double"
+path = "tests/types/double.rs"
 required-features = ["migrate"]
 
 [[test]]
-name = "test-float"
-path = "tests/float.rs"
+name = "test-types-float"
+path = "tests/types/float.rs"
 required-features = ["migrate"]
 
 [[test]]
-name = "test-int"
-path = "tests/int.rs"
+name = "test-types-int"
+path = "tests/types/int.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-smallint"
+path = "tests/types/smallint.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-text"
+path = "tests/types/text.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-time"
+path = "tests/types/time.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-timestamp"
+path = "tests/types/timestamp.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-tinyint"
+path = "tests/types/tinyint.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-uuid"
+path = "tests/types/uuid.rs"
 required-features = ["migrate"]
 
 [[test]]
 name = "test-migrate"
 path = "tests/migrate.rs"
-required-features = ["migrate"]
-
-[[test]]
-name = "test-smallint"
-path = "tests/smallint.rs"
-required-features = ["migrate"]
-
-[[test]]
-name = "test-text"
-path = "tests/text.rs"
-required-features = ["migrate"]
-
-[[test]]
-name = "test-time"
-path = "tests/time.rs"
-required-features = ["migrate"]
-
-[[test]]
-name = "test-timestamp"
-path = "tests/timestamp.rs"
-required-features = ["migrate"]
-
-[[test]]
-name = "test-tinyint"
-path = "tests/tinyint.rs"
-required-features = ["migrate"]
-
-[[test]]
-name = "test-uuid"
-path = "tests/uuid.rs"
 required-features = ["migrate"]

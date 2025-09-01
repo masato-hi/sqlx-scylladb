@@ -4,7 +4,7 @@ use sqlx_macros::FromRow;
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_cql_date(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
 
@@ -86,7 +86,7 @@ async fn it_can_select_cql_date(pool: ScyllaDBPool) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_cql_date_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
 
@@ -169,7 +169,7 @@ async fn it_can_select_cql_date_optional(pool: ScyllaDBPool) -> anyhow::Result<(
 }
 
 #[cfg(feature = "chrono-04")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_chrono_04_datetime(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use chrono_04::NaiveDate;
 
@@ -266,7 +266,7 @@ async fn it_can_select_chrono_04_datetime(pool: ScyllaDBPool) -> anyhow::Result<
 }
 
 #[cfg(feature = "chrono-04")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_chrono_04_naive_date_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use chrono_04::NaiveDate;
 
@@ -357,7 +357,7 @@ async fn it_can_select_chrono_04_naive_date_optional(pool: ScyllaDBPool) -> anyh
 }
 
 #[cfg(feature = "time-03")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_time_03_date(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use time_03::{
         Date,
@@ -453,7 +453,7 @@ async fn it_can_select_time_03_date(pool: ScyllaDBPool) -> anyhow::Result<()> {
 }
 
 #[cfg(feature = "time-03")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_time_03_date_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use time_03::{
         Date,
@@ -547,7 +547,7 @@ async fn it_can_select_time_03_date_optional(pool: ScyllaDBPool) -> anyhow::Resu
     Ok(())
 }
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn describe_date(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
     let conn = conn.acquire().await?;

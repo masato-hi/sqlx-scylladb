@@ -3,7 +3,7 @@ use sqlx_macros::FromRow;
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_boolean(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
 
@@ -48,7 +48,7 @@ async fn it_can_select_boolean(pool: ScyllaDBPool) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_boolean_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
 
@@ -109,7 +109,7 @@ async fn it_can_select_boolean_optional(pool: ScyllaDBPool) -> anyhow::Result<()
     Ok(())
 }
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn describe_boolean(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
     let conn = conn.acquire().await?;

@@ -4,7 +4,7 @@ use sqlx_macros::FromRow;
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_cql_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
 
@@ -86,7 +86,7 @@ async fn it_can_select_cql_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     Ok(())
 }
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_cql_time_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
 
@@ -169,7 +169,7 @@ async fn it_can_select_cql_time_optional(pool: ScyllaDBPool) -> anyhow::Result<(
 }
 
 #[cfg(feature = "chrono-04")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_chrono_04_naive_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use chrono_04::NaiveTime;
 
@@ -266,7 +266,7 @@ async fn it_can_select_chrono_04_naive_time(pool: ScyllaDBPool) -> anyhow::Resul
 }
 
 #[cfg(feature = "chrono-04")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_chrono_04_naive_time_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use chrono_04::NaiveTime;
 
@@ -358,7 +358,7 @@ async fn it_can_select_chrono_04_naive_time_optional(pool: ScyllaDBPool) -> anyh
 }
 
 #[cfg(feature = "time-03")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_time_03_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use time_03::Time;
 
@@ -450,7 +450,7 @@ async fn it_can_select_time_03_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
 }
 
 #[cfg(feature = "time-03")]
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_time_03_time_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     use time_03::Time;
 
@@ -538,7 +538,7 @@ async fn it_can_select_time_03_time_optional(pool: ScyllaDBPool) -> anyhow::Resu
     Ok(())
 }
 
-#[sqlx::test(migrations = "tests/types_migrations")]
+#[sqlx::test(migrations = "tests/types/migrations")]
 async fn describe_time(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
     let conn = conn.acquire().await?;
