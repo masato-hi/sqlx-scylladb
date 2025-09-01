@@ -43,6 +43,8 @@ async fn main() -> anyhow::Result<()> {
 
 ## URL
 
+In addition to DATABASE_URL, SCYLLADB_URL is supported as a source for retrieving environment variables during testing.
+
 ### Full example
 
 ```url

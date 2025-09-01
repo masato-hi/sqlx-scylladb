@@ -44,7 +44,7 @@ async fn find_user(conn: impl ScyllaDBExecutor<'_>, id: i64) -> anyhow::Result<U
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    let database_url = env::var("DATABASE_URL")?;
+    let database_url = env::var("SCYLLADB_URL")?;
 
     ScyllaDB::create_database(&database_url).await?;
 

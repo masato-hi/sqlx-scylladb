@@ -56,7 +56,7 @@ impl TestSupport for ScyllaDB {
 }
 
 async fn test_context(args: &TestArgs) -> Result<TestContext<ScyllaDB>, Error> {
-    let url = dotenvy::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let url = get_database_url();
 
     let master_opts = ScyllaDBConnectOptions::from_str(&url).expect("failed to parse DATABASE_URL");
 
@@ -143,7 +143,7 @@ async fn do_cleanup(conn: &mut ScyllaDBConnection, db_name: &str) -> Result<(), 
 }
 
 async fn cleanup_test_dbs() -> Result<Option<usize>, Error> {
-    let url = dotenvy::var("DATABASE_URL").expect("DATABASE_URL must be set");
+    let url = get_database_url();
 
     let mut conn = ScyllaDBConnection::connect(&url).await?;
 
@@ -189,6 +189,12 @@ async fn cleanup_test_dbs() -> Result<Option<usize>, Error> {
     let _ = conn.close().await;
 
     Ok(Some(delete_db_names.len()))
+}
+
+fn get_database_url() -> String {
+    dotenvy::var("SCYLLADB_URL")
+        .or_else(|_| dotenvy::var("DATABSE_URL"))
+        .expect("SCYLLADB_URL or DATABASE_URL must be set")
 }
 
 fn once_lock_try_insert_polyfill<T>(this: &OnceLock<T>, value: T) -> Result<&T, (&T, T)> {

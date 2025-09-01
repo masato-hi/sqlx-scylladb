@@ -5,7 +5,7 @@
 1. Declare the database URL
 
 ```shell
-export DATABASE_URL=scylladb://localhost/basic_example?replication_strategy=SimpleStrategy
+export SCYLLADB_URL=scylladb://localhost/basic_example?replication_strategy=SimpleStrategy
 ```
 
 ## Usage
