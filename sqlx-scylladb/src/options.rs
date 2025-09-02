@@ -46,7 +46,7 @@ impl ScyllaDBConnectOptions {
         let username = url.username();
         if !username.is_empty() {
             let password = url.password().unwrap_or_default();
-            options = options.user(username, password);
+            options = options.user_authentication(username, password);
         }
 
         let query_pairs = url.query_pairs();
@@ -114,17 +114,21 @@ impl ScyllaDBConnectOptions {
         }
     }
 
-    fn add_node(mut self, node: impl Into<String>) -> Self {
+    pub fn add_node(mut self, node: impl Into<String>) -> Self {
         self.nodes.push(node.into());
         self
     }
 
-    pub(crate) fn keyspace(mut self, keyspace: &str) -> Self {
-        self.keyspace = Some(keyspace.to_owned());
+    pub fn keyspace(mut self, keyspace: impl Into<String>) -> Self {
+        self.keyspace = Some(keyspace.into());
         self
     }
 
-    fn user(mut self, username: impl Into<String>, password: impl Into<String>) -> Self {
+    pub fn user_authentication(
+        mut self,
+        username: impl Into<String>,
+        password: impl Into<String>,
+    ) -> Self {
         let authentication_options = ScyllaDBAuthenticationOptions {
             username: username.into(),
             password: password.into(),
@@ -133,31 +137,31 @@ impl ScyllaDBConnectOptions {
         self
     }
 
-    fn replication_strategy(mut self, strategy: ScyllaDBReplicationStrategy) -> Self {
+    pub fn replication_strategy(mut self, strategy: ScyllaDBReplicationStrategy) -> Self {
         let mut replication_options = self.replication_options_or_default();
         replication_options.strategy = strategy;
         self.replication_options = Some(replication_options);
         self
     }
 
-    fn replication_factor(mut self, factor: usize) -> Self {
+    pub fn replication_factor(mut self, factor: usize) -> Self {
         let mut replication_options = self.replication_options_or_default();
         replication_options.replication_factor = factor;
         self.replication_options = Some(replication_options);
         self
     }
 
-    fn compressor(mut self, compressor: ScyllaDBCompressor) -> Self {
+    pub fn compressor(mut self, compressor: ScyllaDBCompressor) -> Self {
         self.compression_options = Some(ScyllaDBCompressionOptions { compressor });
         self
     }
 
-    fn tcp_nodelay(mut self) -> Self {
+    pub fn tcp_nodelay(mut self) -> Self {
         self.tcp_nodelay = true;
         self
     }
 
-    fn tcp_keepalive(mut self, secs: u64) -> Self {
+    pub fn tcp_keepalive(mut self, secs: u64) -> Self {
         self.tcp_keepalive = Some(Duration::from_secs(secs));
         self
     }
@@ -217,7 +221,7 @@ pub(crate) struct ScyllaDBAuthenticationOptions {
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub(crate) enum ScyllaDBReplicationStrategy {
+pub enum ScyllaDBReplicationStrategy {
     #[default]
     SimpleStrategy,
     NetworkTopologyStrategy,
@@ -268,7 +272,7 @@ impl Default for ScyllaDBReplicationOptions {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum ScyllaDBCompressor {
+pub enum ScyllaDBCompressor {
     LZ4Compressor,
     SnappyCompressor,
 }
@@ -307,6 +311,8 @@ pub(crate) struct ScyllaDBCompressionOptions {
 
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
     use crate::{
         ScyllaDBConnectOptions,
         options::{ScyllaDBCompressor, ScyllaDBReplicationStrategy},
@@ -344,6 +350,140 @@ mod tests {
 
         let page_size = options.page_size;
         assert_eq!(10, page_size);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_add_nodes() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert_eq!(0, options.nodes.len());
+
+        let options = options.add_node("example1.test:9043");
+
+        assert_eq!(vec!["example1.test:9043"], options.nodes);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_keyspace() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert!(options.keyspace.is_none());
+
+        let options = options.keyspace("test");
+
+        assert_eq!("test", options.keyspace.unwrap());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_user_authentication() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert!(options.authentication_options.is_none());
+
+        let options = options.user_authentication("my_name", "my_password");
+
+        let authentication_options = options.authentication_options.unwrap();
+        assert_eq!("my_name", &authentication_options.username);
+        assert_eq!("my_password", &authentication_options.password);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_replication_strategy() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert!(options.replication_options.is_none());
+
+        let options =
+            options.replication_strategy(ScyllaDBReplicationStrategy::NetworkTopologyStrategy);
+
+        let replication_options = options.replication_options.unwrap();
+        assert_eq!(
+            ScyllaDBReplicationStrategy::NetworkTopologyStrategy,
+            replication_options.strategy
+        );
+        assert_eq!(1, replication_options.replication_factor);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_replication_factor() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert!(options.replication_options.is_none());
+
+        let options = options.replication_factor(2);
+
+        let replication_options = options.replication_options.unwrap();
+        assert_eq!(
+            ScyllaDBReplicationStrategy::SimpleStrategy,
+            replication_options.strategy
+        );
+        assert_eq!(2, replication_options.replication_factor);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_compressor() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert!(options.compression_options.is_none());
+
+        let options = options.compressor(ScyllaDBCompressor::SnappyCompressor);
+
+        let compression_options = options.compression_options.unwrap();
+        assert_eq!(
+            ScyllaDBCompressor::SnappyCompressor,
+            compression_options.compressor
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_tcp_nodelay() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert!(!options.tcp_nodelay);
+
+        let options = options.tcp_nodelay();
+
+        assert!(options.tcp_nodelay);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_tcp_keepalive() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert!(options.tcp_keepalive.is_none());
+
+        let options = options.tcp_keepalive(20);
+
+        assert_eq!(Duration::from_secs(20), options.tcp_keepalive.unwrap());
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_page_size() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert_eq!(5000, options.page_size);
+
+        let options = options.page_size(200);
+
+        assert_eq!(200, options.page_size);
 
         Ok(())
     }

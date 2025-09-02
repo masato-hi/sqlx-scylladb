@@ -22,7 +22,7 @@ pub use column::ScyllaDBColumn;
 pub use connection::ScyllaDBConnection;
 pub use database::ScyllaDB;
 pub use error::ScyllaDBError;
-pub use options::ScyllaDBConnectOptions;
+pub use options::{ScyllaDBCompressor, ScyllaDBConnectOptions, ScyllaDBReplicationStrategy};
 pub use query_result::ScyllaDBQueryResult;
 pub use row::ScyllaDBRow;
 use sqlx::{Executor, Pool, Transaction, pool::PoolOptions};
