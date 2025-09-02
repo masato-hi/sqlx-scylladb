@@ -11,6 +11,7 @@ pub struct ScyllaDBStatement<'q> {
     pub(crate) sql: Cow<'q, str>,
     pub(crate) prepared_statement: PreparedStatement,
     pub(crate) metadata: ScyllaDBStatementMetadata,
+    pub(crate) is_affect_statement: bool,
 }
 
 impl<'q> Statement<'q> for ScyllaDBStatement<'q> {
@@ -21,6 +22,7 @@ impl<'q> Statement<'q> for ScyllaDBStatement<'q> {
             sql: Cow::Owned(self.sql.clone().into_owned()),
             prepared_statement: self.prepared_statement.clone(),
             metadata: self.metadata.clone(),
+            is_affect_statement: self.is_affect_statement,
         }
     }
 

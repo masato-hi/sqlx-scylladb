@@ -162,7 +162,7 @@ impl ScyllaDBConnectOptions {
         self
     }
 
-    fn page_size(mut self, page_size: i32) -> Self {
+    pub fn page_size(mut self, page_size: i32) -> Self {
         self.page_size = page_size;
         self
     }

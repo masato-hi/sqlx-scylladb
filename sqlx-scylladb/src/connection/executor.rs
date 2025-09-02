@@ -5,10 +5,13 @@ use futures_core::{Stream, future::BoxFuture, stream::BoxStream};
 use futures_util::TryStreamExt;
 use scylla::{
     deserialize::row::ColumnIterator,
-    response::{PagingState, PagingStateResponse, query_result::QueryResult},
+    response::{
+        PagingState, PagingStateResponse,
+        query_result::{ColumnSpecs, QueryResult},
+    },
     statement::Statement,
 };
-use sqlx::{Describe, Either, Error, Executor};
+use sqlx::{Connection, Describe, Either, Error, Executor, Row};
 use sqlx_core::{ext::ustr::UStr, try_stream};
 
 use crate::{
@@ -17,10 +20,12 @@ use crate::{
     statement::ScyllaDBStatementMetadata,
 };
 
+const APPLIED_COLUMN: &'static str = "[applied]";
+
 impl ScyllaDBConnection {
     async fn execute_single_page<'e, 'c: 'e, 'q: 'e>(
         &'c mut self,
-        statement: Statement,
+        sql: &str,
         arguments: &Option<ScyllaDBArguments>,
         persistent: bool,
         paging_state: PagingState,
@@ -28,11 +33,11 @@ impl ScyllaDBConnection {
         if persistent {
             let (query_result, paging_state_response) = if let Some(arguments) = arguments {
                 self.caching_session
-                    .execute_single_page(statement, arguments, paging_state)
+                    .execute_single_page(sql, arguments, paging_state)
                     .await?
             } else {
                 self.caching_session
-                    .execute_single_page(statement, (), paging_state)
+                    .execute_single_page(sql, (), paging_state)
                     .await?
             };
 
@@ -42,12 +47,10 @@ impl ScyllaDBConnection {
 
             let (query_result, paging_state_response) = if let Some(arguments) = arguments {
                 session
-                    .query_single_page(statement, arguments, paging_state)
+                    .query_single_page(sql, arguments, paging_state)
                     .await?
             } else {
-                session
-                    .query_single_page(statement, (), paging_state)
-                    .await?
+                session.query_single_page(sql, (), paging_state).await?
             };
 
             Ok((query_result, paging_state_response))
@@ -64,14 +67,16 @@ impl ScyllaDBConnection {
         Error,
     > {
         Ok(try_stream! {
-            if self.in_transaction(){
-                self.insert_transactional(sql, arguments).await?;
-            } else {
+            let statement = self.prepare(sql).await?;
+
+            // INSERT, UPDATE, and DELETE queries during transactions are processed in batches.
+            let in_batch = self.is_in_transaction() && statement.is_affect_statement;
+
+            if !in_batch {
                 let mut paging_state = PagingState::start();
-                let statement = Statement::new(sql).with_page_size(self.page_size);
 
                 loop {
-                    let (query_result, paging_state_response) = self.execute_single_page(statement.clone(), &arguments, persistent, paging_state.clone()).await?;
+                    let (query_result, paging_state_response) = self.execute_single_page(&statement.sql, &arguments, persistent, paging_state.clone()).await?;
 
                     if !query_result.is_rows() {
                         break;
@@ -80,6 +85,10 @@ impl ScyllaDBConnection {
                     let rows_result = query_result.into_rows_result().map_err(ScyllaDBError::IntoRowsResultError)?;
                     let column_specs = rows_result.column_specs();
                     let metadata = ScyllaDBStatementMetadata::from_column_specs(column_specs)?;
+
+                    let is_lwt = column_specs.is_lwt();
+                    let rows_num = rows_result.rows_num() as u64;
+                    let mut rows_affected = 0;
 
                     let rows = rows_result.rows::<ColumnIterator<'_,'_>>().map_err(ScyllaDBError::RowsError)?;
                     for row in rows {
@@ -97,8 +106,19 @@ impl ScyllaDBConnection {
                             columns.push(column)
                         }
 
-                        r#yield!(Either::Right(ScyllaDBRow::new(columns, metadata.clone())))
+                        let scylladb_row = ScyllaDBRow::new(columns, metadata.clone());
+
+                        if is_lwt {
+                            let applied: bool = scylladb_row.try_get(APPLIED_COLUMN).unwrap_or(false);
+                            if applied {
+                                rows_affected += 1;
+                            }
+                        }
+
+                        r#yield!(Either::Right(scylladb_row))
                     }
+
+                    r#yield!(Either::Left(ScyllaDBQueryResult { rows_num, rows_affected }));
 
                     match paging_state_response.into_paging_control_flow() {
                         ControlFlow::Break(()) => {
@@ -109,6 +129,8 @@ impl ScyllaDBConnection {
                         }
                     }
                 }
+            } else {
+                self.insert_transactional(sql, arguments).await?;
             }
 
             Ok(())
@@ -174,7 +196,7 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
         'c: 'e,
     {
         Box::pin(async move {
-            let statement = Statement::new(sql);
+            let statement = Statement::new(sql).with_page_size(self.page_size);
             let prepared_statement = self
                 .caching_session
                 .add_prepared_statement(&statement)
@@ -184,10 +206,13 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
             let column_specs = prepared_statement.get_result_set_col_specs();
             let metadata = ScyllaDBStatementMetadata::from_column_specs(column_specs)?;
 
+            let is_affect_statement = column_specs.is_affect_statement();
+
             Ok(ScyllaDBStatement {
                 sql: Cow::Borrowed(sql),
                 prepared_statement,
                 metadata,
+                is_affect_statement,
             })
         })
     }
@@ -235,5 +260,38 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
 
             Ok(describe)
         })
+    }
+}
+
+trait ColumnSpecsExt {
+    fn is_affect_statement(&self) -> bool;
+    fn is_lwt(&self) -> bool;
+}
+
+impl ColumnSpecsExt for ColumnSpecs<'_, '_> {
+    #[inline]
+    fn is_affect_statement(&self) -> bool {
+        // Returns 0 for queries other than SELECT queries.
+        if self.len() == 0 {
+            return true;
+        }
+
+        if self.is_lwt() {
+            return true;
+        }
+
+        return false;
+    }
+
+    #[inline]
+    fn is_lwt(&self) -> bool {
+        // In the case of a lightweight transaction, [applied] is returned.
+        if let Some(column_spec) = self.get_by_index(0) {
+            if column_spec.name() == APPLIED_COLUMN {
+                return true;
+            }
+        }
+
+        false
     }
 }

@@ -4,7 +4,7 @@ use sqlx_scylladb::ScyllaDBPool;
 static MIGRATOR: Migrator = sqlx::migrate!("./tests/migrations");
 
 #[sqlx::test(migrations = false)]
-async fn up_all(pool: ScyllaDBPool) -> anyhow::Result<()> {
+async fn it_can_apply_all_migrations(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
 
     let _ = conn.ensure_migrations_table().await?;
@@ -23,7 +23,7 @@ async fn up_all(pool: ScyllaDBPool) -> anyhow::Result<()> {
 }
 
 #[sqlx::test(migrations = false)]
-async fn apply_each(pool: ScyllaDBPool) -> anyhow::Result<()> {
+async fn it_can_apply_each_migrations(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
 
     let _ = conn.ensure_migrations_table().await?;
@@ -50,7 +50,7 @@ async fn apply_each(pool: ScyllaDBPool) -> anyhow::Result<()> {
 }
 
 #[sqlx::test(migrations = false)]
-async fn revert_each(pool: ScyllaDBPool) -> anyhow::Result<()> {
+async fn it_can_revert_each_migrations(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
 
     let _ = conn.ensure_migrations_table().await?;

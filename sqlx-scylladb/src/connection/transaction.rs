@@ -74,10 +74,6 @@ impl ScyllaDBConnection {
         if self.transaction.is_some() { 1 } else { 0 }
     }
 
-    pub(crate) fn in_transaction(&self) -> bool {
-        self.transaction.is_some()
-    }
-
     pub(crate) async fn insert_transactional<'e, 'c: 'e, 'q: 'e>(
         &'c mut self,
         sql: &'q str,
