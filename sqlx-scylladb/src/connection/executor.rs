@@ -130,7 +130,7 @@ impl ScyllaDBConnection {
                     }
                 }
             } else {
-                self.insert_transactional(sql, arguments).await?;
+                self.append_to_transaction(sql, arguments).await?;
             }
 
             Ok(())

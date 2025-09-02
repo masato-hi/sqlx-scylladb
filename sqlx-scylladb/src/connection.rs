@@ -2,17 +2,27 @@ mod establish;
 mod executor;
 mod transaction;
 
+use std::fmt::Debug;
+
 use futures_core::future::BoxFuture;
 use scylla::client::caching_session::CachingSession;
 use sqlx::{Connection, Transaction};
 
 use crate::{ScyllaDB, ScyllaDBConnectOptions, connection::transaction::ScyllaDBTransaction};
 
-#[derive(Debug)]
 pub struct ScyllaDBConnection {
     pub(crate) caching_session: CachingSession,
     pub(crate) page_size: i32,
     pub(crate) transaction: Option<ScyllaDBTransaction>,
+}
+
+impl Debug for ScyllaDBConnection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ScyllaDBConnection")
+            .field("caching_session", &self.caching_session)
+            .field("page_size", &self.page_size)
+            .finish()
+    }
 }
 
 impl Connection for ScyllaDBConnection {
