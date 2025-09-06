@@ -7,12 +7,14 @@ use sqlx_scylladb::{
 use sqlx_scylladb_macros::UserDefinedType;
 use uuid::Uuid;
 
+#[cfg(feature = "macros")]
 #[derive(Debug, Clone, FromRow, SerializeValue, DeserializeValue, UserDefinedType)]
 struct MyUserDefinedType {
     my_bigint: i64,
     my_text: String,
 }
 
+#[cfg(feature = "macros")]
 #[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
@@ -148,6 +150,7 @@ async fn it_can_select_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<(
     Ok(())
 }
 
+#[cfg(feature = "macros")]
 #[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
@@ -290,15 +293,15 @@ async fn describe_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<()> {
 
     assert_eq!("UUID", describe.columns()[0].type_info().name());
     assert_eq!(
-        "user_defined_type_test",
+        "my_user_defined_type",
         describe.columns()[1].type_info().name()
     );
     assert_eq!(
-        "user_defined_type_test[]",
+        "my_user_defined_type[]",
         describe.columns()[2].type_info().name()
     );
     assert_eq!(
-        "user_defined_type_test[]",
+        "my_user_defined_type[]",
         describe.columns()[3].type_info().name()
     );
 

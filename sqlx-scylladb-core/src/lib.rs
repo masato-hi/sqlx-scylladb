@@ -5,7 +5,6 @@ mod column;
 mod connection;
 mod database;
 mod error;
-pub mod ext;
 #[cfg(feature = "migrate")]
 mod migrate;
 mod options;
@@ -36,9 +35,6 @@ pub use transaction::ScyllaDBTransactionManager;
 pub use type_info::ScyllaDBTypeInfo;
 pub use types::array::ScyllaDBHasArrayType;
 pub use value::{ScyllaDBValue, ScyllaDBValueRef};
-
-#[cfg(feature = "macros")]
-pub mod macros;
 
 pub type ScyllaDBPool = Pool<ScyllaDB>;
 

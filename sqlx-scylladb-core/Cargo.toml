@@ -1,0 +1,50 @@
+[package]
+name = "sqlx-scylladb-core"
+version.workspace = true
+edition.workspace = true
+
+[features]
+migrate = ["dep:crc", "sqlx/migrate"]
+any = ["sqlx/any"]
+macros = ["sqlx-scylladb-macros", "sqlx/macros"]
+time-03 = ["dep:time-03", "sqlx/time", "scylla/time-03", "scylla-cql/time-03"]
+chrono-04 = [
+  "dep:chrono-04",
+  "sqlx/chrono",
+  "scylla/chrono-04",
+  "scylla-cql/chrono-04",
+]
+bigdecimal-04 = [
+  "dep:bigdecimal-04",
+  "sqlx/bigdecimal",
+  "scylla/bigdecimal-04",
+  "scylla-cql/bigdecimal-04",
+]
+
+[dependencies]
+sqlx-scylladb-macros = { workspace = true, optional = true }
+
+scylla = { workspace = true }
+scylla-cql = { workspace = true }
+sqlx = { workspace = true }
+sqlx-core = { workspace = true }
+
+uuid = { workspace = true }
+chrono-04 = { workspace = true, optional = true }
+time-03 = { workspace = true, optional = true }
+bigdecimal-04 = { workspace = true, optional = true }
+
+thiserror = "2.0"
+log = "0.4"
+url = "2"
+bytes = "1.10"
+tracing = { version = "0.1", features = ["log"] }
+crc = { version = "3", optional = true }
+base64 = "0.22.1"
+sha2 = { version = "0.10.9", default-features = false }
+dotenvy = "0.15"
+futures-core = "0.3.31"
+futures-util = "0.3.31"
+
+[dev-dependencies]
+anyhow = { workspace = true }

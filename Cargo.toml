@@ -1,11 +1,152 @@
 [workspace]
 resolver = "3"
-members = ["sqlx-scylladb", "sqlx-scylladb-macros", "sqlx-scylladb-macros-core"]
+members = [
+  ".",
+  "sqlx-scylladb-core",
+  "sqlx-scylladb-macros",
+  "sqlx-scylladb-macros-core",
+]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
 
 [workspace.dependencies]
+sqlx-scylladb-core = { path = "sqlx-scylladb-core" }
 sqlx-scylladb-macros = { path = "sqlx-scylladb-macros" }
 sqlx-scylladb-macros-core = { path = "sqlx-scylladb-macros-core" }
+
+scylla = { version = "1.3" }
+scylla-cql = { version = "1.3" }
+sqlx = { version = "0.8", default-features = false, features = [
+  "uuid",
+  "runtime-tokio",
+] }
+sqlx-core = { version = "0.8" }
+
+anyhow = { version = "1" }
+
+uuid = { version = "1" }
+chrono-04 = { version = "0.4", package = "chrono" }
+time-03 = { version = "0.3", package = "time" }
+bigdecimal-04 = { version = "0.4", package = "bigdecimal" }
+
+
+[package]
+name = "sqlx-scylladb"
+version.workspace = true
+edition.workspace = true
+
+[features]
+default = ["any", "migrate", "macros"]
+
+migrate = ["sqlx-scylladb-core/migrate"]
+any = ["sqlx-scylladb-core/any"]
+macros = ["sqlx-scylladb-macros"]
+time-03 = ["sqlx-scylladb-core/time-03"]
+chrono-04 = ["sqlx-scylladb-core/chrono-04"]
+bigdecimal-04 = ["sqlx-scylladb-core/bigdecimal-04"]
+
+[dependencies]
+sqlx-scylladb-macros = { workspace = true, optional = true }
+sqlx-scylladb-core = { workspace = true }
+
+sqlx-core = { workspace = true }
+scylla = { workspace = true }
+sqlx = { workspace = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+anyhow = { version = "1" }
+sqlx = { workspace = true, features = ["uuid", "runtime-tokio", "macros"] }
+sqlx-macros = "0.8"
+env_logger = "0.11"
+uuid = { workspace = true }
+chrono-04 = { workspace = true }
+time-03 = { workspace = true }
+bigdecimal-04 = { workspace = true }
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+required-features = ["migrate"]
+
+[[example]]
+name = "user_defined_type"
+path = "examples/user_defined_type.rs"
+required-features = ["migrate", "macros"]
+
+[[test]]
+name = "test-types-ascii"
+path = "tests/types/ascii.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-bigint"
+path = "tests/types/bigint.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-boolean"
+path = "tests/types/boolean.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-date"
+path = "tests/types/date.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-double"
+path = "tests/types/double.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-float"
+path = "tests/types/float.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-int"
+path = "tests/types/int.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-smallint"
+path = "tests/types/smallint.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-text"
+path = "tests/types/text.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-time"
+path = "tests/types/time.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-timestamp"
+path = "tests/types/timestamp.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-tinyint"
+path = "tests/types/tinyint.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-uuid"
+path = "tests/types/uuid.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-user-defined-type"
+path = "tests/types/user_defined_type.rs"
+required-features = ["migrate", "macros"]
+
+[[test]]
+name = "test-migrate"
+path = "tests/migrate.rs"
+required-features = ["migrate"]

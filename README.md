@@ -127,7 +127,7 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 Currently, only manual implementation is supported.
 
 - [x] Manual implementation.
-- [x] Derive macro. Use the new type idiom to implement user defined types for array types. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/sqlx-scylladb/examples/user_defined_type.rs) for usage.)
+- [x] Derive macro. Use the new type idiom to implement user defined types for array types. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/examples/user_defined_type.rs) for usage.)
 
 ### Testing
 

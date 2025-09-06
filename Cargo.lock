@@ -1839,13 +1839,31 @@ name = "sqlx-scylladb"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bigdecimal",
+ "chrono",
+ "env_logger",
+ "scylla",
+ "sqlx",
+ "sqlx-core",
+ "sqlx-macros",
+ "sqlx-scylladb-core",
+ "sqlx-scylladb-macros",
+ "time",
+ "tokio",
+ "uuid",
+]
+
+[[package]]
+name = "sqlx-scylladb-core"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
  "base64",
  "bigdecimal",
  "bytes",
  "chrono",
  "crc",
  "dotenvy",
- "env_logger",
  "futures-core",
  "futures-util",
  "log",
@@ -1854,11 +1872,9 @@ dependencies = [
  "sha2",
  "sqlx",
  "sqlx-core",
- "sqlx-macros",
  "sqlx-scylladb-macros",
  "thiserror",
  "time",
- "tokio",
  "tracing",
  "url",
  "uuid",
