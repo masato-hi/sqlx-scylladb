@@ -60,7 +60,7 @@ macro_rules! impl_array_type {
             }
         }
 
-        impl<'r> sqlx::Encode<'r, crate::ScyllaDB> for &'r [$typ] {
+        impl sqlx::Encode<'_, crate::ScyllaDB> for &[$typ] {
             #[inline(always)]
             fn encode_by_ref(
                 &self,
@@ -108,9 +108,9 @@ macro_rules! impl_array_type {
             }
         }
 
-        impl<'r> sqlx::Decode<'r, crate::ScyllaDB> for Vec<$typ> {
+        impl sqlx::Decode<'_, crate::ScyllaDB> for Vec<$typ> {
             fn decode(
-                value: crate::ScyllaDBValueRef<'r>,
+                value: crate::ScyllaDBValueRef<'_>,
             ) -> Result<Self, sqlx::error::BoxDynError> {
                 let val: Self = value.deserialize()?;
                 Ok(val)

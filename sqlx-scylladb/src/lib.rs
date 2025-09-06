@@ -5,6 +5,7 @@ mod column;
 mod connection;
 mod database;
 mod error;
+pub mod ext;
 #[cfg(feature = "migrate")]
 mod migrate;
 mod options;
@@ -36,6 +37,9 @@ pub use type_info::ScyllaDBTypeInfo;
 pub use types::array::ScyllaDBHasArrayType;
 pub use value::{ScyllaDBValue, ScyllaDBValueRef};
 
+#[cfg(feature = "macros")]
+pub mod macros;
+
 pub type ScyllaDBPool = Pool<ScyllaDB>;
 
 pub type ScyllaDBPoolOptions = PoolOptions<ScyllaDB>;
@@ -44,6 +48,8 @@ pub trait ScyllaDBExecutor<'c>: Executor<'c, Database = ScyllaDB> {}
 impl<'c, T: Executor<'c, Database = ScyllaDB>> ScyllaDBExecutor<'c> for T {}
 
 pub type ScyllaDBTransaction<'c> = Transaction<'c, ScyllaDB>;
+
+pub trait ScyllaDBType: sqlx::Type<ScyllaDB> {}
 
 impl_into_arguments_for_arguments!(ScyllaDBArguments);
 impl_acquire!(ScyllaDB, ScyllaDBConnection);

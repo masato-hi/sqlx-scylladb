@@ -1,7 +1,11 @@
 [workspace]
 resolver = "3"
-members = ["examples/basic", "sqlx-scylladb"]
+members = ["sqlx-scylladb", "sqlx-scylladb-macros", "sqlx-scylladb-macros-core"]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
+
+[workspace.dependencies]
+sqlx-scylladb-macros = { path = "sqlx-scylladb-macros" }
+sqlx-scylladb-macros-core = { path = "sqlx-scylladb-macros-core" }

@@ -6,6 +6,7 @@ edition.workspace = true
 [features]
 migrate = ["dep:crc", "sqlx/migrate"]
 any = ["sqlx/any"]
+macros = ["sqlx-scylladb-macros", "sqlx/macros"]
 time-03 = ["dep:time-03", "sqlx/time", "scylla/time-03", "scylla-cql/time-03"]
 chrono-04 = [
   "dep:chrono-04",
@@ -43,13 +44,22 @@ sha2 = { version = "0.10.9", default-features = false }
 dotenvy = "0.15"
 futures-core = "0.3.31"
 futures-util = "0.3.31"
+sqlx-scylladb-macros = { workspace = true, optional = true }
 
 [dev-dependencies]
-tokio = { version = "1", features = ["rt"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 anyhow = { version = "1" }
 sqlx = { version = "0.8", features = ["uuid", "runtime-tokio", "macros"] }
 sqlx-macros = "0.8"
 env_logger = "0.11"
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+
+[[example]]
+name = "user_defined_type"
+path = "examples/user_defined_type.rs"
 
 [[test]]
 name = "test-types-ascii"
@@ -115,6 +125,11 @@ required-features = ["migrate"]
 name = "test-types-uuid"
 path = "tests/types/uuid.rs"
 required-features = ["migrate"]
+
+[[test]]
+name = "test-types-user-defined-type"
+path = "tests/types/user_defined_type.rs"
+required-features = ["migrate", "macros"]
 
 [[test]]
 name = "test-migrate"

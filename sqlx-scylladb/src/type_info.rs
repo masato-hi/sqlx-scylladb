@@ -220,7 +220,7 @@ impl ScyllaDBTypeInfo {
                     } => {
                         let type_name = format!("{}[]", definition.name);
                         let type_name = UStr::new(&type_name);
-                        Self::UserDefinedType(type_name)
+                        Self::UserDefinedTypeArray(type_name)
                     }
                     _ => column_type_not_supported!(column_type),
                 },

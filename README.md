@@ -127,7 +127,7 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 Currently, only manual implementation is supported.
 
 - [x] Manual implementation.
-- [ ] Derive macro.
+- [x] Derive macro. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/sqlx-scylladb/examples/user_defined_type.rs) for usage.)
 
 ### Testing
 

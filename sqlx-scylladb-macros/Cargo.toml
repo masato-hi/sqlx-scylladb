@@ -1,0 +1,11 @@
+[package]
+name = "sqlx-scylladb-macros"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+proc-macro = true
+
+[dependencies]
+syn = "2.0.106"
+sqlx-scylladb-macros-core = { workspace = true }

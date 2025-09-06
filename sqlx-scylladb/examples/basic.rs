@@ -6,7 +6,7 @@ use sqlx::{
 };
 use sqlx_scylladb::{ScyllaDB, ScyllaDBExecutor, ScyllaDBPoolOptions};
 
-static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+static MIGRATOR: Migrator = sqlx::migrate!("examples/migrations");
 
 #[derive(FromRow)]
 struct User {
@@ -24,7 +24,7 @@ async fn create_user(
         name: name.into(),
     };
 
-    sqlx::query("INSERT INTO users(id, name) VALUES(?, ?)")
+    sqlx::query("INSERT INTO example_users(id, name) VALUES(?, ?)")
         .bind(id)
         .bind(user.name.as_str())
         .execute(conn)
@@ -34,7 +34,7 @@ async fn create_user(
 }
 
 async fn find_user(conn: impl ScyllaDBExecutor<'_>, id: i64) -> anyhow::Result<User> {
-    let user = sqlx::query_as::<_, User>("SELECT id, name FROM users WHERE id = ?")
+    let user = sqlx::query_as::<_, User>("SELECT id, name FROM example_users WHERE id = ?")
         .bind(id)
         .fetch_one(conn)
         .await?;

@@ -1,8 +1,5 @@
-use std::sync::Arc;
-
 use bytes::Bytes;
 use sqlx::{ColumnIndex, Error, Row};
-use sqlx_core::{HashMap, ext::ustr::UStr};
 
 use crate::{ScyllaDB, ScyllaDBColumn, ScyllaDBValueRef, statement::ScyllaDBStatementMetadata};
 
@@ -24,8 +21,11 @@ impl ScyllaDBRow {
         }
     }
 
+    #[cfg(feature = "any")]
     #[inline(always)]
-    pub(crate) fn column_names(&self) -> Arc<HashMap<UStr, usize>> {
+    pub(crate) fn column_names(
+        &self,
+    ) -> std::sync::Arc<sqlx_core::HashMap<sqlx_core::ext::ustr::UStr, usize>> {
         self.metadata.column_names.clone()
     }
 }
