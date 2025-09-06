@@ -1872,7 +1872,6 @@ dependencies = [
  "sha2",
  "sqlx",
  "sqlx-core",
- "sqlx-scylladb-macros",
  "thiserror",
  "time",
  "tracing",
@@ -1896,6 +1895,7 @@ dependencies = [
  "darling 0.21.3",
  "proc-macro2",
  "quote",
+ "sqlx-scylladb-core",
  "syn",
 ]
 

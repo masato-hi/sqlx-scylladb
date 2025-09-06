@@ -42,7 +42,8 @@ default = ["any", "migrate", "macros"]
 
 migrate = ["sqlx-scylladb-core/migrate"]
 any = ["sqlx-scylladb-core/any"]
-macros = ["sqlx-scylladb-macros"]
+derive = ["sqlx-scylladb-macros/derive"]
+macros = ["derive", "sqlx-scylladb-macros/macros"]
 time-03 = ["sqlx-scylladb-core/time-03"]
 chrono-04 = ["sqlx-scylladb-core/chrono-04"]
 bigdecimal-04 = ["sqlx-scylladb-core/bigdecimal-04"]
@@ -74,7 +75,7 @@ required-features = ["migrate"]
 [[example]]
 name = "user_defined_type"
 path = "examples/user_defined_type.rs"
-required-features = ["migrate", "macros"]
+required-features = ["migrate", "derive"]
 
 [[test]]
 name = "test-types-ascii"
@@ -144,7 +145,7 @@ required-features = ["migrate"]
 [[test]]
 name = "test-types-user-defined-type"
 path = "tests/types/user_defined_type.rs"
-required-features = ["migrate", "macros"]
+required-features = ["migrate", "derive"]
 
 [[test]]
 name = "test-migrate"

@@ -1,10 +1,10 @@
 use sqlx::{Acquire, Column, Executor, TypeInfo};
 use sqlx_macros::FromRow;
+use sqlx_scylladb::macros::UserDefinedType;
 use sqlx_scylladb::{
     ScyllaDBPool,
     ext::scylla::{DeserializeValue, SerializeValue},
 };
-use sqlx_scylladb_macros::UserDefinedType;
 use uuid::Uuid;
 
 #[cfg(feature = "macros")]

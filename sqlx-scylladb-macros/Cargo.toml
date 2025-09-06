@@ -6,6 +6,10 @@ edition.workspace = true
 [lib]
 proc-macro = true
 
+[features]
+macros = ["sqlx-scylladb-macros-core/macros"]
+derive = ["sqlx-scylladb-macros-core/derive"]
+
 [dependencies]
 syn = "2.0.106"
 sqlx-scylladb-macros-core = { workspace = true }

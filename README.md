@@ -151,4 +151,4 @@ Transaction are implemented using batch statement.
 
 Please carefully read the documentation on batch operations in ScyllaDB before using them.
 
-[BATCH | ScyllaDB Docs ](https://enterprise.docs.scylladb.com/stable/cql/dml/batch.html)
+[BATCH | ScyllaDB Docs](https://enterprise.docs.scylladb.com/stable/cql/dml/batch.html)

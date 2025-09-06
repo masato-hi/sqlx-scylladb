@@ -6,7 +6,6 @@ edition.workspace = true
 [features]
 migrate = ["dep:crc", "sqlx/migrate"]
 any = ["sqlx/any"]
-macros = ["sqlx-scylladb-macros", "sqlx/macros"]
 time-03 = ["dep:time-03", "sqlx/time", "scylla/time-03", "scylla-cql/time-03"]
 chrono-04 = [
   "dep:chrono-04",
@@ -22,8 +21,6 @@ bigdecimal-04 = [
 ]
 
 [dependencies]
-sqlx-scylladb-macros = { workspace = true, optional = true }
-
 scylla = { workspace = true }
 scylla-cql = { workspace = true }
 sqlx = { workspace = true }

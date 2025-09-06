@@ -3,9 +3,14 @@ name = "sqlx-scylladb-macros-core"
 version.workspace = true
 edition.workspace = true
 
+[features]
+macros = []
+derive = []
+
 [dependencies]
 proc-macro2 = "1.0.101"
 quote = "1.0.40"
 syn = { version = "2.0.106", features = ["full"] }
 darling = "0.21.3"
 convert_case = "0.8.0"
+sqlx-scylladb-core = { workspace = true }

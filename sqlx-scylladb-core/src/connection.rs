@@ -72,6 +72,7 @@ impl Connection for ScyllaDBConnection {
 }
 
 impl ScyllaDBConnection {
+    #[cfg(feature = "migrate")]
     pub(crate) fn get_keyspace(&self) -> Option<String> {
         self.caching_session
             .get_session()
