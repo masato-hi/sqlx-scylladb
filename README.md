@@ -95,9 +95,8 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 - [x] TIME (scylla::value::CqlTime, chrono::NaiveTime, time::Time)
 - [x] INET (std::net::IpAddr)
 - [x] DECIMAL (bigdecimal::Decimal)
-  - [ ] scylla::value::CqlDecimal
 - [x] Counter (deserialize only) (scylla::value::Counter)
-- [ ] Duration
+- [x] Duration
 - [ ] Varint
 
 ### List or Set type binding
@@ -118,8 +117,7 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 - [x] LIST\<TIME>, SET\<TIME> (Vec\<scylla::value::CqlTime>, Vec\<chrono::NaiveTime>, Vec\<time::Time>)
 - [x] LIST\<INET>, SET\<INET> (Vec\<std::net::IpAddr>)
 - [x] LIST\<DECIMAL>, SET\<DECIMAL> (Vec\<bigdecimal::Decimal>)
-  - [ ] scylla::value::CqlDecimal
-- [ ] Duration
+- [x] LIST\<DURATION> (Vec\<scylla::value::CqlDuration>)
 - [ ] Varint
 
 ### User defined type

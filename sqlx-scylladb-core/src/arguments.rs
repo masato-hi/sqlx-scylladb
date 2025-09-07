@@ -13,7 +13,7 @@ use scylla::{
         value::SerializeValue,
         writers::{CellWriter, RowWriter, WrittenCellProof},
     },
-    value::{CqlDate, CqlTime, CqlTimestamp, CqlTimeuuid},
+    value::{CqlDate, CqlDuration, CqlTime, CqlTimestamp, CqlTimeuuid},
 };
 use sqlx::Arguments;
 use uuid::Uuid;
@@ -123,6 +123,8 @@ pub enum ScyllaDBArgument {
     TimeuuidArray(Arc<Vec<CqlTimeuuid>>),
     IpAddr(IpAddr),
     IpAddrArray(Arc<Vec<IpAddr>>),
+    Duration(CqlDuration),
+    DurationArray(Arc<Vec<CqlDuration>>),
     #[cfg(feature = "bigdecimal-04")]
     BigDecimal(bigdecimal_04::BigDecimal),
     #[cfg(feature = "bigdecimal-04")]
@@ -211,6 +213,8 @@ impl SerializeValue for ScyllaDBArgument {
             Self::TimeuuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::IpAddr(ip_addr) => <_ as SerializeValue>::serialize(ip_addr, typ, writer),
             Self::IpAddrArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Duration(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::DurationArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "bigdecimal-04")]
             Self::BigDecimal(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "bigdecimal-04")]
