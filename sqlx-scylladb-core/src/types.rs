@@ -165,7 +165,6 @@ pub mod blob;
 pub mod bool;
 pub mod counter;
 pub mod date;
-#[cfg(feature = "bigdecimal-04")]
 pub mod decimal;
 pub mod duration;
 pub mod float;

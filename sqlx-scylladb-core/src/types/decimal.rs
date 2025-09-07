@@ -1,15 +1,13 @@
-use bigdecimal_04::BigDecimal;
-
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
-
+#[cfg(feature = "bigdecimal-04")]
 impl_type!(
-    BigDecimal,
-    ScyllaDBTypeInfo::Decimal,
-    ScyllaDBArgument::BigDecimal
+    bigdecimal_04::BigDecimal,
+    crate::ScyllaDBTypeInfo::Decimal,
+    crate::ScyllaDBArgument::BigDecimal
 );
 
+#[cfg(feature = "bigdecimal-04")]
 impl_array_type!(
-    BigDecimal,
-    ScyllaDBTypeInfo::DecimalArray,
-    ScyllaDBArgument::BigDecimalArray
+    bigdecimal_04::BigDecimal,
+    crate::ScyllaDBTypeInfo::DecimalArray,
+    crate::ScyllaDBArgument::BigDecimalArray
 );
