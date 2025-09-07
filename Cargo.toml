@@ -148,6 +148,11 @@ path = "tests/types/duration.rs"
 required-features = ["migrate"]
 
 [[test]]
+name = "test-types-blob"
+path = "tests/types/blob.rs"
+required-features = ["migrate"]
+
+[[test]]
 name = "test-types-user-defined-type"
 path = "tests/types/user_defined_type.rs"
 required-features = ["migrate", "derive"]
