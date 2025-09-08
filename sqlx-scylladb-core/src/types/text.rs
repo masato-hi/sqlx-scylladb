@@ -58,6 +58,43 @@ impl Decode<'_, ScyllaDB> for String {
     }
 }
 
+impl Type<ScyllaDB> for Arc<String> {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Text
+    }
+}
+
+impl Encode<'_, ScyllaDB> for Arc<String> {
+    fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::Text(self);
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::Text(self.clone());
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
+impl Type<ScyllaDB> for Rc<String> {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Text
+    }
+}
+
+impl Encode<'_, ScyllaDB> for Rc<String> {
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
 impl Type<ScyllaDB> for Arc<str> {
     fn type_info() -> ScyllaDBTypeInfo {
         ScyllaDBTypeInfo::Text
