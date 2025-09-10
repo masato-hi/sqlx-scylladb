@@ -232,6 +232,8 @@ impl FromStr for ScyllaDBReplicationStrategy {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let class = match s {
+            "simple" => Self::SimpleStrategy,
+            "network_topology" => Self::NetworkTopologyStrategy,
             "SimpleStrategy" => Self::SimpleStrategy,
             "NetworkTopologyStrategy" => Self::NetworkTopologyStrategy,
             _ => {
@@ -311,7 +313,7 @@ pub(crate) struct ScyllaDBCompressionOptions {
 
 #[cfg(test)]
 mod tests {
-    use std::time::Duration;
+    use std::{str::FromStr, time::Duration};
 
     use crate::{
         ScyllaDBConnectOptions,
@@ -410,6 +412,31 @@ mod tests {
             replication_options.strategy
         );
         assert_eq!(1, replication_options.replication_factor);
+
+        Ok(())
+    }
+
+    #[test]
+    fn test_replication_strategy_from_str() -> anyhow::Result<()> {
+        assert_eq!(
+            ScyllaDBReplicationStrategy::SimpleStrategy,
+            ScyllaDBReplicationStrategy::from_str("simple")?
+        );
+
+        assert_eq!(
+            ScyllaDBReplicationStrategy::SimpleStrategy,
+            ScyllaDBReplicationStrategy::from_str("SimpleStrategy")?
+        );
+
+        assert_eq!(
+            ScyllaDBReplicationStrategy::NetworkTopologyStrategy,
+            ScyllaDBReplicationStrategy::from_str("network_topology")?
+        );
+
+        assert_eq!(
+            ScyllaDBReplicationStrategy::NetworkTopologyStrategy,
+            ScyllaDBReplicationStrategy::from_str("NetworkTopologyStrategy")?
+        );
 
         Ok(())
     }
