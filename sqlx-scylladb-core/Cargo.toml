@@ -39,15 +39,9 @@ tracing = { version = "0.1", features = ["log"] }
 crc = { version = "3", optional = true }
 base64 = "0.22.1"
 sha2 = { version = "0.10.9", default-features = false }
-dotenvy = "0.15"
+dotenvy = { workspace = true }
 futures-core = "0.3.31"
 futures-util = "0.3.31"
 
 [dev-dependencies]
 anyhow = { workspace = true }
-tokio = { workspace = true }
-criterion = { version = "0.7.0", features = ["stable", "async_tokio"] }
-
-[[bench]]
-name = "benchmark"
-harness = false

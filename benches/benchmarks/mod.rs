@@ -1,5 +1,6 @@
-pub mod text;
-pub mod uuid;
+pub(crate) mod pprof;
+pub(crate) mod text;
+pub(crate) mod uuid;
 
 use std::env;
 
@@ -7,7 +8,7 @@ use scylla::client::{
     caching_session::{CachingSession, CachingSessionBuilder},
     session_builder::SessionBuilder,
 };
-use sqlx_scylladb_core::{ScyllaDBPool, ScyllaDBPoolOptions};
+use sqlx_scylladb::{ScyllaDBPool, ScyllaDBPoolOptions};
 
 pub(crate) async fn setup_scylla_session() -> anyhow::Result<CachingSession> {
     let _ = dotenvy::dotenv();

@@ -2,13 +2,13 @@ use std::time::Instant;
 
 use criterion::{Criterion, criterion_group};
 use scylla::client::caching_session::CachingSession;
-use sqlx_scylladb_core::ScyllaDBPool;
+use sqlx_scylladb::ScyllaDBPool;
 
 use crate::benchmarks::{setup_scylla_session, setup_sqlx_scylladb_pool};
 
 const COUNT: i64 = 10000;
 
-async fn setup_table() -> anyhow::Result<()> {
+pub(super) async fn setup_table() -> anyhow::Result<()> {
     let session = setup_scylla_session().await?;
 
     session
@@ -37,7 +37,7 @@ async fn run_insert_text_with_scylla(session: &CachingSession) -> anyhow::Result
     Ok(())
 }
 
-async fn run_insert_text_with_sqlx_scylladb(pool: &ScyllaDBPool) -> anyhow::Result<()> {
+pub(super) async fn run_insert_text_with_sqlx_scylladb(pool: &ScyllaDBPool) -> anyhow::Result<()> {
     for i in 0..COUNT {
         sqlx::query("INSERT INTO bench_text(id, my_name) VALUES(?, ?)")
             .bind(i)
@@ -143,8 +143,8 @@ pub fn select_text_with_sqlx_scylladb(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    insert_text_with_sqlx_scylladb,
     insert_text_with_scylla,
+    insert_text_with_sqlx_scylladb,
     select_text_with_scylla,
     select_text_with_sqlx_scylladb,
 );

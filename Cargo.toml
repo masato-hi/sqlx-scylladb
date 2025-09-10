@@ -27,6 +27,7 @@ sqlx-core = { version = "0.8" }
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 
 anyhow = { version = "1" }
+dotenvy = "0.15"
 
 uuid = { version = "1" }
 chrono-04 = { version = "0.4", package = "chrono" }
@@ -60,7 +61,9 @@ sqlx = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
+scylla = { workspace = true }
 anyhow = { version = "1" }
+dotenvy = { workspace = true }
 sqlx = { workspace = true, features = ["uuid", "runtime-tokio", "macros"] }
 sqlx-macros = "0.8"
 env_logger = "0.11"
@@ -68,6 +71,11 @@ uuid = { workspace = true }
 chrono-04 = { workspace = true }
 time-03 = { workspace = true }
 bigdecimal-04 = { workspace = true }
+criterion = { version = "0.7.0", features = ["stable", "async_tokio"] }
+pprof = { version = "0.15.0", features = ["protobuf", "protobuf-codec"] }
+
+[profile.bench]
+debug = true
 
 [[example]]
 name = "basic"
@@ -163,3 +171,7 @@ required-features = ["migrate", "derive"]
 name = "test-migrate"
 path = "tests/migrate.rs"
 required-features = ["migrate"]
+
+[[bench]]
+name = "benchmark"
+harness = false

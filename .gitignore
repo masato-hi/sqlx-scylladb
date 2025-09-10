@@ -27,3 +27,6 @@ target
 
 # Environment variable files
 .env
+
+# pprof protobuf report files
+*.pb

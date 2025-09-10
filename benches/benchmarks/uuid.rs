@@ -2,7 +2,7 @@ use std::time::Instant;
 
 use criterion::{Criterion, criterion_group};
 use scylla::client::caching_session::CachingSession;
-use sqlx_scylladb_core::ScyllaDBPool;
+use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
 use crate::benchmarks::{setup_scylla_session, setup_sqlx_scylladb_pool};
