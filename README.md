@@ -151,3 +151,9 @@ Transaction are implemented using batch statement.
 Please carefully read the documentation on batch operations in ScyllaDB before using them.
 
 [BATCH | ScyllaDB Docs](https://enterprise.docs.scylladb.com/stable/cql/dml/batch.html)
+
+## Performance
+
+Compared to using the scylla-rust-driver, performance is reduced by approximately 20%.
+
+However, this equates to a decrease of about 100 milliseconds for 10,000 insertions.
