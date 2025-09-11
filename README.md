@@ -41,14 +41,14 @@ async fn main() -> anyhow::Result<()> {
 }
 ```
 
-## URL
+## Connection URL
 
 In addition to DATABASE_URL, SCYLLADB_URL is supported as a source for retrieving environment variables during testing.
 
-### Full example
+### Example URL
 
 ```url
-scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,example2.test:9043&tcp_nodelay&tcp_keepalive=40&compression=lz4&replication_strategy=SimpleStrategy&replication_factor=2&page_size=10
+scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,example2.test:9043&tcp_nodelay&tcp_keepalive=40&compression=lz4&replication_strategy=simple&replication_factor=2&page_size=10
 ```
 
 ### Basic
@@ -62,7 +62,7 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 | port     | Optional | 9042        | Specify the port number. The default is 9042. |
 | path     | Required | my_keyspace | Specify the keyspace.                         |
 
-### Query parameters
+### Options
 
 | Name                 | Example                         | Explanation                                                                                                                      |
 |----------------------|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
@@ -70,9 +70,12 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 | tcp_nodelay          |                                 | When using tcp_nodelay, specify the key. No value is required.                                                                   |
 | tcp_keepalive        | 40                              | When using tcp_keepalive, specify the keepalive interval in seconds.                                                             |
 | compression          | lz4                             | Specify when compressing communication data. Supported values are `lz4` or `snappy`.                                             |
-| replication_strategy | SimpleStrategy                  | Specifies the replication strategy when creating a keyspace. Supported values are `SimpleStrategy` or `NetworkTopologyStrategy`. |
+| replication_strategy | SimpleStrategy                  | Specifies the replication strategy when creating a keyspace. Supported values are `simple`, `network_topology`, `SimpleStrategy`, `NetworkTopologyStrategy`. |
 | replication_factor   | 2                               | Specify the replication factor when creating a keyspace.                                                                         |
 | page_size            | 10                              | Specify the number of results to retrieve per page when receiving query results.                                                 |
+| tls_rootcert | /etc/certs/ca.crt | Specify the path to the root CA certificate when establishing a TLS connection. |
+| tls_cert | /etc/certs/client.crt | Specify the path to the client certificate when establishing a TLS connection |
+| tls_key | /etc/certs/client.key | Specify the path to the client private key when establishing a TLS connection |
 
 ## Features
 
@@ -123,8 +126,6 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 ### User defined type
 
-Currently, only manual implementation is supported.
-
 - [x] Manual implementation.
 - [x] Derive macro. Use the new type idiom to implement user defined types for array types. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/examples/user_defined_type.rs) for usage.)
 
@@ -140,9 +141,7 @@ Currently, only manual implementation is supported.
 
 ### TLS
 
-Currently not supported.
-
-- [ ] TLS
+- [x] TLS (Enable with the `openssl-010` or `rustls-023` feature)
 
 ### Transaction
 

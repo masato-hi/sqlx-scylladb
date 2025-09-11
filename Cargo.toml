@@ -34,6 +34,7 @@ chrono-04 = { version = "0.4", package = "chrono" }
 time-03 = { version = "0.3", package = "time" }
 bigdecimal-04 = { version = "0.4", package = "bigdecimal" }
 
+url = "2"
 
 [package]
 name = "sqlx-scylladb"
@@ -51,6 +52,9 @@ time-03 = ["sqlx-scylladb-core/time-03"]
 chrono-04 = ["sqlx-scylladb-core/chrono-04"]
 bigdecimal-04 = ["sqlx-scylladb-core/bigdecimal-04"]
 
+openssl-010 = ["sqlx-scylladb-core/openssl-010"]
+rustls-023 = ["sqlx-scylladb-core/rustls-023"]
+
 [dependencies]
 sqlx-scylladb-macros = { workspace = true, optional = true }
 sqlx-scylladb-core = { workspace = true }
@@ -67,6 +71,7 @@ dotenvy = { workspace = true }
 sqlx = { workspace = true, features = ["uuid", "runtime-tokio", "macros"] }
 sqlx-macros = "0.8"
 env_logger = "0.11"
+url = { workspace = true }
 uuid = { workspace = true }
 chrono-04 = { workspace = true }
 time-03 = { workspace = true }
@@ -168,9 +173,29 @@ path = "tests/types/user_defined_type.rs"
 required-features = ["migrate", "derive"]
 
 [[test]]
+name = "test-batch"
+path = "tests/batch.rs"
+required-features = ["migrate"]
+
+[[test]]
 name = "test-migrate"
 path = "tests/migrate.rs"
 required-features = ["migrate"]
+
+[[test]]
+name = "test-query-result"
+path = "tests/query_result.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-openssl"
+path = "tests/openssl.rs"
+required-features = ["migrate", "openssl-010"]
+
+[[test]]
+name = "test-rustls"
+path = "tests/rustls.rs"
+required-features = ["migrate", "rustls-023"]
 
 [[bench]]
 name = "benchmark"

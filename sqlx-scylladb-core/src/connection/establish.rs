@@ -1,7 +1,8 @@
 use std::num::NonZeroUsize;
 
 use scylla::client::{
-    PoolSize, caching_session::CachingSessionBuilder, session_builder::SessionBuilder,
+    PoolSize, caching_session::CachingSessionBuilder, session::TlsContext,
+    session_builder::SessionBuilder,
 };
 use sqlx::Error;
 
@@ -20,6 +21,10 @@ impl ScyllaDBConnection {
                 &authentication_options.username,
                 &authentication_options.password,
             );
+        }
+        if let Some(tls_options) = &options.tls_options {
+            let tls_context: TlsContext = tls_options.clone().try_into()?;
+            builder = builder.tls_context(Some(tls_context));
         }
         if let Some(compression_options) = options.compression_options {
             let compression = compression_options.compressor.into();

@@ -1,0 +1,25 @@
+services:
+  scylladb:
+    image: scylladb/scylla:2025.2
+    command:
+      [
+        "--listen-address",
+        "0.0.0.0",
+        "--broadcast-rpc-address",
+        "127.0.0.1",
+        "--smp",
+        "8",
+        "--auto-snapshot",
+        "false",
+        "--max-partition-key-restrictions-per-query",
+        "20000",
+      ]
+    volumes:
+      - ./scylla.yml:/etc/scylla/scylla.yaml
+      - ./certs/ca-cert.pem:/etc/scylla/conf/ca.crt
+      - ./certs/server-cert.pem:/etc/scylla/conf/scylla.crt
+      - ./certs/server-key.pem:/etc/scylla/conf/scylla.key
+      # - ./certs:/certs # debug
+    ports:
+      - 9042:9042
+      - 9142:9142
