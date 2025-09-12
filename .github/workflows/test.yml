@@ -1,0 +1,54 @@
+name: Test
+
+on: push
+
+env:
+  CARGO_TERM_COLOR: always
+  SCYLLA_URI: localhost:9042
+  SCYLLA_KEYSPACE: test
+  SCYLLADB_URL: scylladb://localhost:9042/test?replication_strategy=simple
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Make certification files.
+      run: make mkcert
+
+    - name: Start services
+      run: docker compose up -d
+
+    - name: Wait for ScyllaDB
+      run: |
+        while ! echo 'EXIT;' | docker compose exec -T scylladb cqlsh >/dev/null 2>&1
+        do
+          sleep 5
+          docker compose logs -n 20 scylladb
+        done
+
+    - name: Create keyspace
+      run: |
+        echo "CREATE KEYSPACE IF NOT EXISTS test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};" | docker compose exec -T scylladb cqlsh
+
+    - name: Run tests
+      run: cargo test --features time-03,chrono-04,bigdecimal-04
+
+    - name: Run the openssl-010 tests
+      run: cargo test --features migrate,openssl-010 it_can_connect_by_openssl
+
+    - name: Run the rustls-023 tests
+      run: cargo test --features migrate,rustls-023 it_can_connect_by_rustls

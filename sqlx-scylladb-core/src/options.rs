@@ -125,10 +125,6 @@ impl ScyllaDBConnectOptions {
         }
     }
 
-    pub fn get_nodes<'a>(&'a self) -> &'a [String] {
-        &self.nodes
-    }
-
     pub fn nodes(mut self, nodes: Vec<String>) -> Self {
         self.nodes = nodes;
         self
