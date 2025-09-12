@@ -1,7 +1,7 @@
 
 CERTSUBJ := /C=JP/ST=Tokyo/O='sqlx-scylladb'
-CERTSAN := IP:127.0.0.1,DNS:scylladb-tls,DNS:*.internal,DNS:*.local,DNS:localhost
-CERTDIR := certs
+CERTSAN := IP:127.0.0.1,DNS:scylladb,DNS:*.internal,DNS:*.local,DNS:localhost
+CERTDIR := tests/certs
 CACERT := $(CERTDIR)/ca-cert.pem
 CAKEY := $(CERTDIR)/ca-key.pem
 CACSR := $(CERTDIR)/ca-csr.pem
@@ -25,3 +25,5 @@ mkcert:
 	openssl genpkey -algorithm ec -pkeyopt ec_paramgen_curve:P-256 -out $(CERTKEY) # 秘密鍵の作成
 	openssl req -new -key $(CERTKEY) -out $(CERTCSR) -subj $(CERTSUBJ) -addext 'subjectAltName = $(CERTSAN)' # 証明書署名要求の作成
 	openssl x509 -req -in $(CERTCSR) -CA $(CACERT) -CAkey $(CAKEY) -CAcreateserial -days 3650 -copy_extensions copy -out $(CERT) # 認証局による証明書発行
+
+	chmod 0644 $(CERTDIR)/*.pem

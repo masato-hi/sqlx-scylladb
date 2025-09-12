@@ -8,7 +8,7 @@ services:
         "--broadcast-rpc-address",
         "127.0.0.1",
         "--smp",
-        "8",
+        "1",
         "--auto-snapshot",
         "false",
         "--max-partition-key-restrictions-per-query",
@@ -16,10 +16,10 @@ services:
       ]
     volumes:
       - ./scylla.yml:/etc/scylla/scylla.yaml
-      - ./certs/ca-cert.pem:/etc/scylla/conf/ca.crt
-      - ./certs/server-cert.pem:/etc/scylla/conf/scylla.crt
-      - ./certs/server-key.pem:/etc/scylla/conf/scylla.key
-      # - ./certs:/certs # debug
+      - ./tests/certs/ca-cert.pem:/etc/scylla/conf/ca.crt
+      - ./tests/certs/server-cert.pem:/etc/scylla/conf/scylla.crt
+      - ./tests/certs/server-key.pem:/etc/scylla/conf/scylla.key
+      # - ./tests/certs:/certs # debug
     ports:
       - 9042:9042
       - 9142:9142
