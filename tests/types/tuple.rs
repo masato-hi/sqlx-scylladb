@@ -207,7 +207,7 @@ async fn it_can_select_tuple_optional(pool: ScyllaDBPool) -> anyhow::Result<()> 
             Vec<u8>,
             MyUserDefinedType,
         )>,
-    ) = sqlx::query_as("SELECT my_id, my_tuple,  FROM tuple_tests WHERE my_id = ?")
+    ) = sqlx::query_as("SELECT my_id, my_tuple FROM tuple_tests WHERE my_id = ?")
         .bind(id)
         .fetch_one(&pool)
         .await?;
