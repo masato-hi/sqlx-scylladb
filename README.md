@@ -156,3 +156,11 @@ Please carefully read the documentation on batch operations in ScyllaDB before u
 Compared to using the scylla-rust-driver, performance is reduced by approximately 20%.
 
 However, this equates to a decrease of about 100 milliseconds for 10,000 insertions.
+
+## License
+
+This project is licensed under either of
+
+Apache License, Version 2.0 ([LICENSE-APACHE](https://github.com/masato-hi/sqlx-scylladb/blob/main/LICENSE-APACHE) or [https://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0))
+MIT license ([LICENSE-MIT](https://github.com/masato-hi/sqlx-scylladb/blob/main/LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
+at your option.
