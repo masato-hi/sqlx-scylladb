@@ -1,3 +1,5 @@
+use std::net::IpAddr;
+
 use uuid::Uuid;
 
 use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
@@ -66,66 +68,9 @@ impl_map_type!(
     ScyllaDBArgument::TextUuidMap
 );
 
-// UUID
 impl_map_type!(
-    Uuid,
     String,
-    ScyllaDBTypeInfo::UuidTextMap,
-    ScyllaDBArgument::UuidTextMap
-);
-
-impl_map_type!(
-    Uuid,
-    bool,
-    ScyllaDBTypeInfo::UuidBooleanMap,
-    ScyllaDBArgument::UuidBooleanMap
-);
-
-impl_map_type!(
-    Uuid,
-    i8,
-    ScyllaDBTypeInfo::UuidTinyIntMap,
-    ScyllaDBArgument::UuidTinyIntMap
-);
-
-impl_map_type!(
-    Uuid,
-    i16,
-    ScyllaDBTypeInfo::UuidSmallIntMap,
-    ScyllaDBArgument::UuidSmallIntMap
-);
-
-impl_map_type!(
-    Uuid,
-    i32,
-    ScyllaDBTypeInfo::UuidIntMap,
-    ScyllaDBArgument::UuidIntMap
-);
-
-impl_map_type!(
-    Uuid,
-    i64,
-    ScyllaDBTypeInfo::UuidBigIntMap,
-    ScyllaDBArgument::UuidBigIntMap
-);
-
-impl_map_type!(
-    Uuid,
-    f32,
-    ScyllaDBTypeInfo::UuidFloatMap,
-    ScyllaDBArgument::UuidFloatMap
-);
-
-impl_map_type!(
-    Uuid,
-    f64,
-    ScyllaDBTypeInfo::UuidDoubleMap,
-    ScyllaDBArgument::UuidDoubleMap
-);
-
-impl_map_type!(
-    Uuid,
-    Uuid,
-    ScyllaDBTypeInfo::UuidUuidMap,
-    ScyllaDBArgument::UuidUuidMap
+    IpAddr,
+    ScyllaDBTypeInfo::TextInetMap,
+    ScyllaDBArgument::TextInetMap
 );

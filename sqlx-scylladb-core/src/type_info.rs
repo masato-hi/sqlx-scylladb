@@ -51,6 +51,19 @@ pub enum ScyllaDBTypeInfo {
     Tuple(UStr),
     UserDefinedType(UStr),
     UserDefinedTypeArray(UStr),
+    AsciiAsciiMap,
+    AsciiTextMap,
+    AsciiBooleanMap,
+    AsciiTinyIntMap,
+    AsciiSmallIntMap,
+    AsciiIntMap,
+    AsciiBigIntMap,
+    AsciiFloatMap,
+    AsciiDoubleMap,
+    AsciiUuidMap,
+    AsciiTimeuuidMap,
+    AsciiInetMap,
+    TextAsciiMap,
     TextTextMap,
     TextBooleanMap,
     TextTinyIntMap,
@@ -60,15 +73,8 @@ pub enum ScyllaDBTypeInfo {
     TextFloatMap,
     TextDoubleMap,
     TextUuidMap,
-    UuidTextMap,
-    UuidBooleanMap,
-    UuidTinyIntMap,
-    UuidSmallIntMap,
-    UuidIntMap,
-    UuidBigIntMap,
-    UuidFloatMap,
-    UuidDoubleMap,
-    UuidUuidMap,
+    TextTimeuuidMap,
+    TextInetMap,
 }
 
 impl TypeInfo for ScyllaDBTypeInfo {
@@ -121,6 +127,19 @@ impl TypeInfo for ScyllaDBTypeInfo {
             Self::Tuple(name) => name,
             Self::UserDefinedType(name) => name,
             Self::UserDefinedTypeArray(name) => name,
+            Self::AsciiAsciiMap => "MAP<ASCII, ASCII>",
+            Self::AsciiTextMap => "MAP<ASCII, TEXT>",
+            Self::AsciiBooleanMap => "MAP<ASCII, BOOLEAN>",
+            Self::AsciiTinyIntMap => "MAP<ASCII, TINYINT>",
+            Self::AsciiSmallIntMap => "MAP<ASCII, SMALLINT>",
+            Self::AsciiIntMap => "MAP<ASCII, INT>",
+            Self::AsciiBigIntMap => "MAP<ASCII, BIGINT>",
+            Self::AsciiFloatMap => "MAP<ASCII, FLOAT>",
+            Self::AsciiDoubleMap => "MAP<ASCII, DOUBLE>",
+            Self::AsciiUuidMap => "MAP<ASCII, UUID>",
+            Self::AsciiTimeuuidMap => "MAP<ASCII, TIMEUUID>",
+            Self::AsciiInetMap => "MAP<ASCII, INET>",
+            Self::TextAsciiMap => "MAP<TEXT, ASCII>",
             Self::TextTextMap => "MAP<TEXT, TEXT>",
             Self::TextBooleanMap => "MAP<TEXT, BOOLEAN>",
             Self::TextTinyIntMap => "MAP<TEXT, TINYINT>",
@@ -130,15 +149,8 @@ impl TypeInfo for ScyllaDBTypeInfo {
             Self::TextFloatMap => "MAP<TEXT, FLOAT>",
             Self::TextDoubleMap => "MAP<TEXT, DOUBLE>",
             Self::TextUuidMap => "MAP<TEXT, UUID>",
-            Self::UuidTextMap => "MAP<UUID, TEXT>",
-            Self::UuidBooleanMap => "MAP<UUID, BOOLEAN>",
-            Self::UuidTinyIntMap => "MAP<UUID, TINYINT>",
-            Self::UuidSmallIntMap => "MAP<UUID, SMALLINT>",
-            Self::UuidIntMap => "MAP<UUID, INT>",
-            Self::UuidBigIntMap => "MAP<UUID, BIGINT>",
-            Self::UuidFloatMap => "MAP<UUID, FLOAT>",
-            Self::UuidDoubleMap => "MAP<UUID, DOUBLE>",
-            Self::UuidUuidMap => "MAP<UUID, UUID>",
+            Self::TextTimeuuidMap => "MAP<TEXT, TIMEUUID>",
+            Self::TextInetMap => "MAP<TEXT, INET>",
         }
     }
 
@@ -154,6 +166,52 @@ impl TypeInfo for ScyllaDBTypeInfo {
             Self::BigInt => *other == Self::Counter || *other == Self::BigInt,
             Self::Uuid => *other == Self::Uuid || *other == Self::Timeuuid,
             Self::UuidArray => *other == Self::UuidArray || *other == Self::TimeuuidArray,
+            Self::AsciiAsciiMap | Self::AsciiTextMap | Self::TextTextMap | Self::TextAsciiMap => {
+                *other == Self::AsciiAsciiMap
+                    || *other == Self::AsciiTextMap
+                    || *other == Self::TextTextMap
+                    || *other == Self::TextAsciiMap
+            }
+            Self::AsciiBooleanMap | Self::TextBooleanMap => {
+                *other == Self::AsciiBooleanMap || *other == Self::TextBooleanMap
+            }
+            Self::AsciiTinyIntMap | Self::TextTinyIntMap => {
+                *other == Self::AsciiTinyIntMap || *other == Self::TextTinyIntMap
+            }
+            Self::AsciiSmallIntMap | Self::TextSmallIntMap => {
+                *other == Self::AsciiSmallIntMap || *other == Self::TextSmallIntMap
+            }
+            Self::AsciiIntMap | Self::TextIntMap => {
+                *other == Self::AsciiIntMap || *other == Self::TextIntMap
+            }
+            Self::AsciiBigIntMap | Self::TextBigIntMap => {
+                *other == Self::AsciiBigIntMap || *other == Self::TextBigIntMap
+            }
+            Self::AsciiFloatMap | Self::TextFloatMap => {
+                *other == Self::AsciiFloatMap || *other == Self::TextFloatMap
+            }
+            Self::AsciiDoubleMap | Self::TextDoubleMap => {
+                *other == Self::AsciiDoubleMap || *other == Self::TextDoubleMap
+            }
+            Self::AsciiUuidMap
+            | Self::TextUuidMap
+            | Self::AsciiTimeuuidMap
+            | Self::TextTimeuuidMap => {
+                *other == Self::AsciiUuidMap
+                    || *other == Self::TextUuidMap
+                    || *other == Self::AsciiTimeuuidMap
+                    || *other == Self::TextTimeuuidMap
+            }
+            Self::AsciiInetMap | Self::TextInetMap => {
+                *other == Self::AsciiInetMap || *other == Self::TextInetMap
+            }
+            Self::Tuple(typ) => {
+                if let Self::Tuple(other_typ) = other {
+                    typ.replace("ASCII", "TEXT") == other_typ.replace("ASCII", "TEXT")
+                } else {
+                    self == other
+                }
+            }
             _ => self == other,
         }
     }
@@ -230,9 +288,28 @@ impl ScyllaDBTypeInfo {
                 },
                 CollectionType::Map(key_type, value_type) => match &**key_type {
                     ColumnType::Native(key_native_type) => match key_native_type {
-                        NativeType::Ascii | NativeType::Text => match &**value_type {
+                        NativeType::Ascii => match &**value_type {
                             ColumnType::Native(value_native_type) => match value_native_type {
-                                NativeType::Ascii | NativeType::Text => Self::TextTextMap,
+                                NativeType::Ascii => Self::AsciiAsciiMap,
+                                NativeType::Text => Self::AsciiTextMap,
+                                NativeType::Boolean => Self::AsciiBooleanMap,
+                                NativeType::Double => Self::AsciiDoubleMap,
+                                NativeType::Float => Self::AsciiFloatMap,
+                                NativeType::Int => Self::AsciiIntMap,
+                                NativeType::BigInt => Self::AsciiBigIntMap,
+                                NativeType::SmallInt => Self::AsciiSmallIntMap,
+                                NativeType::TinyInt => Self::AsciiTinyIntMap,
+                                NativeType::Timeuuid => Self::AsciiTimeuuidMap,
+                                NativeType::Uuid => Self::AsciiUuidMap,
+                                NativeType::Inet => Self::AsciiInetMap,
+                                _ => column_type_not_supported!(column_type),
+                            },
+                            _ => column_type_not_supported!(column_type),
+                        },
+                        NativeType::Text => match &**value_type {
+                            ColumnType::Native(value_native_type) => match value_native_type {
+                                NativeType::Ascii => Self::TextAsciiMap,
+                                NativeType::Text => Self::TextTextMap,
                                 NativeType::Boolean => Self::TextBooleanMap,
                                 NativeType::Double => Self::TextDoubleMap,
                                 NativeType::Float => Self::TextFloatMap,
@@ -240,22 +317,9 @@ impl ScyllaDBTypeInfo {
                                 NativeType::BigInt => Self::TextBigIntMap,
                                 NativeType::SmallInt => Self::TextSmallIntMap,
                                 NativeType::TinyInt => Self::TextTinyIntMap,
-                                NativeType::Timeuuid | NativeType::Uuid => Self::TextUuidMap,
-                                _ => column_type_not_supported!(column_type),
-                            },
-                            _ => column_type_not_supported!(column_type),
-                        },
-                        NativeType::Timeuuid | NativeType::Uuid => match &**value_type {
-                            ColumnType::Native(value_native_type) => match value_native_type {
-                                NativeType::Ascii | NativeType::Text => Self::UuidTextMap,
-                                NativeType::Boolean => Self::UuidBooleanMap,
-                                NativeType::Double => Self::UuidDoubleMap,
-                                NativeType::Float => Self::UuidFloatMap,
-                                NativeType::Int => Self::UuidIntMap,
-                                NativeType::BigInt => Self::UuidBigIntMap,
-                                NativeType::SmallInt => Self::UuidSmallIntMap,
-                                NativeType::TinyInt => Self::UuidTinyIntMap,
-                                NativeType::Timeuuid | NativeType::Uuid => Self::UuidUuidMap,
+                                NativeType::Timeuuid => Self::TextTimeuuidMap,
+                                NativeType::Uuid => Self::TextUuidMap,
+                                NativeType::Inet => Self::TextInetMap,
                                 _ => column_type_not_supported!(column_type),
                             },
                             _ => column_type_not_supported!(column_type),
