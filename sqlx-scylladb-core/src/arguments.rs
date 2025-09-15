@@ -172,15 +172,7 @@ pub enum ScyllaDBArgument {
     TextFloatMap(Arc<HashMap<String, f32>>),
     TextDoubleMap(Arc<HashMap<String, f64>>),
     TextUuidMap(Arc<HashMap<String, Uuid>>),
-    UuidTextMap(Arc<HashMap<Uuid, String>>),
-    UuidBooleanMap(Arc<HashMap<Uuid, bool>>),
-    UuidTinyIntMap(Arc<HashMap<Uuid, i8>>),
-    UuidSmallIntMap(Arc<HashMap<Uuid, i16>>),
-    UuidIntMap(Arc<HashMap<Uuid, i32>>),
-    UuidBigIntMap(Arc<HashMap<Uuid, i64>>),
-    UuidFloatMap(Arc<HashMap<Uuid, f32>>),
-    UuidDoubleMap(Arc<HashMap<Uuid, f64>>),
-    UuidUuidMap(Arc<HashMap<Uuid, Uuid>>),
+    TextInetMap(Arc<HashMap<String, IpAddr>>),
 }
 
 impl SerializeValue for ScyllaDBArgument {
@@ -273,15 +265,7 @@ impl SerializeValue for ScyllaDBArgument {
             Self::TextFloatMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::TextDoubleMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::TextUuidMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::UuidTextMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::UuidBooleanMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::UuidTinyIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::UuidSmallIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::UuidIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::UuidBigIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::UuidFloatMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::UuidDoubleMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::UuidUuidMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextInetMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
         }
     }
 }

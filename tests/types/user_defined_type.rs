@@ -7,14 +7,12 @@ use sqlx_scylladb::{
 };
 use uuid::Uuid;
 
-#[cfg(feature = "macros")]
 #[derive(Debug, Clone, FromRow, SerializeValue, DeserializeValue, UserDefinedType)]
 struct MyUserDefinedType {
     my_bigint: i64,
     my_text: String,
 }
 
-#[cfg(feature = "macros")]
 #[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
@@ -150,7 +148,6 @@ async fn it_can_select_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<(
     Ok(())
 }
 
-#[cfg(feature = "macros")]
 #[sqlx::test(migrations = "tests/types/migrations")]
 async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
