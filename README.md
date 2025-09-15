@@ -43,9 +43,9 @@ async fn main() -> anyhow::Result<()> {
 
 ## Connection URL
 
-In addition to DATABASE_URL, SCYLLADB_URL is supported as a source for retrieving environment variables during testing.
+In addition to DATABASE_URL, it also supports SCYLLADB_URL as an environment variable.
 
-### Example URL
+### Example
 
 ```url
 scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,example2.test:9043&tcp_nodelay&tcp_keepalive=40&compression=lz4&replication_strategy=simple&replication_factor=2&page_size=10
@@ -64,84 +64,111 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 ### Options
 
-| Name                 | Example                         | Explanation                                                                                                                      |
-|----------------------|---------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
-| nodes                | example.test,example2.test:9043 | Specify additional nodes separated by commas.                                                                                    |
-| tcp_nodelay          |                                 | When using tcp_nodelay, specify the key. No value is required.                                                                   |
-| tcp_keepalive        | 40                              | When using tcp_keepalive, specify the keepalive interval in seconds.                                                             |
-| compression          | lz4                             | Specify when compressing communication data. Supported values are `lz4` or `snappy`.                                             |
+| Name                 | Example                         | Explanation                                                                                                                                                  |
+|----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| nodes                | example.test,example2.test:9043 | Specify additional nodes separated by commas.                                                                                                                |
+| tcp_nodelay          |                                 | When using tcp_nodelay, specify the key. No value is required.                                                                                               |
+| tcp_keepalive        | 40                              | When using tcp_keepalive, specify the keepalive interval in seconds.                                                                                         |
+| compression          | lz4                             | Specify when compressing communication data. Supported values are `lz4` or `snappy`.                                                                         |
 | replication_strategy | SimpleStrategy                  | Specifies the replication strategy when creating a keyspace. Supported values are `simple`, `network_topology`, `SimpleStrategy`, `NetworkTopologyStrategy`. |
-| replication_factor   | 2                               | Specify the replication factor when creating a keyspace.                                                                         |
-| page_size            | 10                              | Specify the number of results to retrieve per page when receiving query results.                                                 |
-| tls_rootcert | /etc/certs/ca.crt | Specify the path to the root CA certificate when establishing a TLS connection. |
-| tls_cert | /etc/certs/client.crt | Specify the path to the client certificate when establishing a TLS connection |
-| tls_key | /etc/certs/client.key | Specify the path to the client private key when establishing a TLS connection |
+| replication_factor   | 2                               | Specify the replication factor when creating a keyspace.                                                                                                     |
+| page_size            | 10                              | Specify the number of results to retrieve per page when receiving query results.                                                                             |
+| tls_rootcert         | /etc/certs/ca.crt               | Specify the path to the root CA certificate when establishing a TLS connection.                                                                              |
+| tls_cert             | /etc/certs/client.crt           | Specify the path to the client certificate when establishing a TLS connection                                                                                |
+| tls_key              | /etc/certs/client.key           | Specify the path to the client private key when establishing a TLS connection                                                                                |
 
 ## Features
 
-### Basic type binding
+### Type bindings
 
-- [x] ASCII (&str, String, Box\<str>, Cow\<'_, str>, Rc\<str>, Arc\<str>)
-- [x] TEXT (&str, String, Box\<str>, Cow\<'_, str>, Rc\<str>, Arc\<str>)
-- [x] BOOLEAN (bool)
-- [x] TINYINT (i8)
-- [x] SMALLINT (i16)
-- [x] INT (i32)
-- [x] BIGINT (i64)
-- [x] FLOAT (f32)
-- [x] DOUBLE (f64)
-- [x] BLOB (Vec\<u8>)
-- [x] UUID (uuid::Uuid)
-- [x] TIMEUUID (scylla::value::CqlTimeuuid)
-- [x] TIMESTAMP (scylla::value::CqlTimestamp, chrono::DateTime\<Utc>, time::OffsetDateTime)
-- [x] DATE (scylla::value::CqlDate, chrono::NaiveDate, time::Date)
-- [x] TIME (scylla::value::CqlTime, chrono::NaiveTime, time::Time)
-- [x] INET (std::net::IpAddr)
-- [x] DECIMAL (bigdecimal::Decimal)
-- [x] Counter (deserialize only) (scylla::value::Counter)
-- [x] Duration
+<!-- markdownlint-disable MD033 -->
+
+<details>
+<summary>Basic type bindings.</summary>
+
+- ASCII (&str, String, Box\<str>, Cow\<'_, str>, Rc\<str>, Arc\<str>)
+- TEXT (&str, String, Box\<str>, Cow\<'_, str>, Rc\<str>, Arc\<str>)
+- BOOLEAN (bool)
+- TINYINT (i8)
+- SMALLINT (i16)
+- INT (i32)
+- BIGINT (i64)
+- FLOAT (f32)
+- DOUBLE (f64)
+- BLOB (Vec\<u8>)
+- UUID (uuid::Uuid)
+- TIMEUUID (scylla::value::CqlTimeuuid)
+- TIMESTAMP (scylla::value::CqlTimestamp, chrono::DateTime\<Utc>, time::OffsetDateTime)
+- DATE (scylla::value::CqlDate, chrono::NaiveDate, time::Date)
+- TIME (scylla::value::CqlTime, chrono::NaiveTime, time::Time)
+- INET (std::net::IpAddr)
+- DECIMAL (bigdecimal::Decimal)
+- Counter (deserialize only) (scylla::value::Counter)
+- Duration
 - [ ] Varint
 
-### List or Set type binding
+</details>
 
-- [x] LIST\<ASCII>, SET\<ASCII> ([&str], Vec\<String>)
-- [x] LIST\<TEXT>, SET\<TEXT> ([&str], Vec\<String>)
-- [x] LIST\<BOOLEAN>, SET\<BOOLEAN> (Vec\<bool>)
-- [x] LIST\<TINYINT>, SET\<TINYINT> (Vec\<i8>)
-- [x] LIST\<SMALLINT>, SET\<SMALLINT> (Vec\<i16>)
-- [x] LIST\<INT>, SET\<INT> (Vec\<i32>)
-- [x] LIST\<BIGINT>, SET\<BIGINT> (Vec\<i64>)
-- [x] LIST\<FLOAT>, SET\<FLOAT> (Vec\<f32>)
-- [x] LIST\<DOUBLE>, SET\<DOUBLE> (Vec\<f64>)
-- [x] LIST\<BLOB>, SET\<BLOB> (Vec\<Vec\<u8>>)
-- [x] LIST\<UUID>, SET\<UUID> (Vec\<uuid::Uuid>)
-- [x] LIST\<TIMEUUID>, SET\<TIMEUUID> (Vec\<scylla::value::CqlTimeuuid>)
-- [x] LIST\<TIMESTAMP>, SET\<TIMESTAMP> (Vec\<scylla::value::CqlTimestamp>, Vec\<chrono::DateTime\<Utc>>, Vec\<time::OffsetDateTime>)
-- [x] LIST\<DATE>, SET\<DATE> (Vec\<scylla::value::CqlDate>, Vec\<chrono::NaiveDate>, Vec\<time::Date>)
-- [x] LIST\<TIME>, SET\<TIME> (Vec\<scylla::value::CqlTime>, Vec\<chrono::NaiveTime>, Vec\<time::Time>)
-- [x] LIST\<INET>, SET\<INET> (Vec\<std::net::IpAddr>)
-- [x] LIST\<DECIMAL>, SET\<DECIMAL> (Vec\<bigdecimal::Decimal>)
-- [x] LIST\<DURATION> (Vec\<scylla::value::CqlDuration>)
+<details>
+<summary>List or Set type bindings.</summary>
+
+- LIST\<ASCII>, SET\<ASCII> ([&str], Vec\<String>)
+- LIST\<TEXT>, SET\<TEXT> ([&str], Vec\<String>)
+- LIST\<BOOLEAN>, SET\<BOOLEAN> (Vec\<bool>)
+- LIST\<TINYINT>, SET\<TINYINT> (Vec\<i8>)
+- LIST\<SMALLINT>, SET\<SMALLINT> (Vec\<i16>)
+- LIST\<INT>, SET\<INT> (Vec\<i32>)
+- LIST\<BIGINT>, SET\<BIGINT> (Vec\<i64>)
+- LIST\<FLOAT>, SET\<FLOAT> (Vec\<f32>)
+- LIST\<DOUBLE>, SET\<DOUBLE> (Vec\<f64>)
+- LIST\<BLOB>, SET\<BLOB> (Vec\<Vec\<u8>>)
+- LIST\<UUID>, SET\<UUID> (Vec\<uuid::Uuid>)
+- LIST\<TIMEUUID>, SET\<TIMEUUID> (Vec\<scylla::value::CqlTimeuuid>)
+- LIST\<TIMESTAMP>, SET\<TIMESTAMP> (Vec\<scylla::value::CqlTimestamp>, Vec\<chrono::DateTime\<Utc>>, Vec\<time::OffsetDateTime>)
+- LIST\<DATE>, SET\<DATE> (Vec\<scylla::value::CqlDate>, Vec\<chrono::NaiveDate>, Vec\<time::Date>)
+- LIST\<TIME>, SET\<TIME> (Vec\<scylla::value::CqlTime>, Vec\<chrono::NaiveTime>, Vec\<time::Time>)
+- LIST\<INET>, SET\<INET> (Vec\<std::net::IpAddr>)
+- LIST\<DECIMAL>, SET\<DECIMAL> (Vec\<bigdecimal::Decimal>)
+- LIST\<DURATION> (Vec\<scylla::value::CqlDuration>)
 - [ ] Varint
+
+</details>
+
+<details>
+<summary>Map type bindings.</summary>
+
+- MAP\<ASCII, ASCII>, MAP\<ASCII, TEXT>, MAP\<TEXT, ASCII>, MAP\<TEXT, TEXT> (HashMap\<String, String>)
+- MAP\<ASCII, BOOLEAN>, MAP\<TEXT, BOOLEAN> (HashMap\<String, bool>)
+- MAP\<ASCII, TINYINT>, MAP\<TEXT, TINYINT> (HashMap\<String, i8>)
+- MAP\<ASCII, SMALLINT>, MAP\<TEXT, SMALLINT> (HashMap\<String, i16>)
+- MAP\<ASCII, INT>, MAP\<TEXT, INT> (HashMap\<String, i32>)
+- MAP\<ASCII, BIGINT>, MAP\<TEXT, BIGINT> (HashMap\<String, i64>)
+- MAP\<ASCII, FLOAT>, MAP\<TEXT, FLOAT> (HashMap\<String, f32>)
+- MAP\<ASCII, DOUBLE>, MAP\<TEXT, DOUBLE> (HashMap\<String, f64>)
+- MAP\<ASCII, UUID>, MAP\<TEXT, UUID> (HashMap\<String, uuid::Uuid>)
+- MAP\<ASCII, INET>, MAP\<TEXT, INET> (HashMap\<String, IpAddr>)
+
+</details>
+
+<!-- markdownlint-enable MD033 -->
 
 ### User defined type
 
-- [x] Manual implementation.
-- [x] Derive macro. Use the new type idiom to implement user defined types for array types. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/examples/user_defined_type.rs) for usage.)
+- Definition using the derive macro. Use the new type idiom to implement user defined types for array types. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/examples/user_defined_type.rs) for usage.)
 
 ### Testing
 
-- [x] #[sqlx::test] macro.
+- #[sqlx::test] macro.
 
 ### Migration
 
-- [x] Support migrations in #[sqlx::test] macro.
-- [x] sqlx::migrate::Migrator
+- Support migrations in #[sqlx::test] macro.
+- sqlx::migrate::Migrator
 - [ ] CLI
 
 ### TLS
 
-- [x] TLS (Enable with the `openssl-010` or `rustls-023` feature)
+- TLS (Enable with the `openssl-010` or `rustls-023` feature)
 
 ### Transaction
 
@@ -153,14 +180,35 @@ Please carefully read the documentation on batch operations in ScyllaDB before u
 
 ## Performance
 
-Compared to using the scylla-rust-driver, performance is reduced by approximately 20%.
+Compared to using the scylla-rust-driver, performance decreases by approximately 5%.
 
-However, this equates to a decrease of about 100 milliseconds for 10,000 insertions.
+However, this equates to a reduction of about 30 milliseconds for 10,000 operations.
+
+<!-- markdownlint-disable MD033 -->
+
+<details>
+<summary>Benchmark results.</summary>
+
+| Name                           | Crate              | Lower bound | Estimate  | Upper bound |
+|--------------------------------|--------------------|-------------|-----------|-------------|
+| insert_text_with_scylla        | scylla-rust-driver | 435.09 ms   | 436.31 ms | 437.60 ms   |
+| insert_text_with_sqlx_scylladb | sqlx-scylladb      | 458.42 ms   | 460.34 ms | 463.05 ms   |
+| select_text_with_scylla        | scylla-rust-driver | 438.23 ms   | 439.27 ms | 440.34 ms   |
+| select_text_with_sqlx_scylladb | sqlx-scylladb      | 463.38 ms   | 464.76 ms | 466.13 ms   |
+| insert_uuid_with_scylla        | scylla-rust-driver | 437.38 ms   | 438.38 ms | 439.45 ms   |
+| insert_uuid_with_sqlx_scylladb | sqlx-scylladb      | 463.30 ms   | 464.43 ms | 465.66 ms   |
+| select_uuid_with_scylla        | scylla-rust-driver | 437.76 ms   | 438.89 ms | 440.09 ms   |
+| select_uuid_with_sqlx_scylladb | sqlx-scylladb      | 463.09 ms   | 464.30 ms | 465.51 ms   |
+
+</details>
+
+<!-- markdownlint-enable MD033 -->
 
 ## License
 
 This project is licensed under either of
 
 Apache License, Version 2.0 ([LICENSE-APACHE](https://github.com/masato-hi/sqlx-scylladb/blob/main/LICENSE-APACHE) or [https://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0))
+
 MIT license ([LICENSE-MIT](https://github.com/masato-hi/sqlx-scylladb/blob/main/LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
 at your option.
