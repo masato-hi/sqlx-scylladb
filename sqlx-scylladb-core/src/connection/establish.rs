@@ -1,8 +1,5 @@
-use std::num::NonZeroUsize;
-
 use scylla::client::{
-    PoolSize, caching_session::CachingSessionBuilder, session::TlsContext,
-    session_builder::SessionBuilder,
+    caching_session::CachingSessionBuilder, session::TlsContext, session_builder::SessionBuilder,
 };
 use sqlx::Error;
 
@@ -11,10 +8,6 @@ use crate::{ScyllaDBConnectOptions, ScyllaDBConnection, ScyllaDBError};
 impl ScyllaDBConnection {
     pub(crate) async fn establish(options: &ScyllaDBConnectOptions) -> Result<Self, Error> {
         let mut builder = SessionBuilder::new().known_nodes(&options.nodes);
-
-        if let Some(pool_size_per_host) = NonZeroUsize::new(1) {
-            builder = builder.pool_size(PoolSize::PerHost(pool_size_per_host));
-        }
 
         if let Some(authentication_options) = &options.authentication_options {
             builder = builder.user(
