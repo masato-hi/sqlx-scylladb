@@ -1,4 +1,7 @@
-use std::fmt::Display;
+use std::{
+    fmt::Display,
+    sync::{LazyLock, RwLock},
+};
 
 use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 use sqlx::TypeInfo;
@@ -8,6 +11,7 @@ use crate::ScyllaDBError;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ScyllaDBTypeInfo {
+    Any(UStr),
     Ascii,
     AsciiArray,
     Boolean,
@@ -84,6 +88,7 @@ impl TypeInfo for ScyllaDBTypeInfo {
 
     fn name(&self) -> &str {
         match self {
+            Self::Any(name) => name,
             Self::Ascii => "ASCII",
             Self::AsciiArray => "ASCII[]",
             Self::Text => "TEXT",
@@ -217,12 +222,45 @@ impl TypeInfo for ScyllaDBTypeInfo {
     }
 }
 
+static ANY_TYPES: LazyLock<RwLock<Vec<(ColumnType<'static>, UStr)>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+
+pub fn register_any_type(
+    column_type: ColumnType<'static>,
+    name: UStr,
+) -> Result<(), ScyllaDBError> {
+    let mut guard = ANY_TYPES
+        .write()
+        .map_err(|_| ScyllaDBError::ExclusiveLockError)?;
+    guard.push((column_type, name));
+
+    Ok(())
+}
+
+fn get_any_type(column_type: &ColumnType<'_>) -> Result<Option<ScyllaDBTypeInfo>, ScyllaDBError> {
+    let guard = ANY_TYPES
+        .read()
+        .map_err(|_| ScyllaDBError::ExclusiveLockError)?;
+    for (ty, name) in guard.iter() {
+        if column_type == ty {
+            let type_info = ScyllaDBTypeInfo::Any(name.clone());
+            return Ok(Some(type_info));
+        }
+    }
+
+    Ok(None)
+}
+
 macro_rules! column_type_not_supported {
-    ($column_type:ident) => {
+    ($column_type:ident) => {{
+        if let Some(type_info) = get_any_type($column_type)? {
+            return Ok(type_info);
+        }
+
         return Err(ScyllaDBError::ColumnTypeNotSupportedError(
             $column_type.clone().into_owned(),
-        ))
-    };
+        ));
+    }};
 }
 
 impl ScyllaDBTypeInfo {

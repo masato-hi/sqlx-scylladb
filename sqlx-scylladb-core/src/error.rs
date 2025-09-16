@@ -47,6 +47,8 @@ pub enum ScyllaDBError {
     ColumnTypeNotSupportedError(ColumnType<'static>),
     #[error("{0:?} is null.")]
     NullValueError(UStr),
+    #[error("Exclusive lock error.")]
+    ExclusiveLockError,
 }
 
 impl DatabaseError for ScyllaDBError {
@@ -75,6 +77,7 @@ impl DatabaseError for ScyllaDBError {
             ScyllaDBError::MismatchedColumnTypeError(_, _) => "Mismatched column type.",
             ScyllaDBError::ColumnTypeNotSupportedError(_) => "Column type not supported.",
             ScyllaDBError::NullValueError(_) => "Null value error",
+            ScyllaDBError::ExclusiveLockError => "Exclusive lock error.",
         }
     }
 
