@@ -180,9 +180,9 @@ Please carefully read the documentation on batch operations in ScyllaDB before u
 
 ## Performance
 
-Compared to using the scylla-rust-driver, performance decreases by approximately 5%.
+Compared to using the scylla-rust-driver, performance decreases by approximately 20%.
 
-However, this equates to a reduction of about 30 milliseconds for 10,000 operations.
+However, this equates to a reduction of about 100 milliseconds for 10,000 operations.
 
 <!-- markdownlint-disable MD033 -->
 
@@ -191,14 +191,14 @@ However, this equates to a reduction of about 30 milliseconds for 10,000 operati
 
 | Name                           | Crate              | Lower bound | Estimate  | Upper bound |
 |--------------------------------|--------------------|-------------|-----------|-------------|
-| insert_text_with_scylla        | scylla-rust-driver | 435.09 ms   | 436.31 ms | 437.60 ms   |
-| insert_text_with_sqlx_scylladb | sqlx-scylladb      | 458.42 ms   | 460.34 ms | 463.05 ms   |
-| select_text_with_scylla        | scylla-rust-driver | 438.23 ms   | 439.27 ms | 440.34 ms   |
-| select_text_with_sqlx_scylladb | sqlx-scylladb      | 463.38 ms   | 464.76 ms | 466.13 ms   |
-| insert_uuid_with_scylla        | scylla-rust-driver | 437.38 ms   | 438.38 ms | 439.45 ms   |
-| insert_uuid_with_sqlx_scylladb | sqlx-scylladb      | 463.30 ms   | 464.43 ms | 465.66 ms   |
-| select_uuid_with_scylla        | scylla-rust-driver | 437.76 ms   | 438.89 ms | 440.09 ms   |
-| select_uuid_with_sqlx_scylladb | sqlx-scylladb      | 463.09 ms   | 464.30 ms | 465.51 ms   |
+| insert_text_with_scylla        | scylla-rust-driver | 462.12 ms   | 462.95 ms | 463.84 ms   |
+| insert_text_with_sqlx_scylladb | sqlx-scylladb      | 549.94 ms   | 550.99 ms | 552.06 ms   |
+| select_text_with_scylla        | scylla-rust-driver | 457.50 ms   | 458.24 ms | 459.01 ms   |
+| select_text_with_sqlx_scylladb | sqlx-scylladb      | 563.70 ms   | 564.75 ms | 565.82 ms   |
+| insert_uuid_with_scylla        | scylla-rust-driver | 464.53 ms   | 465.51 ms | 466.62 ms   |
+| insert_uuid_with_sqlx_scylladb | sqlx-scylladb      | 554.59 ms   | 555.82 ms | 557.18 ms   |
+| select_uuid_with_scylla        | scylla-rust-driver | 458.02 ms   | 458.76 ms | 459.50 ms   |
+| select_uuid_with_sqlx_scylladb | sqlx-scylladb      | 562.22 ms   | 563.22 ms | 564.22 ms   |
 
 </details>
 
@@ -211,4 +211,5 @@ This project is licensed under either of
 Apache License, Version 2.0 ([LICENSE-APACHE](https://github.com/masato-hi/sqlx-scylladb/blob/main/LICENSE-APACHE) or [https://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0))
 
 MIT license ([LICENSE-MIT](https://github.com/masato-hi/sqlx-scylladb/blob/main/LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
+
 at your option.
