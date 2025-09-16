@@ -156,6 +156,10 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 - Definition using the derive macro. Use the new type idiom to implement user defined types for array types. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/examples/user_defined_type.rs) for usage.)
 
+### Any type not supported by default
+
+- You can add any type supported by scylla-rust-driver. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/examples/any.rs) for usage.)
+
 ### Testing
 
 - #[sqlx::test] macro.

@@ -61,6 +61,7 @@ sqlx-scylladb-core = { workspace = true }
 
 sqlx-core = { workspace = true }
 scylla = { workspace = true }
+scylla-cql = { workspace = true }
 sqlx = { workspace = true }
 
 [dev-dependencies]
@@ -91,6 +92,16 @@ required-features = ["migrate"]
 name = "user_defined_type"
 path = "examples/user_defined_type.rs"
 required-features = ["migrate", "derive"]
+
+[[example]]
+name = "any"
+path = "examples/any.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-any"
+path = "tests/types/any.rs"
+required-features = ["migrate"]
 
 [[test]]
 name = "test-types-ascii"

@@ -99,6 +99,7 @@ impl<'q> DerefMut for ScyllaDBArgumentBuffer {
 }
 
 pub enum ScyllaDBArgument {
+    Any(Arc<dyn SerializeValue + Send + Sync>),
     Null,
     Boolean(bool),
     BooleanArray(Arc<Vec<bool>>),
@@ -182,6 +183,7 @@ impl SerializeValue for ScyllaDBArgument {
         writer: CellWriter<'b>,
     ) -> Result<WrittenCellProof<'b>, SerializationError> {
         match self {
+            Self::Any(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Null => Ok(writer.set_null()),
             Self::Boolean(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::BooleanArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),

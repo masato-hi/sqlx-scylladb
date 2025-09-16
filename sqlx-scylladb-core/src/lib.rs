@@ -32,7 +32,7 @@ use sqlx_core::{
 };
 pub use statement::ScyllaDBStatement;
 pub use transaction::ScyllaDBTransactionManager;
-pub use type_info::ScyllaDBTypeInfo;
+pub use type_info::{ScyllaDBTypeInfo, register_any_type};
 pub use types::array::ScyllaDBHasArrayType;
 pub use value::{ScyllaDBValue, ScyllaDBValueRef};
 

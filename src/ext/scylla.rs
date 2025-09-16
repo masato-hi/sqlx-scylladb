@@ -1,5 +1,11 @@
 pub use scylla::{DeserializeRow, DeserializeValue, SerializeRow, SerializeValue};
 
+pub mod cql {
+    pub use scylla_cql::frame::response::result::{
+        CollectionType, ColumnType, NativeType, UserDefinedType,
+    };
+}
+
 pub mod writers {
     pub use scylla::serialize::value::SerializeValue;
 }
