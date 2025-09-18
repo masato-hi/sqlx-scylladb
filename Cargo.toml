@@ -3,6 +3,7 @@ resolver = "3"
 members = [
   ".",
   "sqlx-scylladb-core",
+  "sqlx-scylladb-ext",
   "sqlx-scylladb-macros",
   "sqlx-scylladb-macros-core",
 ]
@@ -12,6 +13,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace.dependencies]
+sqlx-scylladb-ext = { path = "sqlx-scylladb-ext" }
 sqlx-scylladb-core = { path = "sqlx-scylladb-core" }
 sqlx-scylladb-macros = { path = "sqlx-scylladb-macros" }
 sqlx-scylladb-macros-core = { path = "sqlx-scylladb-macros-core" }
@@ -58,11 +60,7 @@ rustls-023 = ["sqlx-scylladb-core/rustls-023"]
 [dependencies]
 sqlx-scylladb-macros = { workspace = true, optional = true }
 sqlx-scylladb-core = { workspace = true }
-
-sqlx-core = { workspace = true }
-scylla = { workspace = true }
-scylla-cql = { workspace = true }
-sqlx = { workspace = true }
+sqlx-scylladb-ext = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
