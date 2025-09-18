@@ -2849,11 +2849,10 @@ dependencies = [
  "env_logger",
  "pprof",
  "scylla",
- "scylla-cql",
  "sqlx",
- "sqlx-core",
  "sqlx-macros",
  "sqlx-scylladb-core",
+ "sqlx-scylladb-ext",
  "sqlx-scylladb-macros",
  "time",
  "tokio",
@@ -2887,6 +2886,16 @@ dependencies = [
  "tracing",
  "url",
  "uuid",
+]
+
+[[package]]
+name = "sqlx-scylladb-ext"
+version = "0.1.0"
+dependencies = [
+ "scylla",
+ "scylla-cql",
+ "sqlx",
+ "sqlx-core",
 ]
 
 [[package]]

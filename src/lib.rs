@@ -4,7 +4,9 @@ pub use sqlx_scylladb_core::{
     ScyllaDBValueRef,
 };
 
-pub mod ext;
+pub mod ext {
+    pub use sqlx_scylladb_ext::*;
+}
 
 pub mod types {
     pub use sqlx_scylladb_core::types::*;

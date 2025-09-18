@@ -1,0 +1,10 @@
+[package]
+name = "sqlx-scylladb-ext"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+sqlx-core = { workspace = true }
+scylla = { workspace = true }
+scylla-cql = { workspace = true }
+sqlx = { workspace = true }
