@@ -26,7 +26,6 @@ sqlx = { version = "0.8", default-features = false, features = [
   "runtime-tokio",
 ] }
 sqlx-core = { version = "0.8" }
-sqlx-cli = { version = "0.8" }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 

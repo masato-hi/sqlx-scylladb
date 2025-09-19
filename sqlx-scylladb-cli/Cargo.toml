@@ -8,17 +8,16 @@ name = "sqlx-scylladb"
 path = "src/bin/sqlx-scylladb.rs"
 
 [features]
-rustls = ["sqlx-cli/rustls", "sqlx-scylladb-core/rustls-023"]
-native-tls = ["sqlx-cli/native-tls", "sqlx-scylladb-core/openssl-010"]
+rustls = ["sqlx-scylladb-core/rustls-023"]
+native-tls = ["sqlx-scylladb-core/openssl-010"]
 
 [dependencies]
 sqlx = { workspace = true }
-sqlx-cli = { workspace = true }
 sqlx-scylladb-core = { workspace = true, features = ["migrate", "any"] }
 
 anyhow = { workspace = true }
 dotenvy = { workspace = true }
-tokio = { workspace = true }
+tokio = { workspace = true, features = ["signal"] }
 chrono-04 = { workspace = true }
 
 clap = { version = "4.3.10", features = ["derive", "env", "wrap_help"] }
