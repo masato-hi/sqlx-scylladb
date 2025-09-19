@@ -1,0 +1,8 @@
+sqlx-scylladb
+Copyright 2025 masato-hi
+
+This project contains code created with reference to sqlx (https://github.com/launchbadge/sqlx).
+Copyright 2020 LaunchBadge, LLC
+
+This project contains code created with reference to scylla-rust-driver (https://github.com/scylladb/scylla-rust-driver).
+Copyright 2020 ScyllaDB

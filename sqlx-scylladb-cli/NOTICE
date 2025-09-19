@@ -1,0 +1,7 @@
+sqlx-scylladb-cli
+Copyright 2025 masato-hi
+
+This project was created by adapting sqlx-cli (https://github.com/launchbadge/sqlx/tree/main/sqlx-cli).
+Copyright 2020 LaunchBadge, LLC.
+
+* Removed several commands and added support for the SCYLLADB_URL option.

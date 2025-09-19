@@ -162,13 +162,14 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 ### Testing
 
-- #[sqlx::test] macro.
+- You can use #[sqlx::test] macro.
 
 ### Migration
 
+- Implemented sqlx::migrate::Migrator trait.
 - Support migrations in #[sqlx::test] macro.
-- sqlx::migrate::Migrator
-- [ ] CLI
+- You can use the command-line tool.
+  - To install it, run `cargo install --git https://github.com/masato-hi/sqlx-scylladb/tree/main/sqlx-scylladb-cli`
 
 ### TLS
 
@@ -217,3 +218,7 @@ Apache License, Version 2.0 ([LICENSE-APACHE](https://github.com/masato-hi/sqlx-
 MIT license ([LICENSE-MIT](https://github.com/masato-hi/sqlx-scylladb/blob/main/LICENSE-MIT) or [http://opensource.org/licenses/MIT](http://opensource.org/licenses/MIT))
 
 at your option.
+
+## Contribution
+
+Unless you explicitly state otherwise, any Contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.

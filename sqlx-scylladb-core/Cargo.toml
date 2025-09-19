@@ -2,6 +2,7 @@
 name = "sqlx-scylladb-core"
 version.workspace = true
 edition.workspace = true
+license.workspace = true
 
 [features]
 migrate = ["dep:crc", "sqlx/migrate"]
