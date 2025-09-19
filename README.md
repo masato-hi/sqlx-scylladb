@@ -162,13 +162,14 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 ### Testing
 
-- #[sqlx::test] macro.
+- You can use #[sqlx::test] macro.
 
 ### Migration
 
+- Implemented sqlx::migrate::Migrator trait.
 - Support migrations in #[sqlx::test] macro.
-- sqlx::migrate::Migrator
-- [ ] CLI
+- You can use the command-line tool.
+  - To install it, run `cargo install --git https://github.com/masato-hi/sqlx-scylladb/tree/main/sqlx-scylladb-cli`
 
 ### TLS
 
