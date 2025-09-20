@@ -69,10 +69,9 @@ sqlx-scylladb-ext = { workspace = true }
 [dev-dependencies]
 tokio = { workspace = true }
 scylla = { workspace = true }
-anyhow = { version = "1" }
+anyhow = { workspace = true }
 dotenvy = { workspace = true }
 sqlx = { workspace = true, features = ["uuid", "runtime-tokio", "macros"] }
-sqlx-macros = "0.8"
 url = { workspace = true }
 uuid = { workspace = true }
 chrono-04 = { workspace = true }
