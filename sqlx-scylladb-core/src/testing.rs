@@ -2,7 +2,6 @@ use std::fmt::Write;
 use std::time::SystemTime;
 use std::{ops::Deref, str::FromStr, sync::OnceLock, time::Duration};
 
-use base64::{Engine, prelude::BASE64_URL_SAFE};
 use futures_core::future::BoxFuture;
 use scylla::value::CqlTimestamp;
 use sha2::{Digest, Sha512};
@@ -41,15 +40,27 @@ impl TestSupport for ScyllaDB {
         todo!()
     }
 
+    ///
+    /// ```
+    /// use sqlx_core::testing::TestSupport;
+    /// let args = ::sqlx_core::testing::TestArgs{
+    ///     test_path: "my_test_function",
+    ///     migrator: None,
+    ///     fixtures: &[],
+    /// };
+    /// let name = ::sqlx_scylladb_core::ScyllaDB::db_name(&args);
+    /// assert_eq!("sqlx_test_ai4drkqtg4lnnkdlk7fjtixcrmcc7cnwamqrm", name);
+    /// ```
     fn db_name(args: &TestArgs) -> String {
         let mut hasher = Sha512::new();
         hasher.update(args.test_path.as_bytes());
         let hash = hasher.finalize();
-        let hash = BASE64_URL_SAFE.encode(&hash[..27]);
+        let hash = base32::encode(
+            base32::Alphabet::Rfc4648Lower { padding: false },
+            &hash[0..23],
+        );
         // Keyspace name is supported lower and less than 48 characters.
-        let db_name = format!("sqlx_test_{}", hash)
-            .replace('-', "_")
-            .to_lowercase();
+        let db_name = format!("sqlx_test_{}", hash);
         debug_assert!(db_name.len() <= 48);
         db_name
     }
