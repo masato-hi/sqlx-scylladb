@@ -2895,7 +2895,6 @@ dependencies = [
  "scylla",
  "secrecy",
  "sqlx",
- "sqlx-macros",
  "sqlx-scylladb-core",
  "sqlx-scylladb-ext",
  "sqlx-scylladb-macros",
