@@ -1,8 +1,7 @@
 use std::{collections::HashMap, net::IpAddr, str::FromStr};
 
 use sqlx::Column;
-use sqlx::{Acquire, Executor, TypeInfo};
-use sqlx_macros::FromRow;
+use sqlx::{Acquire, Executor, FromRow, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 

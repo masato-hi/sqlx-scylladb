@@ -4,8 +4,7 @@ use scylla::{
     DeserializeValue, SerializeValue,
     value::{CqlDate, CqlTime, CqlTimestamp},
 };
-use sqlx::{Acquire, Column, Executor, TypeInfo};
-use sqlx_macros::FromRow;
+use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use sqlx_scylladb_macros::UserDefinedType;
 use uuid::Uuid;
