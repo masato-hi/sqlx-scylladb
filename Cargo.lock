@@ -2480,6 +2480,7 @@ dependencies = [
  "itertools 0.14.0",
  "lz4_flex",
  "scylla-macros",
+ "secrecy",
  "snap",
  "stable_deref_trait",
  "thiserror 2.0.16",
@@ -2499,6 +2500,15 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "secrecy"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9bd1c54ea06cfd2f6b63219704de0b9b4f72dcc2b8fdef820be6cd799780e91e"
+dependencies = [
+ "zeroize",
 ]
 
 [[package]]
@@ -2883,6 +2893,7 @@ dependencies = [
  "dotenvy",
  "pprof",
  "scylla",
+ "secrecy",
  "sqlx",
  "sqlx-macros",
  "sqlx-scylladb-core",
@@ -2929,6 +2940,7 @@ dependencies = [
  "rustls",
  "scylla",
  "scylla-cql",
+ "secrecy",
  "sha2",
  "sqlx",
  "sqlx-core",

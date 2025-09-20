@@ -117,8 +117,12 @@ pub enum ScyllaDBArgument {
     DoubleArray(Arc<Vec<f64>>),
     Text(Arc<String>),
     TextArray(Arc<Vec<String>>),
+    #[cfg(feature = "secrecy-08")]
+    SecretText(Arc<secrecy_08::SecretString>),
     Blob(Arc<Vec<u8>>),
     BlobArray(Arc<Vec<Vec<u8>>>),
+    #[cfg(feature = "secrecy-08")]
+    SecretBlob(Arc<secrecy_08::SecretVec<u8>>),
     Uuid(Uuid),
     UuidArray(Arc<Vec<Uuid>>),
     Timeuuid(CqlTimeuuid),
@@ -201,8 +205,12 @@ impl SerializeValue for ScyllaDBArgument {
             Self::DoubleArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Text(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::TextArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-08")]
+            Self::SecretText(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Blob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::BlobArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-08")]
+            Self::SecretBlob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Uuid(uuid) => <_ as SerializeValue>::serialize(uuid, typ, writer),
             Self::UuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Timeuuid(timeuuid) => <_ as SerializeValue>::serialize(timeuuid, typ, writer),

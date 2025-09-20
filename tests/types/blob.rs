@@ -177,6 +177,45 @@ async fn it_can_select_blob_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "secrecy-08")]
+#[sqlx::test(migrations = "tests/types/migrations")]
+async fn it_can_select_secret_blob(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    use secrecy_08::ExposeSecret;
+
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query("INSERT INTO blob_tests(my_id, my_blob) VALUES(?, ?)")
+        .bind(id)
+        .bind(secrecy_08::SecretVec::new(vec![0x00u8, 0x61, 0x73, 0x6d]))
+        .execute(&pool)
+        .await?;
+
+    let (my_id, my_blob): (Uuid, secrecy_08::SecretVec<u8>) =
+        sqlx::query_as("SELECT my_id, my_blob FROM blob_tests WHERE my_id = ?")
+            .bind(id)
+            .fetch_one(&pool)
+            .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!(vec![0x00u8, 0x61, 0x73, 0x6d], *my_blob.expose_secret());
+
+    #[derive(FromRow)]
+    struct AsciiTest {
+        my_id: Uuid,
+        my_blob: secrecy_08::SecretVec<u8>,
+    }
+
+    let row: AsciiTest = sqlx::query_as("SELECT my_id, my_blob FROM blob_tests WHERE my_id = ?")
+        .bind(id)
+        .fetch_one(&pool)
+        .await?;
+
+    assert_eq!(id, row.my_id);
+    assert_eq!(vec![0x00u8, 0x61, 0x73, 0x6d], *row.my_blob.expose_secret());
+
+    Ok(())
+}
+
 #[sqlx::test(migrations = "tests/types/migrations")]
 async fn describe_blob(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;

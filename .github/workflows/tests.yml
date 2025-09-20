@@ -49,7 +49,7 @@ jobs:
         echo "CREATE KEYSPACE IF NOT EXISTS test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};" | docker compose exec -T scylladb cqlsh
 
     - name: Run tests
-      run: cargo test --features time-03,chrono-04,bigdecimal-04
+      run: cargo test --features time-03,chrono-04,bigdecimal-04,secrecy-08
 
     - name: Run the openssl-010 tests
       run: cargo test --features migrate,openssl-010 it_can_connect_by_openssl
