@@ -5,8 +5,7 @@ use std::{
 };
 
 use scylla::value::CqlTimestamp;
-use sqlx::{Acquire, Column, Executor, TypeInfo};
-use sqlx_macros::FromRow;
+use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
 use sqlx_scylladb::{
     ScyllaDB, ScyllaDBArgument, ScyllaDBPool, ScyllaDBTypeInfo,
     ext::{

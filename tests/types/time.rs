@@ -1,6 +1,5 @@
 use scylla::value::CqlTime;
-use sqlx::{Acquire, Column, Executor, TypeInfo};
-use sqlx_macros::FromRow;
+use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 

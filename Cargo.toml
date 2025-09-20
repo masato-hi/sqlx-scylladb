@@ -71,7 +71,6 @@ anyhow = { version = "1" }
 dotenvy = { workspace = true }
 sqlx = { workspace = true, features = ["uuid", "runtime-tokio", "macros"] }
 sqlx-macros = "0.8"
-env_logger = "0.11"
 url = { workspace = true }
 uuid = { workspace = true }
 chrono-04 = { workspace = true }
