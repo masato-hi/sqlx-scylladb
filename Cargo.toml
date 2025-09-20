@@ -37,6 +37,7 @@ uuid = { version = "1" }
 chrono-04 = { version = "0.4", package = "chrono" }
 time-03 = { version = "0.3", package = "time" }
 bigdecimal-04 = { version = "0.4", package = "bigdecimal" }
+secrecy-08 = { version = "0.8.0", package = "secrecy" }
 
 url = "2"
 
@@ -55,6 +56,7 @@ macros = ["derive", "sqlx-scylladb-macros/macros"]
 time-03 = ["sqlx-scylladb-core/time-03"]
 chrono-04 = ["sqlx-scylladb-core/chrono-04"]
 bigdecimal-04 = ["sqlx-scylladb-core/bigdecimal-04"]
+secrecy-08 = ["sqlx-scylladb-core/secrecy-08"]
 
 openssl-010 = ["sqlx-scylladb-core/openssl-010"]
 rustls-023 = ["sqlx-scylladb-core/rustls-023"]
@@ -76,6 +78,7 @@ uuid = { workspace = true }
 chrono-04 = { workspace = true }
 time-03 = { workspace = true }
 bigdecimal-04 = { workspace = true }
+secrecy-08 = { workspace = true }
 criterion = { version = "0.7.0", features = ["stable", "async_tokio"] }
 pprof = { version = "0.15.0", features = ["protobuf", "protobuf-codec"] }
 
@@ -145,7 +148,7 @@ required-features = ["migrate"]
 [[test]]
 name = "test-types-text"
 path = "tests/types/text.rs"
-required-features = ["migrate"]
+required-features = ["migrate", "secrecy-08"]
 
 [[test]]
 name = "test-types-time"

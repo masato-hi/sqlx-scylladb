@@ -155,6 +155,62 @@ impl<'r> Encode<'r, ScyllaDB> for Box<str> {
     }
 }
 
+#[cfg(feature = "secrecy-08")]
+impl Type<ScyllaDB> for secrecy_08::SecretString {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Text
+    }
+}
+
+#[cfg(feature = "secrecy-08")]
+impl Encode<'_, ScyllaDB> for secrecy_08::SecretString {
+    fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::SecretText(Arc::new(self));
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::SecretText(Arc::new(self.clone()));
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
+#[cfg(feature = "secrecy-08")]
+impl Decode<'_, ScyllaDB> for secrecy_08::SecretString {
+    fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
+        let val: Self = value.deserialize()?;
+        Ok(val)
+    }
+}
+
+#[cfg(feature = "secrecy-08")]
+impl Type<ScyllaDB> for Arc<secrecy_08::SecretString> {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Text
+    }
+}
+
+#[cfg(feature = "secrecy-08")]
+impl Encode<'_, ScyllaDB> for Arc<secrecy_08::SecretString> {
+    fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::SecretText(self);
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+
+    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        let argument = ScyllaDBArgument::SecretText(self.clone());
+        buf.push(argument);
+
+        Ok(IsNull::No)
+    }
+}
+
 impl ScyllaDBHasArrayType for &str {
     fn array_type_info() -> crate::ScyllaDBTypeInfo {
         ScyllaDBTypeInfo::TextArray

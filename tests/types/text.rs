@@ -128,6 +128,45 @@ async fn it_can_select_text_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "secrecy-08")]
+#[sqlx::test(migrations = "tests/types/migrations")]
+async fn it_can_select_secret_text(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    use secrecy_08::ExposeSecret;
+
+    let id = Uuid::new_v4();
+
+    let _ = sqlx::query("INSERT INTO text_tests(my_id, my_text) VALUES(?, ?)")
+        .bind(id)
+        .bind(secrecy_08::SecretString::new(String::from("こんにちは")))
+        .execute(&pool)
+        .await?;
+
+    let (my_id, my_text): (Uuid, secrecy_08::SecretString) =
+        sqlx::query_as("SELECT my_id, my_text FROM text_tests WHERE my_id = ?")
+            .bind(id)
+            .fetch_one(&pool)
+            .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!("こんにちは", my_text.expose_secret());
+
+    #[derive(FromRow)]
+    struct TextTest {
+        my_id: Uuid,
+        my_text: secrecy_08::SecretString,
+    }
+
+    let row: TextTest = sqlx::query_as("SELECT my_id, my_text FROM text_tests WHERE my_id = ?")
+        .bind(id)
+        .fetch_one(&pool)
+        .await?;
+
+    assert_eq!(id, row.my_id);
+    assert_eq!("こんにちは", row.my_text.expose_secret());
+
+    Ok(())
+}
+
 #[sqlx::test(migrations = "tests/types/migrations")]
 async fn describe_text(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;

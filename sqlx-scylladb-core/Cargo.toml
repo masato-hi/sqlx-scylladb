@@ -20,6 +20,7 @@ bigdecimal-04 = [
   "scylla/bigdecimal-04",
   "scylla-cql/bigdecimal-04",
 ]
+secrecy-08 = ["dep:secrecy-08", "scylla/secrecy-08"]
 openssl-010 = ["dep:openssl-010", "scylla/openssl-010"]
 rustls-023 = ["dep:rustls-023", "scylla/rustls-023"]
 
@@ -33,6 +34,7 @@ uuid = { workspace = true }
 chrono-04 = { workspace = true, optional = true }
 time-03 = { workspace = true, optional = true }
 bigdecimal-04 = { workspace = true, optional = true }
+secrecy-08 = { workspace = true, optional = true }
 
 openssl-010 = { version = "0.10.70", package = "openssl", optional = true }
 rustls-023 = { version = "0.23", package = "rustls", optional = true }
