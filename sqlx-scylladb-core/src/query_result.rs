@@ -1,6 +1,9 @@
+/// Query execution result.
 #[derive(Debug, Default)]
 pub struct ScyllaDBQueryResult {
+    /// Number of retrieved items. Or the number of items in the light-weight transaction.
     pub rows_num: u64,
+    /// Only valid when using a light-weight transaction.
     pub rows_affected: u64,
 }
 

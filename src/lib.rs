@@ -1,22 +1,24 @@
+#![warn(missing_docs)]
+#![doc = include_str!("lib.md")]
+
 pub use sqlx_scylladb_core::{
     ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBConnectOptions, ScyllaDBError,
     ScyllaDBExecutor, ScyllaDBPool, ScyllaDBPoolOptions, ScyllaDBTypeInfo, ScyllaDBValue,
     ScyllaDBValueRef,
 };
 
+/// Re-exported external crates.
 pub mod ext {
     pub use sqlx_scylladb_ext::*;
 }
 
-pub mod types {
-    pub use sqlx_scylladb_core::types::*;
-}
-
+/// Runtime-generic database driver. `any` feature is required.
 #[cfg(feature = "any")]
 pub mod any {
     pub use sqlx_scylladb_core::any::*;
 }
 
+/// `macros` feature is required.
 #[cfg(feature = "macros")]
 pub mod macros {
     pub use sqlx_scylladb_macros::*;

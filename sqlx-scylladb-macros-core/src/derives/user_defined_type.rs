@@ -10,6 +10,7 @@ struct UserDefinedTypeOption {
     name: Option<String>,
 }
 
+#[doc(hidden)]
 pub fn expand_user_defined_type(item: DeriveInput) -> syn::Result<TokenStream> {
     let option = UserDefinedTypeOption::from_derive_input(&item).unwrap();
 
