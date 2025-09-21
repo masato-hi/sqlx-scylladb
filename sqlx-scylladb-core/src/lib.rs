@@ -1,3 +1,6 @@
+#![warn(missing_docs)]
+#![doc = include_str!("lib.md")]
+
 #[cfg(feature = "any")]
 pub mod any;
 mod arguments;
@@ -14,7 +17,7 @@ mod statement;
 mod testing;
 mod transaction;
 mod type_info;
-pub mod types;
+mod types;
 mod value;
 
 pub use arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArguments};
@@ -36,15 +39,20 @@ pub use type_info::{ScyllaDBTypeInfo, register_any_type};
 pub use types::array::ScyllaDBHasArrayType;
 pub use value::{ScyllaDBValue, ScyllaDBValueRef};
 
+/// An alias for [sqlx::Pool], specialized for ScyllaDB.
 pub type ScyllaDBPool = Pool<ScyllaDB>;
 
+/// An alias for [sqlx::pool::PoolOptions], specialized for ScyllaDB.
 pub type ScyllaDBPoolOptions = PoolOptions<ScyllaDB>;
 
+/// An alias for [`sqlx::Executor<'_, Database = ScyllaDB>`][sqlx::Executor].
 pub trait ScyllaDBExecutor<'c>: Executor<'c, Database = ScyllaDB> {}
 impl<'c, T: Executor<'c, Database = ScyllaDB>> ScyllaDBExecutor<'c> for T {}
 
+/// An alias for [`sqlx::Transaction<'_, ScyllaDB>`][sqlx::Transaction].
 pub type ScyllaDBTransaction<'c> = Transaction<'c, ScyllaDB>;
 
+/// An alias for [`sqlx::Type<ScyllaDB>`][sqlx::Type].
 pub trait ScyllaDBType: sqlx::Type<ScyllaDB> {}
 
 impl_into_arguments_for_arguments!(ScyllaDBArguments);

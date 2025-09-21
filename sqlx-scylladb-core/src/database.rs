@@ -6,6 +6,7 @@ use crate::{
     ScyllaDBValueRef, arguments::ScyllaDBArgumentBuffer,
 };
 
+/// ScyllaDB database driver.
 #[derive(Debug)]
 pub struct ScyllaDB;
 

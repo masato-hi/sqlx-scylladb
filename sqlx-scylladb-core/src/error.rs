@@ -12,41 +12,65 @@ use sqlx::error::{DatabaseError, ErrorKind};
 use sqlx_core::ext::ustr::UStr;
 use thiserror::Error;
 
+/// Represents all the ways a method can fail within ScyllaDB.
 #[derive(Debug, Error)]
 #[error(transparent)]
 pub enum ScyllaDBError {
+    /// There is an error in the options.
     #[error("Configuration error. {0}")]
     ConfigurationError(String),
+    /// Error occurred while creating the session.
     NewSessionError(#[from] NewSessionError),
+    /// There is an error in the specified keyspace.
     UseKeyspaceError(#[from] UseKeyspaceError),
+    /// Error occurred while preparing the statement.
     PrepareError(#[from] PrepareError),
+    /// Error occurred while converting to rows result.
     IntoRowsResultError(#[from] IntoRowsResultError),
+    /// Error occurred while retrieving the row.
     RowsError(#[from] RowsError),
+    /// Error occurred while type checking.
     TypeCheckError(#[from] TypeCheckError),
+    /// Error occurred while serialization.
     SerializationError(#[from] SerializationError),
+    /// Error occurred while deserialization.
     DeserializationError(#[from] DeserializationError),
+    /// Error occurred while execution.
     ExecutionError(#[from] ExecutionError),
+    /// Error occurred while pagination.
     PagerExecutionError(#[from] PagerExecutionError),
+    /// Transaction is not started.
     #[error("Transaction is not started.")]
     TransactionNotStarted,
+    /// Attempted to retrieve data exceeding the number of columns.
     #[error("Column index out of bounds. the len is {len}, but the index is {index}")]
     ColumnIndexOutOfBounds {
+        /// index.
         index: usize,
+        /// total size.
         len: usize,
     },
+    /// Column types do not match.
     #[error("Column type is mismatched. expect: {expect:?}, actual: {actual:?}")]
     ColumnTypeError {
+        /// expected column type.
         expect: ColumnType<'static>,
+        /// actual column type.
         actual: ColumnType<'static>,
     },
-    #[error("Cannot lock on migration.")]
+    /// Failed to acquire migration lock.
+    #[error("Failed to acquire migration lock.")]
     MigrationLockError,
+    /// Column types do not match.
     #[error("Mismatched column type {0}: {1:?}..")]
     MismatchedColumnTypeError(UStr, ColumnType<'static>),
+    /// This column type is not supported.
     #[error("Column type '{0:?}' is not supported.")]
     ColumnTypeNotSupportedError(ColumnType<'static>),
+    /// The value is null.
     #[error("{0:?} is null.")]
     NullValueError(UStr),
+    /// Failed to acquire exclusive lock.
     #[error("Exclusive lock error.")]
     ExclusiveLockError,
 }

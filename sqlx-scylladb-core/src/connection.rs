@@ -10,6 +10,7 @@ use sqlx::{Connection, Transaction};
 
 use crate::{ScyllaDB, ScyllaDBConnectOptions, connection::transaction::ScyllaDBTransaction};
 
+/// Implementation of [sqlx::Connection] for ScyllaDB.
 pub struct ScyllaDBConnection {
     pub(crate) caching_session: CachingSession,
     pub(crate) page_size: i32,

@@ -13,6 +13,7 @@ const DEFAULT_PORT: u16 = 9042;
 const DEFAULT_PAGE_SIZE: i32 = 5000;
 const DEFAULT_STATEMENT_CACHE_CAPACITY: usize = 128;
 
+/// Options and flags which can be used to configure a ScyllaDB connection.
 #[derive(Debug, Clone)]
 pub struct ScyllaDBConnectOptions {
     pub(crate) nodes: Vec<String>,
@@ -109,6 +110,7 @@ impl ScyllaDBConnectOptions {
 }
 
 impl ScyllaDBConnectOptions {
+    /// Create a default set of connection options.
     pub fn new() -> Self {
         Self {
             nodes: vec![],
@@ -125,21 +127,25 @@ impl ScyllaDBConnectOptions {
         }
     }
 
+    /// Set the nodes to connect to.
     pub fn nodes(mut self, nodes: Vec<String>) -> Self {
         self.nodes = nodes;
         self
     }
 
+    /// Add the node to connect to.
     pub fn add_node(mut self, node: impl Into<String>) -> Self {
         self.nodes.push(node.into());
         self
     }
 
+    /// Set the keyspace to use.
     pub fn keyspace(mut self, keyspace: impl Into<String>) -> Self {
         self.keyspace = Some(keyspace.into());
         self
     }
 
+    /// Set the authentication information when performing authentication.
     pub fn user_authentication(
         mut self,
         username: impl Into<String>,
@@ -153,6 +159,7 @@ impl ScyllaDBConnectOptions {
         self
     }
 
+    /// Set the replication strategy. This value is only used during keyspace creation and is not normally required to be set.
     pub fn replication_strategy(mut self, strategy: ScyllaDBReplicationStrategy) -> Self {
         let mut replication_options = self.replication_options_or_default();
         replication_options.strategy = strategy;
@@ -160,6 +167,7 @@ impl ScyllaDBConnectOptions {
         self
     }
 
+    /// Set the replication factor. This value is only used during keytable creation and is not normally required to be set.
     pub fn replication_factor(mut self, factor: usize) -> Self {
         let mut replication_options = self.replication_options_or_default();
         replication_options.replication_factor = factor;
@@ -167,11 +175,13 @@ impl ScyllaDBConnectOptions {
         self
     }
 
+    /// Set the compression method used during communication.
     pub fn compressor(mut self, compressor: ScyllaDBCompressor) -> Self {
         self.compression_options = Some(ScyllaDBCompressionOptions { compressor });
         self
     }
 
+    /// Set the path to the RootCA certificate when using TLS.
     pub fn tls_rootcert(mut self, root_cert: impl Into<String>) -> Self {
         let root_cert = root_cert.into();
         if let Some(mut tls_options) = self.tls_options {
@@ -186,6 +196,7 @@ impl ScyllaDBConnectOptions {
         self
     }
 
+    /// Set the path to the client certificate when using TLS.
     pub fn tls_cert(mut self, cert: impl Into<String>) -> Self {
         let cert = cert.into();
         if let Some(mut tls_options) = self.tls_options {
@@ -200,6 +211,7 @@ impl ScyllaDBConnectOptions {
         self
     }
 
+    /// Set the path to the client private key when using TLS.
     pub fn tls_key(mut self, key: impl Into<String>) -> Self {
         let key = key.into();
         if let Some(mut tls_options) = self.tls_options {
@@ -214,16 +226,19 @@ impl ScyllaDBConnectOptions {
         self
     }
 
+    /// Enable tcp_nodelay.
     pub fn tcp_nodelay(mut self) -> Self {
         self.tcp_nodelay = true;
         self
     }
 
+    /// Set the interval for TCP keepalive.
     pub fn tcp_keepalive(mut self, secs: u64) -> Self {
         self.tcp_keepalive = Some(Duration::from_secs(secs));
         self
     }
 
+    /// Sets the size per page for data retrieval pagination.
     pub fn page_size(mut self, page_size: i32) -> Self {
         self.page_size = page_size;
         self
@@ -278,10 +293,13 @@ pub(crate) struct ScyllaDBAuthenticationOptions {
     pub(crate) password: String,
 }
 
+/// Replication strategy classes.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum ScyllaDBReplicationStrategy {
+    /// Simple
     #[default]
     SimpleStrategy,
+    /// Network topology
     NetworkTopologyStrategy,
 }
 
@@ -331,9 +349,12 @@ impl Default for ScyllaDBReplicationOptions {
     }
 }
 
+/// Compression methods.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScyllaDBCompressor {
+    /// Compress with lz4.
     LZ4Compressor,
+    /// Compress with snappy.
     SnappyCompressor,
 }
 

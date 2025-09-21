@@ -72,5 +72,5 @@ impl_map_type!(
     String,
     IpAddr,
     ScyllaDBTypeInfo::TextInetMap,
-    ScyllaDBArgument::TextInetMap
+    ScyllaDBArgument::TextIpAddrMap
 );

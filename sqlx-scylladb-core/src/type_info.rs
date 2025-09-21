@@ -9,75 +9,142 @@ use sqlx_core::ext::ustr::UStr;
 
 use crate::ScyllaDBError;
 
+/// The enum for the supported type.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ScyllaDBTypeInfo {
+    /// Any type. Please set a unique name.
     Any(UStr),
+    /// `ascii` type.
     Ascii,
+    /// array of `ascii` type.
     AsciiArray,
+    /// `boolean` type.
     Boolean,
+    /// array of `boolean` type.
     BooleanArray,
+    /// `blob` type.
     Blob,
+    /// array of `blob` type.
     BlobArray,
+    /// `counter` type.
     Counter,
+    /// `decimal` type.
     Decimal,
+    /// array of `decimal` type.
     DecimalArray,
+    /// `date` type.
     Date,
+    /// array of `date` type.
     DateArray,
+    /// `double` type.
     Double,
+    /// array of `double` type.
     DoubleArray,
+    /// `duration` type.
     Duration,
+    /// array of `duration` type.
     DurationArray,
+    /// NULL type.
     Null,
+    /// `float` type.
     Float,
+    /// array of `float` type.
     FloatArray,
+    /// `int` type.
     Int,
+    /// array of `int` type.
     IntArray,
+    /// `bigint` type.
     BigInt,
+    /// array of `bigint` type.
     BigIntArray,
+    /// `text` type.
     Text,
+    /// array of `text` type.
     TextArray,
+    /// `timestamp` type.
     Timestamp,
+    /// array of `timestamp` type.
     TimestampArray,
+    /// `inet` type.
     Inet,
+    /// array of `inet` type.
     InetArray,
+    /// `smallint` type.
     SmallInt,
+    /// array of `smallint` type.
     SmallIntArray,
+    /// `tinyint` type.
     TinyInt,
+    /// array of `tinyint` type.
     TinyIntArray,
+    /// `time` type.
     Time,
+    /// array of `time` type.
     TimeArray,
+    /// `timeuuid` type.
     Timeuuid,
+    /// array of `timeuuid` type.
     TimeuuidArray,
-    Vector,
+    /// `uuid` type.
     Uuid,
+    /// array of `uuid` type.
     UuidArray,
+    /// `variant` type.
     Variant,
+    /// Any tuple type.
     Tuple(UStr),
+    /// user-defined type.
     UserDefinedType(UStr),
+    /// array of user-defined type.
     UserDefinedTypeArray(UStr),
+    /// map type of `ascii` and `ascii`.
     AsciiAsciiMap,
+    /// map type of `ascii` and `text`.
     AsciiTextMap,
+    /// map type of `ascii` and `boolean`.
     AsciiBooleanMap,
+    /// map type of `ascii` and `tinyint`.
     AsciiTinyIntMap,
+    /// map type of `ascii` and `smallint`.
     AsciiSmallIntMap,
+    /// map type of `ascii` and `int`.
     AsciiIntMap,
+    /// map type of `ascii` and `bigint`.
     AsciiBigIntMap,
+    /// map type of `ascii` and `float`.
     AsciiFloatMap,
+    /// map type of `ascii` and `double`.
     AsciiDoubleMap,
+    /// map type of `ascii` and `uuid`.
     AsciiUuidMap,
+    /// map type of `ascii` and `timeuuid`.
     AsciiTimeuuidMap,
+    /// map type of `ascii` and `inet`.
     AsciiInetMap,
+    /// map type of `text` and `ascii`.
     TextAsciiMap,
+    /// map type of `text` and `text`.
     TextTextMap,
+    /// map type of `text` and `boolean`.
     TextBooleanMap,
+    /// map type of `text` and `tinyint`.
     TextTinyIntMap,
+    /// map type of `text` and `smallint`.
     TextSmallIntMap,
+    /// map type of `text` and `int`.
     TextIntMap,
+    /// map type of `text` and `bigint`.
     TextBigIntMap,
+    /// map type of `text` and `float`.
     TextFloatMap,
+    /// map type of `text` and `double`.
     TextDoubleMap,
+    /// map type of `text` and `uuid`.
     TextUuidMap,
+    /// map type of `text` and `timeuuid`.
     TextTimeuuidMap,
+    /// map type of `text` and `inet`.
     TextInetMap,
 }
 
@@ -117,7 +184,6 @@ impl TypeInfo for ScyllaDBTypeInfo {
             Self::TimestampArray => "TIMESTAMP[]",
             Self::Inet => "INET",
             Self::InetArray => "INET[]",
-            Self::Vector => "VECTOR",
             Self::SmallInt => "SMALLINT",
             Self::SmallIntArray => "SMALLINT[]",
             Self::TinyInt => "TINYINT",
@@ -225,6 +291,7 @@ impl TypeInfo for ScyllaDBTypeInfo {
 static ANY_TYPES: LazyLock<RwLock<Vec<(ColumnType<'static>, UStr)>>> =
     LazyLock::new(|| RwLock::new(Vec::new()));
 
+///
 pub fn register_any_type(
     column_type: ColumnType<'static>,
     name: UStr,
@@ -368,10 +435,6 @@ impl ScyllaDBTypeInfo {
                 },
                 _ => column_type_not_supported!(column_type),
             },
-            ColumnType::Vector {
-                typ: _,
-                dimensions: _,
-            } => Self::Vector,
             ColumnType::UserDefinedType {
                 frozen: _,
                 definition,

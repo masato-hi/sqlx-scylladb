@@ -10,6 +10,7 @@ use sqlx_core::ext::ustr::UStr;
 
 use crate::{ScyllaDB, ScyllaDBError, ScyllaDBTypeInfo};
 
+/// Implementation of [sqlx::Value] for ScyllaDB.
 #[derive(Debug, Clone)]
 pub struct ScyllaDBValue {
     column_name: UStr,
@@ -39,6 +40,7 @@ impl Value for ScyllaDBValue {
     }
 }
 
+/// Implementation of [sqlx::ValueRef] for ScyllaDB.
 #[derive(Debug, Clone)]
 pub struct ScyllaDBValueRef<'r> {
     column_name: UStr,
@@ -74,16 +76,19 @@ impl<'r> ScyllaDBValueRef<'r> {
         }
     }
 
+    /// Return the column name.
     #[inline(always)]
     pub fn column_name(&self) -> UStr {
         self.column_name.clone()
     }
 
+    /// Return the scylladb column type.
     #[inline(always)]
     pub fn column_type(&self) -> ColumnType<'static> {
         self.column_type.clone().into_owned()
     }
 
+    /// Deserialize the response data from scylladb.
     #[inline(always)]
     pub fn deserialize<T>(&self) -> Result<T, ScyllaDBError>
     where

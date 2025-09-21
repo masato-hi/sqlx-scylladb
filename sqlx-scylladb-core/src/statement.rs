@@ -6,6 +6,7 @@ use sqlx_core::{HashMap, ext::ustr::UStr, impl_statement_query};
 
 use crate::{ScyllaDB, ScyllaDBArguments, ScyllaDBColumn, ScyllaDBError, ScyllaDBTypeInfo};
 
+/// Implementation of [sqlx::Statement] for ScyllaDB.
 #[derive(Clone)]
 pub struct ScyllaDBStatement<'q> {
     pub(crate) sql: Cow<'q, str>,

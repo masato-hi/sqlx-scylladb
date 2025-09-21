@@ -5,6 +5,7 @@ use sqlx::TransactionManager;
 
 use crate::{ScyllaDB, ScyllaDBConnection};
 
+/// Implementation of [sqlx::TransactionManager] for ScyllaDB.
 pub struct ScyllaDBTransactionManager {}
 
 impl TransactionManager for ScyllaDBTransactionManager {

@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use std::{borrow::Cow, pin::pin, sync::Arc};
 
 use futures_core::{future::BoxFuture, stream::BoxStream};

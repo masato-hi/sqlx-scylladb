@@ -4,6 +4,7 @@ use sqlx_core::ext::ustr::UStr;
 
 use crate::{ScyllaDB, ScyllaDBTypeInfo};
 
+/// Implementation of [sqlx::Column] for ScyllaDB.
 #[derive(Debug)]
 pub struct ScyllaDBColumn {
     pub(crate) ordinal: usize,

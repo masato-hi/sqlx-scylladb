@@ -3,6 +3,7 @@ use sqlx::{ColumnIndex, Error, Row};
 
 use crate::{ScyllaDB, ScyllaDBColumn, ScyllaDBValueRef, statement::ScyllaDBStatementMetadata};
 
+/// Implementation of [sqlx::Row] for ScyllaDB.
 #[derive(Debug)]
 pub struct ScyllaDBRow {
     raw_columns: Vec<Option<Bytes>>,
