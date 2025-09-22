@@ -3,6 +3,8 @@ name = "sqlx-scylladb-cli"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
+authors.workspace = true
 
 [[bin]]
 name = "sqlx-scylladb"
