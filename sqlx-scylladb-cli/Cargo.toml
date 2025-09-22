@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+description = "Command-line utility for sqlx-scylladb."
 
 [[bin]]
 name = "sqlx-scylladb"

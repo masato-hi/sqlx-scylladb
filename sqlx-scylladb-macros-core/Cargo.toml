@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+description = "Macro support core of sqlx-scylladb. Not intended to be used directly."
 
 [features]
 macros = []
