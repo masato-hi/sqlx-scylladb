@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 repository.workspace = true
 authors.workspace = true
+description = "Re-exported crates for sqlx-scylladb. Not intended to be used directly."
 
 [dependencies]
 sqlx-core = { workspace = true }
