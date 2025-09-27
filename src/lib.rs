@@ -1,11 +1,7 @@
 #![warn(missing_docs)]
 #![doc = include_str!("lib.md")]
 
-pub use sqlx_scylladb_core::{
-    ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBConnectOptions, ScyllaDBError,
-    ScyllaDBExecutor, ScyllaDBPool, ScyllaDBPoolOptions, ScyllaDBTypeInfo, ScyllaDBValue,
-    ScyllaDBValueRef,
-};
+pub use sqlx_scylladb_core::*;
 
 /// Re-exported external crates.
 pub mod ext {
