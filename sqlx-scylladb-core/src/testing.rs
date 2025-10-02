@@ -80,8 +80,8 @@ async fn test_context(args: &TestArgs) -> Result<TestContext<ScyllaDB>, Error> {
         Ok(inserted) => inserted,
         Err((existing, pool)) => {
             assert_eq!(
-                existing.connect_options().nodes,
-                pool.connect_options().nodes,
+                existing.connect_options().get_connect_nodes(),
+                pool.connect_options().get_connect_nodes(),
                 "DATABASE_URL changed at runtime, host differs"
             );
 

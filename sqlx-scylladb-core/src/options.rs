@@ -16,15 +16,21 @@ const DEFAULT_STATEMENT_CACHE_CAPACITY: usize = 128;
 /// Options and flags which can be used to configure a ScyllaDB connection.
 #[derive(Debug, Clone)]
 pub struct ScyllaDBConnectOptions {
-    pub(crate) nodes: Vec<String>,
+    pub(crate) host: String,
+    pub(crate) port: u16,
+    nodes: Vec<String>,
     pub(crate) keyspace: Option<String>,
     pub(crate) statement_cache_capacity: usize,
     pub(crate) log_settings: LogSettings,
     pub(crate) tcp_nodelay: bool,
-    pub(crate) authentication_options: Option<ScyllaDBAuthenticationOptions>,
-    pub(crate) replication_options: Option<ScyllaDBReplicationOptions>,
-    pub(crate) compression_options: Option<ScyllaDBCompressionOptions>,
-    pub(crate) tls_options: Option<ScyllaDBTLSOptions>,
+    pub(crate) username: Option<String>,
+    pub(crate) password: Option<String>,
+    pub(crate) replication_strategy: Option<ScyllaDBReplicationStrategy>,
+    pub(crate) replication_factor: usize,
+    pub(crate) compression: Option<ScyllaDBCompression>,
+    pub(crate) tls_rootcert: Option<String>,
+    pub(crate) tls_cert: Option<String>,
+    pub(crate) tls_key: Option<String>,
     pub(crate) tcp_keepalive: Option<Duration>,
     pub(crate) page_size: i32,
 }
@@ -33,11 +39,12 @@ impl ScyllaDBConnectOptions {
     pub(crate) fn parse_from_url(url: &Url) -> Result<Self, Error> {
         let mut options = Self::new();
 
-        let host = url.host_str();
-        if let Some(host) = host {
-            let port = url.port().unwrap_or(DEFAULT_PORT);
-            let node = format!("{}:{}", host, port);
-            options = options.add_node(node);
+        if let Some(host) = url.host_str() {
+            options = options.host(host);
+        }
+
+        if let Some(port) = url.port() {
+            options = options.port(port)
         }
 
         let path = url.path().trim_start_matches('/');
@@ -47,8 +54,10 @@ impl ScyllaDBConnectOptions {
 
         let username = url.username();
         if !username.is_empty() {
-            let password = url.password().unwrap_or_default();
-            options = options.user_authentication(username, password);
+            options = options.username(username);
+            if let Some(password) = url.password() {
+                options = options.password(password);
+            }
         }
 
         let query_pairs = url.query_pairs();
@@ -72,8 +81,8 @@ impl ScyllaDBConnectOptions {
                     options = options.replication_factor(replication_factor);
                 }
                 "compression" => {
-                    let compressor = ScyllaDBCompressor::from_str(&value)?;
-                    options = options.compressor(compressor);
+                    let compressor = ScyllaDBCompression::from_str(&value)?;
+                    options = options.compresson(compressor);
                 }
                 "tcp_nodelay" => {
                     options = options.tcp_nodelay();
@@ -93,13 +102,13 @@ impl ScyllaDBConnectOptions {
                     options = options.page_size(page_size);
                 }
                 "tls_rootcert" => {
-                    options = options.tls_rootcert(value.to_string());
+                    options = options.tls_rootcert(&value);
                 }
                 "tls_cert" => {
-                    options = options.tls_cert(value.to_string());
+                    options = options.tls_cert(&value);
                 }
                 "tls_key" => {
-                    options = options.tls_key(value.to_string());
+                    options = options.tls_key(&value);
                 }
                 _ => eprintln!("Not supported options. {key}"),
             }
@@ -113,23 +122,43 @@ impl ScyllaDBConnectOptions {
     /// Create a default set of connection options.
     pub fn new() -> Self {
         Self {
+            host: String::from("localhost"),
+            port: DEFAULT_PORT,
             nodes: vec![],
             keyspace: None,
-            statement_cache_capacity: DEFAULT_STATEMENT_CACHE_CAPACITY,
-            log_settings: Default::default(),
+            username: None,
+            password: None,
+            replication_strategy: None,
+            replication_factor: 1,
+            compression: None,
+            tls_rootcert: None,
+            tls_cert: None,
+            tls_key: None,
             tcp_nodelay: false,
-            authentication_options: None,
-            replication_options: None,
-            compression_options: None,
-            tls_options: None,
             tcp_keepalive: None,
             page_size: DEFAULT_PAGE_SIZE,
+            statement_cache_capacity: DEFAULT_STATEMENT_CACHE_CAPACITY,
+            log_settings: Default::default(),
         }
     }
 
-    /// Set the nodes to connect to.
-    pub fn nodes(mut self, nodes: Vec<String>) -> Self {
-        self.nodes = nodes;
+    pub(crate) fn get_connect_nodes(&self) -> Vec<String> {
+        let mut nodes = Vec::with_capacity(self.nodes.len() + 1);
+        // Push primary node.
+        nodes.push(format!("{}:{}", self.host, self.port));
+        nodes.extend_from_slice(&self.nodes);
+        nodes
+    }
+
+    /// Set the host of primary node to connect to.
+    pub fn host(mut self, host: &str) -> Self {
+        host.clone_into(&mut self.host);
+        self
+    }
+
+    /// Set the port of primary node to connect to.
+    pub fn port(mut self, port: u16) -> Self {
+        self.port = port;
         self
     }
 
@@ -145,84 +174,51 @@ impl ScyllaDBConnectOptions {
         self
     }
 
-    /// Set the authentication information when performing authentication.
-    pub fn user_authentication(
-        mut self,
-        username: impl Into<String>,
-        password: impl Into<String>,
-    ) -> Self {
-        let authentication_options = ScyllaDBAuthenticationOptions {
-            username: username.into(),
-            password: password.into(),
-        };
-        self.authentication_options = Some(authentication_options);
+    /// Set the username for authentication.
+    pub fn username(mut self, username: &str) -> Self {
+        self.username = Some(username.to_string());
+        self
+    }
+
+    /// Set the password for authentication.
+    pub fn password(mut self, password: &str) -> Self {
+        self.password = Some(password.to_string());
         self
     }
 
     /// Set the replication strategy. This value is only used during keyspace creation and is not normally required to be set.
     pub fn replication_strategy(mut self, strategy: ScyllaDBReplicationStrategy) -> Self {
-        let mut replication_options = self.replication_options_or_default();
-        replication_options.strategy = strategy;
-        self.replication_options = Some(replication_options);
+        self.replication_strategy = Some(strategy);
         self
     }
 
     /// Set the replication factor. This value is only used during keytable creation and is not normally required to be set.
     pub fn replication_factor(mut self, factor: usize) -> Self {
-        let mut replication_options = self.replication_options_or_default();
-        replication_options.replication_factor = factor;
-        self.replication_options = Some(replication_options);
+        self.replication_factor = factor;
         self
     }
 
     /// Set the compression method used during communication.
-    pub fn compressor(mut self, compressor: ScyllaDBCompressor) -> Self {
-        self.compression_options = Some(ScyllaDBCompressionOptions { compressor });
+    pub fn compresson(mut self, compression: ScyllaDBCompression) -> Self {
+        self.compression = Some(compression);
         self
     }
 
     /// Set the path to the RootCA certificate when using TLS.
-    pub fn tls_rootcert(mut self, root_cert: impl Into<String>) -> Self {
-        let root_cert = root_cert.into();
-        if let Some(mut tls_options) = self.tls_options {
-            tls_options.root_cert = root_cert;
-            self.tls_options = Some(tls_options);
-        } else {
-            self.tls_options = Some(ScyllaDBTLSOptions {
-                root_cert,
-                ..Default::default()
-            });
-        }
+    pub fn tls_rootcert(mut self, root_cert: &str) -> Self {
+        self.tls_rootcert = Some(root_cert.to_string());
         self
     }
 
     /// Set the path to the client certificate when using TLS.
-    pub fn tls_cert(mut self, cert: impl Into<String>) -> Self {
-        let cert = cert.into();
-        if let Some(mut tls_options) = self.tls_options {
-            tls_options.cert = Some(cert);
-            self.tls_options = Some(tls_options);
-        } else {
-            self.tls_options = Some(ScyllaDBTLSOptions {
-                cert: Some(cert),
-                ..Default::default()
-            });
-        }
+    pub fn tls_cert(mut self, cert: &str) -> Self {
+        self.tls_cert = Some(cert.to_string());
         self
     }
 
     /// Set the path to the client private key when using TLS.
-    pub fn tls_key(mut self, key: impl Into<String>) -> Self {
-        let key = key.into();
-        if let Some(mut tls_options) = self.tls_options {
-            tls_options.key = Some(key);
-            self.tls_options = Some(tls_options);
-        } else {
-            self.tls_options = Some(ScyllaDBTLSOptions {
-                key: Some(key),
-                ..Default::default()
-            });
-        }
+    pub fn tls_key(mut self, key: &str) -> Self {
+        self.tls_key = Some(key.to_string());
         self
     }
 
@@ -243,14 +239,6 @@ impl ScyllaDBConnectOptions {
         self.page_size = page_size;
         self
     }
-
-    fn replication_options_or_default(&self) -> ScyllaDBReplicationOptions {
-        if let Some(replication_options) = self.replication_options {
-            replication_options
-        } else {
-            ScyllaDBReplicationOptions::default()
-        }
-    }
 }
 
 impl ConnectOptions for ScyllaDBConnectOptions {
@@ -258,6 +246,64 @@ impl ConnectOptions for ScyllaDBConnectOptions {
 
     fn from_url(url: &Url) -> Result<Self, Error> {
         Self::parse_from_url(url)
+    }
+
+    fn to_url_lossy(&self) -> Url {
+        let mut url = Url::from_str(&format!("scylladb://{}:{}/", self.host, self.port))
+            .expect("BUG: generated un-parseable URL");
+
+        if let Some(keyspace) = &self.keyspace {
+            let _ = url.set_path(keyspace);
+        }
+
+        if let Some(username) = &self.username {
+            let _ = url.set_username(&username);
+        }
+
+        let _ = url.set_password(self.password.as_deref());
+
+        if self.nodes.len() > 0 {
+            let nodes = self.nodes.join(",");
+            url.query_pairs_mut().append_pair("nodes", &nodes);
+        }
+
+        if let Some(replication_strategy) = self.replication_strategy {
+            url.query_pairs_mut()
+                .append_pair("replication_strategy", &replication_strategy.to_string())
+                .append_pair("replication_factor", &self.replication_factor.to_string());
+        }
+
+        if let Some(compression) = self.compression {
+            url.query_pairs_mut()
+                .append_pair("compression", &compression.to_string());
+        }
+
+        if self.tcp_nodelay {
+            url.query_pairs_mut().append_key_only("tcp_nodelay");
+        }
+
+        if let Some(tcp_keepalive) = self.tcp_keepalive {
+            url.query_pairs_mut()
+                .append_pair("tcp_keepalive", &tcp_keepalive.as_secs().to_string());
+        }
+
+        url.query_pairs_mut()
+            .append_pair("page_size", &self.page_size.to_string());
+
+        if let Some(tls_rootcert) = &self.tls_rootcert {
+            url.query_pairs_mut()
+                .append_pair("tls_rootcert", &tls_rootcert);
+        }
+
+        if let Some(tls_cert) = &self.tls_cert {
+            url.query_pairs_mut().append_pair("tls_cert", &tls_cert);
+        }
+
+        if let Some(tls_key) = &self.tls_key {
+            url.query_pairs_mut().append_pair("tls_key", &tls_key);
+        }
+
+        url
     }
 
     fn connect(&self) -> BoxFuture<'_, Result<Self::Connection, Error>>
@@ -285,12 +331,6 @@ impl FromStr for ScyllaDBConnectOptions {
         let url: Url = s.parse().map_err(Error::config)?;
         Self::from_url(&url)
     }
-}
-
-#[derive(Debug, Clone)]
-pub(crate) struct ScyllaDBAuthenticationOptions {
-    pub(crate) username: String,
-    pub(crate) password: String,
 }
 
 /// Replication strategy classes.
@@ -334,40 +374,25 @@ impl Display for ScyllaDBReplicationStrategy {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub(crate) struct ScyllaDBReplicationOptions {
-    pub(crate) strategy: ScyllaDBReplicationStrategy,
-    pub(crate) replication_factor: usize,
-}
-
-impl Default for ScyllaDBReplicationOptions {
-    fn default() -> Self {
-        Self {
-            strategy: Default::default(),
-            replication_factor: 1,
-        }
-    }
-}
-
 /// Compression methods.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum ScyllaDBCompressor {
+pub enum ScyllaDBCompression {
     /// Compress with lz4.
     LZ4Compressor,
     /// Compress with snappy.
     SnappyCompressor,
 }
 
-impl Into<Compression> for ScyllaDBCompressor {
+impl Into<Compression> for ScyllaDBCompression {
     fn into(self) -> Compression {
         match self {
-            ScyllaDBCompressor::LZ4Compressor => Compression::Lz4,
-            ScyllaDBCompressor::SnappyCompressor => Compression::Snappy,
+            ScyllaDBCompression::LZ4Compressor => Compression::Lz4,
+            ScyllaDBCompression::SnappyCompressor => Compression::Snappy,
         }
     }
 }
 
-impl FromStr for ScyllaDBCompressor {
+impl FromStr for ScyllaDBCompression {
     type Err = ScyllaDBError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -385,19 +410,16 @@ impl FromStr for ScyllaDBCompressor {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-pub(crate) struct ScyllaDBCompressionOptions {
-    pub(crate) compressor: ScyllaDBCompressor,
+impl Display for ScyllaDBCompression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ScyllaDBCompression::LZ4Compressor => write!(f, "lz4"),
+            ScyllaDBCompression::SnappyCompressor => write!(f, "snappy"),
+        }
+    }
 }
 
-#[derive(Debug, Clone, Default)]
-pub(crate) struct ScyllaDBTLSOptions {
-    root_cert: String,
-    cert: Option<String>,
-    key: Option<String>,
-}
-
-impl TryInto<TlsContext> for ScyllaDBTLSOptions {
+impl TryInto<TlsContext> for &ScyllaDBConnectOptions {
     type Error = sqlx::Error;
 
     fn try_into(self) -> Result<TlsContext, Self::Error> {
@@ -422,7 +444,7 @@ impl TryInto<TlsContext> for ScyllaDBTLSOptions {
 }
 
 #[cfg(feature = "openssl-010")]
-impl TryInto<openssl_010::ssl::SslContext> for ScyllaDBTLSOptions {
+impl TryInto<openssl_010::ssl::SslContext> for &ScyllaDBConnectOptions {
     type Error = sqlx::Error;
 
     fn try_into(self) -> Result<openssl_010::ssl::SslContext, Self::Error> {
@@ -437,25 +459,28 @@ impl TryInto<openssl_010::ssl::SslContext> for ScyllaDBTLSOptions {
         let mut context_builder = SslContextBuilder::new(SslMethod::tls())
             .map_err(|e| Error::Configuration(Box::new(e)))?;
 
-        let ca_path = fs::canonicalize(PathBuf::from(&self.root_cert))
-            .map_err(|e| Error::Configuration(Box::new(e)))?;
-        let mut ca_file = File::open(ca_path).map_err(|e| Error::Configuration(Box::new(e)))?;
-        let mut ca_buf = Vec::new();
-        ca_file
-            .read_to_end(&mut ca_buf)
-            .map_err(|e| Error::Configuration(Box::new(e)))?;
-        let ca_x509 = X509::from_pem(&ca_buf).map_err(|e| Error::Configuration(Box::new(e)))?;
+        if let Some(root_cert) = &self.tls_rootcert {
+            let ca_path = fs::canonicalize(PathBuf::from(root_cert))
+                .map_err(|e| Error::Configuration(Box::new(e)))?;
+            let mut ca_file = File::open(ca_path).map_err(|e| Error::Configuration(Box::new(e)))?;
+            let mut ca_buf = Vec::new();
+            ca_file
+                .read_to_end(&mut ca_buf)
+                .map_err(|e| Error::Configuration(Box::new(e)))?;
+            let ca_x509 = X509::from_pem(&ca_buf).map_err(|e| Error::Configuration(Box::new(e)))?;
 
-        let mut builder = X509StoreBuilder::new().map_err(|e| Error::Configuration(Box::new(e)))?;
-        builder
-            .add_cert(ca_x509)
-            .map_err(|e| Error::Configuration(Box::new(e)))?;
-        let cert_store = builder.build();
+            let mut builder =
+                X509StoreBuilder::new().map_err(|e| Error::Configuration(Box::new(e)))?;
+            builder
+                .add_cert(ca_x509)
+                .map_err(|e| Error::Configuration(Box::new(e)))?;
+            let cert_store = builder.build();
 
-        context_builder.set_cert_store(cert_store);
+            context_builder.set_cert_store(cert_store);
+        }
 
-        if let Some(cert) = &self.cert {
-            if let Some(key) = &self.key {
+        if let Some(cert) = &self.tls_cert {
+            if let Some(key) = &self.tls_key {
                 let cert_path = fs::canonicalize(PathBuf::from(cert))
                     .map_err(|e| Error::Configuration(Box::new(e)))?;
                 let mut cert_file =
@@ -501,7 +526,7 @@ impl TryInto<openssl_010::ssl::SslContext> for ScyllaDBTLSOptions {
 }
 
 #[cfg(feature = "rustls-023")]
-impl TryInto<rustls_023::ClientConfig> for ScyllaDBTLSOptions {
+impl TryInto<rustls_023::ClientConfig> for &ScyllaDBConnectOptions {
     type Error = sqlx::Error;
 
     fn try_into(self) -> Result<rustls_023::ClientConfig, Self::Error> {
@@ -510,17 +535,24 @@ impl TryInto<rustls_023::ClientConfig> for ScyllaDBTLSOptions {
             pki_types::{CertificateDer, PrivateKeyDer, pem::PemObject},
         };
 
-        let rustls_ca = CertificateDer::from_pem_file(&self.root_cert)
-            .map_err(|e| Error::Configuration(Box::new(e)))?;
-        let mut root_store = RootCertStore::empty();
-        root_store
-            .add(rustls_ca)
-            .map_err(|e| Error::Configuration(Box::new(e)))?;
+        let builder = ClientConfig::builder();
 
-        let builder = ClientConfig::builder().with_root_certificates(root_store);
+        let builder = if let Some(root_cert) = &self.tls_rootcert {
+            let rustls_ca = CertificateDer::from_pem_file(root_cert)
+                .map_err(|e| Error::Configuration(Box::new(e)))?;
+            let mut root_store = RootCertStore::empty();
+            root_store
+                .add(rustls_ca)
+                .map_err(|e| Error::Configuration(Box::new(e)))?;
+            builder.with_root_certificates(root_store)
+        } else {
+            return Err(Error::Configuration(
+                "Root certification file is required.".into(),
+            ));
+        };
 
-        let client_config = if let Some(cert) = &self.cert {
-            if let Some(key) = &self.key {
+        let client_config = if let Some(cert) = &self.tls_cert {
+            if let Some(key) = &self.tls_key {
                 let client_cert = CertificateDer::from_pem_file(cert)
                     .map_err(|e| Error::Configuration(Box::new(e)))?;
                 let priv_key = PrivateKeyDer::from_pem_file(key)
@@ -546,116 +578,136 @@ impl TryInto<rustls_023::ClientConfig> for ScyllaDBTLSOptions {
 mod tests {
     use std::{str::FromStr, time::Duration};
 
+    use claims::{assert_none, assert_some_eq};
+    use sqlx::ConnectOptions;
+
     use crate::{
         ScyllaDBConnectOptions,
-        options::{ScyllaDBCompressor, ScyllaDBReplicationStrategy},
+        options::{ScyllaDBCompression, ScyllaDBReplicationStrategy},
     };
 
     #[test]
-    fn test_parse_url() -> anyhow::Result<()> {
+    fn it_can_parse_url() -> anyhow::Result<()> {
         const URL: &'static str = "scylladb://my_name:my_passwd@localhost/my_keyspace?nodes=example.test,example2.test:9043&tcp_nodelay&tcp_keepalive=40&compression=lz4&replication_strategy=simple&replication_factor=2&page_size=10&tls_rootcert=/etc/tls/root.pem&tls_cert=/etc/tls/client.pem&tls_key=/etc/tls/client.key";
         let options: ScyllaDBConnectOptions = URL.parse()?;
 
-        assert_eq!("my_keyspace", options.keyspace.unwrap());
+        assert_some_eq!(options.keyspace, "my_keyspace");
         assert!(options.tcp_nodelay);
-        assert_eq!(40, options.tcp_keepalive.unwrap().as_secs());
+        assert_some_eq!(options.tcp_keepalive, Duration::from_secs(40));
 
-        let authentication_options = options.authentication_options.clone().unwrap();
-        assert_eq!("my_name", &authentication_options.username);
-        assert_eq!("my_passwd", &authentication_options.password);
+        assert_some_eq!(options.username, "my_name");
+        assert_some_eq!(options.password, "my_passwd");
 
         assert_eq!(
             vec!["localhost:9042", "example.test", "example2.test:9043"],
             options.nodes
         );
 
-        let compression_options = options.compression_options.unwrap();
-        assert_eq!(
-            ScyllaDBCompressor::LZ4Compressor,
-            compression_options.compressor
-        );
+        assert_some_eq!(options.compression, ScyllaDBCompression::LZ4Compressor);
 
-        let replication_options = options.replication_options.unwrap();
-        assert_eq!(
-            ScyllaDBReplicationStrategy::SimpleStrategy,
-            replication_options.strategy
+        assert_some_eq!(
+            options.replication_strategy,
+            ScyllaDBReplicationStrategy::SimpleStrategy
         );
-        assert_eq!(2, replication_options.replication_factor);
+        assert_eq!(options.replication_factor, 2);
 
         let page_size = options.page_size;
         assert_eq!(10, page_size);
 
-        let tls_options = options.tls_options.unwrap();
-
-        assert_eq!("/etc/tls/root.pem", tls_options.root_cert);
-        assert_eq!("/etc/tls/client.pem", tls_options.cert.unwrap());
-        assert_eq!("/etc/tls/client.key", tls_options.key.unwrap());
+        assert_some_eq!(options.tls_rootcert, "/etc/tls/root.pem");
+        assert_some_eq!(options.tls_cert, "/etc/tls/client.pem");
+        assert_some_eq!(options.tls_key, "/etc/tls/client.key");
 
         Ok(())
     }
 
     #[test]
-    fn test_add_nodes() -> anyhow::Result<()> {
+    fn it_can_convert_options_to_url() -> anyhow::Result<()> {
+        const URL: &'static str = "scylladb://my_name:my_passwd@localhost/my_keyspace?nodes=example.test,example2.test:9043&tcp_nodelay&tcp_keepalive=40&compression=lz4&replication_strategy=simple&replication_factor=2&page_size=10&tls_rootcert=/etc/tls/root.pem&tls_cert=/etc/tls/client.pem&tls_key=/etc/tls/client.key";
+        let options: ScyllaDBConnectOptions = URL.parse()?;
+
+        let url = options.to_url_lossy();
+
+        assert_eq!(
+            url.to_string(),
+            "scylladb://my_name:my_passwd@localhost:9042/my_keyspace?nodes=example.test%2Cexample2.test%3A9043&replication_strategy=SimpleStrategy&replication_factor=2&compression=lz4&tcp_nodelay&tcp_keepalive=40&page_size=10&tls_rootcert=%2Fetc%2Ftls%2Froot.pem&tls_cert=%2Fetc%2Ftls%2Fclient.pem&tls_key=%2Fetc%2Ftls%2Fclient.key"
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn it_can_add_node() -> anyhow::Result<()> {
         let options = ScyllaDBConnectOptions::new();
 
-        assert_eq!(0, options.nodes.len());
+        assert_eq!(options.nodes.len(), 0);
 
         let options = options.add_node("example1.test:9043");
 
-        assert_eq!(vec!["example1.test:9043"], options.nodes);
+        assert_eq!(options.nodes, vec!["example1.test:9043"]);
 
         Ok(())
     }
 
     #[test]
-    fn test_keyspace() -> anyhow::Result<()> {
+    fn it_can_set_keyspace() -> anyhow::Result<()> {
         let options = ScyllaDBConnectOptions::new();
 
-        assert!(options.keyspace.is_none());
+        assert_none!(&options.keyspace);
 
         let options = options.keyspace("test");
 
-        assert_eq!("test", options.keyspace.unwrap());
+        assert_some_eq!(options.keyspace, "test");
 
         Ok(())
     }
 
     #[test]
-    fn test_user_authentication() -> anyhow::Result<()> {
+    fn it_can_set_username() -> anyhow::Result<()> {
         let options = ScyllaDBConnectOptions::new();
 
-        assert!(options.authentication_options.is_none());
+        assert_none!(&options.username);
 
-        let options = options.user_authentication("my_name", "my_password");
+        let options = options.username("my_name");
 
-        let authentication_options = options.authentication_options.unwrap();
-        assert_eq!("my_name", &authentication_options.username);
-        assert_eq!("my_password", &authentication_options.password);
+        assert_some_eq!(options.username, "my_name");
 
         Ok(())
     }
 
     #[test]
-    fn test_replication_strategy() -> anyhow::Result<()> {
+    fn it_can_set_password() -> anyhow::Result<()> {
         let options = ScyllaDBConnectOptions::new();
 
-        assert!(options.replication_options.is_none());
+        assert_none!(&options.password);
+
+        let options = options.password("my_password");
+
+        assert_some_eq!(options.password, "my_password");
+
+        Ok(())
+    }
+
+    #[test]
+    fn it_can_set_replication_strategy() -> anyhow::Result<()> {
+        let options = ScyllaDBConnectOptions::new();
+
+        assert_none!(options.replication_strategy);
 
         let options =
             options.replication_strategy(ScyllaDBReplicationStrategy::NetworkTopologyStrategy);
 
-        let replication_options = options.replication_options.unwrap();
-        assert_eq!(
+        assert_some_eq!(
+            options.replication_strategy,
             ScyllaDBReplicationStrategy::NetworkTopologyStrategy,
-            replication_options.strategy
         );
-        assert_eq!(1, replication_options.replication_factor);
+        assert_eq!(options.replication_factor, 1);
 
         Ok(())
     }
 
     #[test]
-    fn test_replication_strategy_from_str() -> anyhow::Result<()> {
+    fn it_can_parse_replication_strategy_from_str() -> anyhow::Result<()> {
         assert_eq!(
             ScyllaDBReplicationStrategy::SimpleStrategy,
             ScyllaDBReplicationStrategy::from_str("simple")?
@@ -680,42 +732,33 @@ mod tests {
     }
 
     #[test]
-    fn test_replication_factor() -> anyhow::Result<()> {
+    fn it_can_set_replication_factor() -> anyhow::Result<()> {
         let options = ScyllaDBConnectOptions::new();
 
-        assert!(options.replication_options.is_none());
+        assert_eq!(options.replication_factor, 1);
 
         let options = options.replication_factor(2);
 
-        let replication_options = options.replication_options.unwrap();
-        assert_eq!(
-            ScyllaDBReplicationStrategy::SimpleStrategy,
-            replication_options.strategy
-        );
-        assert_eq!(2, replication_options.replication_factor);
+        assert_eq!(options.replication_factor, 2);
 
         Ok(())
     }
 
     #[test]
-    fn test_compressor() -> anyhow::Result<()> {
+    fn it_can_set_compression() -> anyhow::Result<()> {
         let options = ScyllaDBConnectOptions::new();
 
-        assert!(options.compression_options.is_none());
+        assert_none!(options.compression);
 
-        let options = options.compressor(ScyllaDBCompressor::SnappyCompressor);
+        let options = options.compresson(ScyllaDBCompression::SnappyCompressor);
 
-        let compression_options = options.compression_options.unwrap();
-        assert_eq!(
-            ScyllaDBCompressor::SnappyCompressor,
-            compression_options.compressor
-        );
+        assert_some_eq!(options.compression, ScyllaDBCompression::SnappyCompressor);
 
         Ok(())
     }
 
     #[test]
-    fn test_tcp_nodelay() -> anyhow::Result<()> {
+    fn it_can_set_tcp_nodelay() -> anyhow::Result<()> {
         let options = ScyllaDBConnectOptions::new();
 
         assert!(!options.tcp_nodelay);
@@ -728,20 +771,20 @@ mod tests {
     }
 
     #[test]
-    fn test_tcp_keepalive() -> anyhow::Result<()> {
+    fn it_can_set_tcp_keepalive() -> anyhow::Result<()> {
         let options = ScyllaDBConnectOptions::new();
 
         assert!(options.tcp_keepalive.is_none());
 
         let options = options.tcp_keepalive(20);
 
-        assert_eq!(Duration::from_secs(20), options.tcp_keepalive.unwrap());
+        assert_some_eq!(options.tcp_keepalive, Duration::from_secs(20));
 
         Ok(())
     }
 
     #[test]
-    fn test_page_size() -> anyhow::Result<()> {
+    fn it_can_set_page_size() -> anyhow::Result<()> {
         let options = ScyllaDBConnectOptions::new();
 
         assert_eq!(5000, options.page_size);

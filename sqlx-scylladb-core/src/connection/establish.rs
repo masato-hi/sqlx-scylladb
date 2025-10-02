@@ -7,20 +7,18 @@ use crate::{ScyllaDBConnectOptions, ScyllaDBConnection, ScyllaDBError};
 
 impl ScyllaDBConnection {
     pub(crate) async fn establish(options: &ScyllaDBConnectOptions) -> Result<Self, Error> {
-        let mut builder = SessionBuilder::new().known_nodes(&options.nodes);
+        let mut builder = SessionBuilder::new().known_nodes(&options.get_connect_nodes());
 
-        if let Some(authentication_options) = &options.authentication_options {
-            builder = builder.user(
-                &authentication_options.username,
-                &authentication_options.password,
-            );
+        if let Some(username) = &options.username {
+            let password = options.password.clone().unwrap_or_default();
+            builder = builder.user(username, password);
         }
-        if let Some(tls_options) = &options.tls_options {
-            let tls_context: TlsContext = tls_options.clone().try_into()?;
+        if options.tls_rootcert.is_some() || options.tls_cert.is_some() {
+            let tls_context: TlsContext = options.try_into()?;
             builder = builder.tls_context(Some(tls_context));
         }
-        if let Some(compression_options) = options.compression_options {
-            let compression = compression_options.compressor.into();
+        if let Some(compression) = options.compression {
+            let compression = compression.into();
             builder = builder.compression(Some(compression));
         }
         if let Some(tcp_keepalive) = options.tcp_keepalive {
