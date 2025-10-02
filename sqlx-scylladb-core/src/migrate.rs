@@ -9,16 +9,23 @@ use sqlx::{Executor, query_as};
 
 use crate::{
     ScyllaDB, ScyllaDBConnectOptions, ScyllaDBConnection, ScyllaDBError,
-    options::ScyllaDBReplicationOptions,
+    ScyllaDBReplicationStrategy,
 };
 
 fn parse_for_maintenance(
     url: &str,
-) -> Result<(ScyllaDBConnectOptions, ScyllaDBReplicationOptions, String), Error> {
+) -> Result<
+    (
+        ScyllaDBConnectOptions,
+        (ScyllaDBReplicationStrategy, usize),
+        String,
+    ),
+    Error,
+> {
     let mut options = ScyllaDBConnectOptions::from_str(url)?;
 
-    let replication_options = if let Some(replication_options) = &options.replication_options {
-        replication_options.clone()
+    let replication_options = if let Some(replication_strategy) = options.replication_strategy {
+        (replication_strategy, options.replication_factor)
     } else {
         return Err(Error::Configuration(
             "replication_strategy is required.".into(),
@@ -39,7 +46,8 @@ fn parse_for_maintenance(
 impl MigrateDatabase for ScyllaDB {
     fn create_database(url: &str) -> BoxFuture<'_, Result<(), sqlx::Error>> {
         Box::pin(async move {
-            let (options, replication_options, keyspace) = parse_for_maintenance(url)?;
+            let (options, (replication_strategy, replication_factor), keyspace) =
+                parse_for_maintenance(url)?;
             let mut conn = options.connect().await?;
 
             const QUERY: &'static str = r#"
@@ -50,11 +58,11 @@ impl MigrateDatabase for ScyllaDB {
                 .replace("%KEYSPACE_NAME%", &keyspace)
                 .replace(
                     "%REPLICATION_STRATEGY%",
-                    replication_options.strategy.to_string().as_str(),
+                    replication_strategy.to_string().as_str(),
                 )
                 .replace(
                     "%REPLICATION_FACTOR%",
-                    replication_options.replication_factor.to_string().as_str(),
+                    replication_factor.to_string().as_str(),
                 );
             let _ = conn.execute(query.as_str()).await?;
 

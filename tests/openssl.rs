@@ -1,7 +1,4 @@
-use std::env;
-
 use sqlx_scylladb::{ScyllaDBConnectOptions, ScyllaDBPoolOptions};
-use url::Url;
 
 #[sqlx::test(migrations = "tests/migrations")]
 async fn it_can_connect_by_openssl(
@@ -9,11 +6,8 @@ async fn it_can_connect_by_openssl(
     connect_options: ScyllaDBConnectOptions,
 ) -> anyhow::Result<()> {
     let _ = dotenvy::dotenv();
-    let database_url = env::var("SCYLLADB_URL")?;
-    let url = Url::parse(&database_url)?;
-    let tls_node = format!("{}:9142", url.host().unwrap());
     let connect_options = connect_options
-        .nodes(vec![tls_node])
+        .port(9142) // set tls port.
         .tls_rootcert("tests/certs/ca-cert.pem")
         .tls_cert("tests/certs/client-cert.pem")
         .tls_key("tests/certs/client-key.pem");
