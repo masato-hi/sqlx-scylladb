@@ -1,7 +1,7 @@
 
 CERTSUBJ := /C=JP/ST=Tokyo/O='sqlx-scylladb'
 CERTSAN := IP:127.0.0.1,DNS:scylladb,DNS:*.internal,DNS:*.local,DNS:localhost
-CERTDIR := tests/certs
+CERTDIR := sqlx-scylladb/tests/certs
 CACERT := $(CERTDIR)/ca-cert.pem
 CAKEY := $(CERTDIR)/ca-key.pem
 CACSR := $(CERTDIR)/ca-csr.pem
