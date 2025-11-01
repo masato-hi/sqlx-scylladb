@@ -11,7 +11,7 @@ pub trait ScyllaDBHasArrayType {
     }
 }
 
-impl<T> ScyllaDBHasArrayType for &T
+impl<T> ScyllaDBHasArrayType for &[T]
 where
     T: ScyllaDBHasArrayType,
 {

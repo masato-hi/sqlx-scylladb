@@ -37,6 +37,7 @@ pub use statement::ScyllaDBStatement;
 pub use transaction::ScyllaDBTransactionManager;
 pub use type_info::{ScyllaDBTypeInfo, register_any_type};
 pub use types::array::ScyllaDBHasArrayType;
+pub use types::user_defined_type::UserDefinedType;
 pub use value::{ScyllaDBValue, ScyllaDBValueRef};
 
 /// An alias for [sqlx::Pool], specialized for ScyllaDB.

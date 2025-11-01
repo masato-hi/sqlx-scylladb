@@ -15,7 +15,7 @@ impl Type<ScyllaDB> for &str {
 
 impl<'r> Encode<'r, ScyllaDB> for &'r str {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        let argument = ScyllaDBArgument::Text(self.to_string());
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -37,14 +37,14 @@ impl Type<ScyllaDB> for String {
 
 impl Encode<'_, ScyllaDB> for String {
     fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Arc::new(self));
+        let argument = ScyllaDBArgument::Text(self);
         buf.push(argument);
 
         Ok(IsNull::No)
     }
 
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Arc::new(self.clone()));
+        let argument = ScyllaDBArgument::Text(self.clone());
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -65,15 +65,8 @@ impl Type<ScyllaDB> for Arc<String> {
 }
 
 impl Encode<'_, ScyllaDB> for Arc<String> {
-    fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(self);
-        buf.push(argument);
-
-        Ok(IsNull::No)
-    }
-
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(self.clone());
+        let argument = ScyllaDBArgument::Text(self.to_string());
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -88,7 +81,7 @@ impl Type<ScyllaDB> for Rc<String> {
 
 impl Encode<'_, ScyllaDB> for Rc<String> {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        let argument = ScyllaDBArgument::Text(self.to_string());
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -103,7 +96,7 @@ impl Type<ScyllaDB> for Arc<str> {
 
 impl<'r> Encode<'r, ScyllaDB> for Arc<str> {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        let argument = ScyllaDBArgument::Text(self.to_string());
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -118,7 +111,7 @@ impl Type<ScyllaDB> for Rc<str> {
 
 impl<'r> Encode<'r, ScyllaDB> for Rc<str> {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        let argument = ScyllaDBArgument::Text(self.to_string());
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -133,7 +126,7 @@ impl Type<ScyllaDB> for Cow<'_, str> {
 
 impl<'r> Encode<'r, ScyllaDB> for Cow<'_, str> {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        let argument = ScyllaDBArgument::Text(self.to_string());
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -148,7 +141,7 @@ impl Type<ScyllaDB> for Box<str> {
 
 impl<'r> Encode<'r, ScyllaDB> for Box<str> {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Arc::new(self.to_string()));
+        let argument = ScyllaDBArgument::Text(self.to_string());
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -165,14 +158,14 @@ impl Type<ScyllaDB> for secrecy_08::SecretString {
 #[cfg(feature = "secrecy-08")]
 impl Encode<'_, ScyllaDB> for secrecy_08::SecretString {
     fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::SecretText(Arc::new(self));
+        let argument = ScyllaDBArgument::SecretText(self);
         buf.push(argument);
 
         Ok(IsNull::No)
     }
 
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::SecretText(Arc::new(self.clone()));
+        let argument = ScyllaDBArgument::SecretText(self.clone());
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -196,15 +189,12 @@ impl Type<ScyllaDB> for Arc<secrecy_08::SecretString> {
 
 #[cfg(feature = "secrecy-08")]
 impl Encode<'_, ScyllaDB> for Arc<secrecy_08::SecretString> {
-    fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::SecretText(self);
-        buf.push(argument);
-
-        Ok(IsNull::No)
-    }
-
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::SecretText(self.clone());
+        use secrecy_08::ExposeSecret;
+
+        let value = self.expose_secret();
+        let value = secrecy_08::SecretString::new(value.to_string());
+        let argument = ScyllaDBArgument::SecretText(value);
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -223,7 +213,7 @@ impl Encode<'_, ScyllaDB> for &[&str] {
         for value in self.iter() {
             strings.push(value.to_string());
         }
-        let argument = ScyllaDBArgument::TextArray(Arc::new(strings));
+        let argument = ScyllaDBArgument::TextArray(strings);
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -236,7 +226,7 @@ impl<const N: usize> Encode<'_, ScyllaDB> for [&str; N] {
         for value in self.iter() {
             strings.push(value.to_string());
         }
-        let argument = ScyllaDBArgument::TextArray(Arc::new(strings));
+        let argument = ScyllaDBArgument::TextArray(strings);
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -249,7 +239,7 @@ impl Encode<'_, ScyllaDB> for Vec<&str> {
         for value in self.iter() {
             strings.push(value.to_string());
         }
-        let argument = ScyllaDBArgument::TextArray(Arc::new(strings));
+        let argument = ScyllaDBArgument::TextArray(strings);
         buf.push(argument);
 
         Ok(IsNull::No)

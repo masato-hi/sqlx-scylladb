@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use std::{borrow::Cow, pin::pin, sync::Arc};
+use std::{borrow::Cow, pin::pin};
 
 use futures_core::{future::BoxFuture, stream::BoxStream};
 use futures_util::{StreamExt, TryFutureExt, TryStreamExt};
@@ -260,12 +260,9 @@ fn map_arguments(args: AnyArguments<'_>) -> ScyllaDBArguments {
             AnyValueKind::Double(d) => (ScyllaDBTypeInfo::Double, ScyllaDBArgument::Double(d)),
             AnyValueKind::Text(t) => (
                 ScyllaDBTypeInfo::Text,
-                ScyllaDBArgument::Text(Arc::new(t.to_string())),
+                ScyllaDBArgument::Text(t.to_string()),
             ),
-            AnyValueKind::Blob(b) => (
-                ScyllaDBTypeInfo::Blob,
-                ScyllaDBArgument::Blob(Arc::new(b.to_vec())),
-            ),
+            AnyValueKind::Blob(b) => (ScyllaDBTypeInfo::Blob, ScyllaDBArgument::Blob(b.to_vec())),
             // AnyValueKind is `#[non_exhaustive]` but we should have covered everything
             _ => unreachable!("BUG: missing mapping for {val:?}"),
         };
