@@ -53,7 +53,7 @@ macro_rules! impl_array_type {
                 &self,
                 buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(std::sync::Arc::new(self.to_vec()));
+                let argument = $arg_typ(self.to_vec());
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -66,7 +66,7 @@ macro_rules! impl_array_type {
                 &self,
                 buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(std::sync::Arc::new(self.to_vec()));
+                let argument = $arg_typ(self.to_vec());
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -78,7 +78,7 @@ macro_rules! impl_array_type {
                 self,
                 buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(std::sync::Arc::new(self));
+                let argument = $arg_typ(self);
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -88,7 +88,7 @@ macro_rules! impl_array_type {
                 &self,
                 buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(std::sync::Arc::new(self.clone()));
+                let argument = $arg_typ(self.clone());
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -101,7 +101,7 @@ macro_rules! impl_array_type {
                 &self,
                 buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(self.clone());
+                let argument = $arg_typ(self.to_vec());
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -132,7 +132,7 @@ macro_rules! impl_map_type {
                 self,
                 buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(std::sync::Arc::new(self));
+                let argument = $arg_typ(self);
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -142,7 +142,7 @@ macro_rules! impl_map_type {
                 &self,
                 buf: &mut crate::ScyllaDBArgumentBuffer,
             ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(std::sync::Arc::new(self.clone()));
+                let argument = $arg_typ(self.clone());
                 buf.push(argument);
 
                 Ok(sqlx::encode::IsNull::No)
@@ -175,4 +175,5 @@ pub mod text;
 pub mod time;
 pub mod timestamp;
 pub mod tuple;
+pub mod user_defined_type;
 pub mod uuid;

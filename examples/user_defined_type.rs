@@ -33,7 +33,7 @@ async fn main() -> anyhow::Result<()> {
         name: String::from("Alice"),
     };
 
-    let mut udt_list = MyUDTVec::new();
+    let mut udt_list = Vec::new();
     udt_list.push(MyUDT {
         id: 2,
         name: String::from("Bob"),
@@ -54,7 +54,6 @@ async fn main() -> anyhow::Result<()> {
     struct ExampleUDTRow {
         id: i64,
         my_udt: MyUDT,
-        #[sqlx(try_from = "MyUDTVec")]
         my_udt_list: Vec<MyUDT>,
     }
 

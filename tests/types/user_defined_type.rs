@@ -24,7 +24,7 @@ async fn it_can_select_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<(
         my_bigint: 1,
         my_text: String::from("Hello!")
     })
-    .bind(MyUserDefinedTypeVec(
+    .bind(
         vec![
             MyUserDefinedType{
                 my_bigint: 1,
@@ -43,8 +43,8 @@ async fn it_can_select_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<(
                 my_text: String::from("Good night.")
             }
         ]
-    ))
-    .bind(MyUserDefinedTypeVec(
+    )
+    .bind(
         vec![
             MyUserDefinedType{
                 my_bigint: 1,
@@ -63,11 +63,11 @@ async fn it_can_select_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<(
                 my_text: String::from("Hello!")
             },
         ]
-    ))
+    )
     .execute(&pool)
     .await?;
 
-    let (my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set): (Uuid, MyUserDefinedType, MyUserDefinedTypeVec, MyUserDefinedTypeVec) =
+    let (my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set): (Uuid, MyUserDefinedType, Vec<MyUserDefinedType>, Vec<MyUserDefinedType>) =
         sqlx::query_as(
             "SELECT my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set FROM user_defined_type_tests WHERE my_id = ?",
         )
@@ -105,9 +105,7 @@ async fn it_can_select_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<(
     struct UserDefinedTypeTestRow {
         my_id: Uuid,
         my_user_defined_type: MyUserDefinedType,
-        #[sqlx(try_from = "MyUserDefinedTypeVec")]
         my_user_defined_type_list: Vec<MyUserDefinedType>,
-        #[sqlx(try_from = "MyUserDefinedTypeVec")]
         my_user_defined_type_set: Vec<MyUserDefinedType>,
     }
 
@@ -156,16 +154,16 @@ async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow:
     )
     .bind(id)
     .bind(None::<MyUserDefinedType>)
-    .bind(None::<MyUserDefinedTypeVec>)
-    .bind(None::<MyUserDefinedTypeVec>)
+    .bind(None::<Vec<MyUserDefinedType>>)
+    .bind(None::<Vec<MyUserDefinedType>>)
     .execute(&pool)
     .await?;
 
     let (my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set): (
         Uuid,
         Option<MyUserDefinedType>,
-        Option<MyUserDefinedTypeVec>,
-        Option<MyUserDefinedTypeVec>,
+        Option<Vec<MyUserDefinedType>>,
+        Option<Vec<MyUserDefinedType>>,
     ) = sqlx::query_as(
         "SELECT my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set FROM user_defined_type_tests WHERE my_id = ?",
     )
@@ -186,7 +184,7 @@ async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow:
         my_bigint: 1,
         my_text: String::from("Hello!")
     })
-    .bind(MyUserDefinedTypeVec(
+    .bind(
         vec![
             MyUserDefinedType{
                 my_bigint: 1,
@@ -205,8 +203,8 @@ async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow:
                 my_text: String::from("Good night.")
             }
         ]
-    ))
-    .bind(MyUserDefinedTypeVec(
+    )
+    .bind(
         vec![
             MyUserDefinedType{
                 my_bigint: 1,
@@ -225,15 +223,15 @@ async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow:
                 my_text: String::from("Hello!")
             },
         ]
-    ))
+    )
     .execute(&pool)
     .await?;
 
     let (my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set): (
         Uuid,
         Option<MyUserDefinedType>,
-        Option<MyUserDefinedTypeVec>,
-        Option<MyUserDefinedTypeVec>,
+        Option<Vec<MyUserDefinedType>>,
+        Option<Vec<MyUserDefinedType>>,
     ) = sqlx::query_as(
         "SELECT my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set FROM user_defined_type_tests WHERE my_id = ?",
     )
