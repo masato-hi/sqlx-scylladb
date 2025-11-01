@@ -1,7 +1,7 @@
 
 CERTSUBJ := /C=JP/ST=Tokyo/O='sqlx-scylladb'
 CERTSAN := IP:127.0.0.1,DNS:scylladb,DNS:*.internal,DNS:*.local,DNS:localhost
-CERTDIR := tests/certs
+CERTDIR := sqlx-scylladb/tests/certs
 CACERT := $(CERTDIR)/ca-cert.pem
 CAKEY := $(CERTDIR)/ca-key.pem
 CACSR := $(CERTDIR)/ca-csr.pem
@@ -12,7 +12,6 @@ CERTKEY := $(CERTDIR)/client-key.pem
 CERTCSR := $(CERTDIR)/client-csr.pem
 CERT := $(CERTDIR)/client-cert.pem
 
-.PHONY: mkcert
 mkcert:
 	openssl genpkey -algorithm ec -pkeyopt ec_paramgen_curve:P-256 -out $(CAKEY) # CA秘密鍵の作成
 	openssl req -new -key $(CAKEY) -out $(CACSR) -subj $(CERTSUBJ) # 証明書署名要求の作成
@@ -27,3 +26,14 @@ mkcert:
 	openssl x509 -req -in $(CERTCSR) -CA $(CACERT) -CAkey $(CAKEY) -CAcreateserial -days 3650 -copy_extensions copy -out $(CERT) # 認証局による証明書発行
 
 	chmod 0644 $(CERTDIR)/*.pem
+
+test:
+	cargo test --features time-03,chrono-04,bigdecimal-04,secrecy-08
+
+test-openssl:
+	cargo test --features migrate,openssl-010 it_can_connect_by_openssl
+
+test-rustls:
+	cargo test --features migrate,rustls-023 it_can_connect_by_rustls
+
+.PHONY: mkcert test test-openssl test-rustls

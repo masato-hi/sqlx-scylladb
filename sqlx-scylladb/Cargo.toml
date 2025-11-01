@@ -1,0 +1,184 @@
+
+[package]
+name = "sqlx-scylladb"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+keywords.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "A database driver for ScyllaDB to be used with the Rust sqlx framework."
+
+[features]
+default = ["any", "migrate", "macros"]
+
+migrate = ["sqlx-scylladb-core/migrate"]
+any = ["sqlx-scylladb-core/any"]
+derive = ["sqlx-scylladb-macros/derive"]
+macros = ["derive", "sqlx-scylladb-macros/macros"]
+time-03 = ["sqlx-scylladb-core/time-03"]
+chrono-04 = ["sqlx-scylladb-core/chrono-04"]
+bigdecimal-04 = ["sqlx-scylladb-core/bigdecimal-04"]
+secrecy-08 = ["sqlx-scylladb-core/secrecy-08"]
+
+openssl-010 = ["sqlx-scylladb-core/openssl-010"]
+rustls-023 = ["sqlx-scylladb-core/rustls-023"]
+
+[dependencies]
+sqlx-scylladb-macros = { workspace = true, optional = true }
+sqlx-scylladb-core = { workspace = true }
+sqlx-scylladb-ext = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+scylla = { workspace = true }
+anyhow = { workspace = true }
+dotenvy = { workspace = true }
+sqlx = { workspace = true, features = ["uuid", "runtime-tokio", "macros"] }
+url = { workspace = true }
+uuid = { workspace = true }
+chrono-04 = { workspace = true }
+time-03 = { workspace = true }
+bigdecimal-04 = { workspace = true }
+secrecy-08 = { workspace = true }
+criterion = { version = "0.7.0", features = ["stable", "async_tokio"] }
+pprof = { version = "0.15.0", features = ["protobuf", "protobuf-codec"] }
+
+[[example]]
+name = "basic"
+path = "examples/basic.rs"
+required-features = ["migrate"]
+
+[[example]]
+name = "user_defined_type"
+path = "examples/user_defined_type.rs"
+required-features = ["migrate", "derive"]
+
+[[example]]
+name = "any"
+path = "examples/any.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-any"
+path = "tests/types/any.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-ascii"
+path = "tests/types/ascii.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-bigint"
+path = "tests/types/bigint.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-boolean"
+path = "tests/types/boolean.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-date"
+path = "tests/types/date.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-double"
+path = "tests/types/double.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-float"
+path = "tests/types/float.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-int"
+path = "tests/types/int.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-smallint"
+path = "tests/types/smallint.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-text"
+path = "tests/types/text.rs"
+required-features = ["migrate", "secrecy-08"]
+
+[[test]]
+name = "test-types-time"
+path = "tests/types/time.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-timestamp"
+path = "tests/types/timestamp.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-tinyint"
+path = "tests/types/tinyint.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-uuid"
+path = "tests/types/uuid.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-duration"
+path = "tests/types/duration.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-blob"
+path = "tests/types/blob.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-tuple"
+path = "tests/types/tuple.rs"
+required-features = ["migrate", "derive"]
+
+[[test]]
+name = "test-types-text-map"
+path = "tests/types/text_map.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-types-user-defined-type"
+path = "tests/types/user_defined_type.rs"
+required-features = ["migrate", "derive"]
+
+[[test]]
+name = "test-batch"
+path = "tests/batch.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-migrate"
+path = "tests/migrate.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-query-result"
+path = "tests/query_result.rs"
+required-features = ["migrate"]
+
+[[test]]
+name = "test-openssl"
+path = "tests/openssl.rs"
+required-features = ["migrate", "openssl-010"]
+
+[[test]]
+name = "test-rustls"
+path = "tests/rustls.rs"
+required-features = ["migrate", "rustls-023"]
+
+[[bench]]
+name = "benchmark"
+harness = false

@@ -32,7 +32,7 @@ pub fn expand_user_defined_type(item: DeriveInput) -> syn::Result<TokenStream> {
         #[automatically_derived]
         impl ::sqlx_scylladb::ext::sqlx::Type<::sqlx_scylladb::ScyllaDB> for #struct_ident {
             fn type_info() -> ::sqlx_scylladb::ScyllaDBTypeInfo {
-                use ::sqlx_scylladb::UserDefinedType;
+                use ::sqlx_scylladb::UserDefinedType as _;
 
                 let type_name = #struct_ident::type_name();
                 ::sqlx_scylladb::ScyllaDBTypeInfo::UserDefinedType(type_name)
@@ -43,7 +43,7 @@ pub fn expand_user_defined_type(item: DeriveInput) -> syn::Result<TokenStream> {
         impl<'r> ::sqlx_scylladb::ext::sqlx::Encode<'_, ::sqlx_scylladb::ScyllaDB> for #struct_ident
         where Self: ::sqlx_scylladb::UserDefinedType<'r> {
             fn encode_by_ref(&self, buf: &mut ::sqlx_scylladb::ScyllaDBArgumentBuffer) -> Result<::sqlx_scylladb::ext::sqlx::IsNull, ::sqlx_scylladb::ext::sqlx::BoxDynError> {
-                use ::sqlx_scylladb::UserDefinedType;
+                use ::sqlx_scylladb::UserDefinedType as _;
 
                 let argument = ::sqlx_scylladb::ScyllaDBArgument::UserDefinedType(self.box_cloned());
                 buf.push(argument);

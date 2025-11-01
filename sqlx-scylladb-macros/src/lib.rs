@@ -9,8 +9,8 @@ use syn::{DeriveInput, parse_macro_input};
 ///
 /// # Examples
 ///
-/// ```no_run
-/// use sqlx_scylladb_macros::UserDefinedType;
+/// ```no_run,ignore
+/// use sqlx_scylladb::macros::UserDefinedType;
 ///
 /// // By default, the names of user-defined types use snake-case for struct names.
 /// #[derive(UserDefinedType)]

@@ -27,7 +27,6 @@ jobs:
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
-          target/
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Make certification files.
@@ -49,10 +48,10 @@ jobs:
         echo "CREATE KEYSPACE IF NOT EXISTS test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};" | docker compose exec -T scylladb cqlsh
 
     - name: Run tests
-      run: cargo test --features time-03,chrono-04,bigdecimal-04,secrecy-08
+      run: make test
 
     - name: Run the openssl-010 tests
-      run: cargo test --features migrate,openssl-010 it_can_connect_by_openssl
+      run: make test-openssl
 
     - name: Run the rustls-023 tests
-      run: cargo test --features migrate,rustls-023 it_can_connect_by_rustls
+      run: make test-rustls
