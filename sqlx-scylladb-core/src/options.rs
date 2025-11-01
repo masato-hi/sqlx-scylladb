@@ -595,13 +595,13 @@ mod tests {
         assert!(options.tcp_nodelay);
         assert_some_eq!(options.tcp_keepalive, Duration::from_secs(40));
 
+        assert_eq!(options.host, "localhost");
+        assert_eq!(options.port, 9042);
+
         assert_some_eq!(options.username, "my_name");
         assert_some_eq!(options.password, "my_passwd");
 
-        assert_eq!(
-            vec!["localhost:9042", "example.test", "example2.test:9043"],
-            options.nodes
-        );
+        assert_eq!(vec!["example.test", "example2.test:9043"], options.nodes);
 
         assert_some_eq!(options.compression, ScyllaDBCompression::LZ4Compressor);
 
