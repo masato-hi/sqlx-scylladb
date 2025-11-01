@@ -11,9 +11,6 @@ pub trait UserDefinedType<'r>:
 {
     #![allow(missing_docs)]
     fn type_name() -> UStr;
-    fn as_serialize_value(&self) -> impl SerializeValue + Send + Sync {
-        self
-    }
     fn box_cloned(&self) -> Box<dyn SerializeValue + Send + Sync>
     where
         Self: 'static,
