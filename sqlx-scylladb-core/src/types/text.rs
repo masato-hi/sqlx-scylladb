@@ -117,7 +117,7 @@ macro_rules! impl_string_type {
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use std::ops::Deref;
+                use ::std::ops::Deref;
 
                 <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
             }
@@ -128,7 +128,7 @@ macro_rules! impl_string_type {
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use std::ops::Deref;
+                use ::std::ops::Deref;
 
                 <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
             }
@@ -150,7 +150,7 @@ macro_rules! impl_string_type {
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use std::ops::Deref;
+                use ::std::ops::Deref;
 
                 <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
             }
