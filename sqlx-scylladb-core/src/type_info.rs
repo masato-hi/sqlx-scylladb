@@ -324,7 +324,7 @@ macro_rules! column_type_not_supported {
             return Ok(type_info);
         }
 
-        return Err(ScyllaDBError::ColumnTypeNotSupportedError(
+        return Err($crate::ScyllaDBError::ColumnTypeNotSupportedError(
             $column_type.clone().into_owned(),
         ));
     }};

@@ -50,7 +50,7 @@ macro_rules! impl_array_type {
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
                 let argument = $arg_typ(self.to_vec());
                 buf.push(argument);
 
@@ -62,7 +62,7 @@ macro_rules! impl_array_type {
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
                 <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(*self, buf)
             }
         }
@@ -71,7 +71,7 @@ macro_rules! impl_array_type {
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
                 <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
             }
         }
@@ -80,7 +80,7 @@ macro_rules! impl_array_type {
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
                 <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
             }
         }
@@ -89,7 +89,7 @@ macro_rules! impl_array_type {
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
                 <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
             }
         }
@@ -107,40 +107,60 @@ macro_rules! impl_array_type {
 
 macro_rules! impl_map_type {
     ($key_typ:ty, $value_typ:ty, $typ_info:path, $arg_typ:path) => {
-        impl sqlx::Type<crate::ScyllaDB> for std::collections::HashMap<$key_typ, $value_typ> {
-            fn type_info() -> crate::ScyllaDBTypeInfo {
+        impl ::sqlx::Type<$crate::ScyllaDB> for ::std::collections::HashMap<$key_typ, $value_typ> {
+            fn type_info() -> $crate::ScyllaDBTypeInfo {
                 $typ_info
             }
         }
 
-        impl sqlx::Encode<'_, crate::ScyllaDB> for std::collections::HashMap<$key_typ, $value_typ> {
-            fn encode(
-                self,
-                buf: &mut crate::ScyllaDBArgumentBuffer,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(self);
-                buf.push(argument);
-
-                Ok(sqlx::encode::IsNull::No)
-            }
-
-            fn encode_by_ref(
-                &self,
-                buf: &mut crate::ScyllaDBArgumentBuffer,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $arg_typ(self.clone());
-                buf.push(argument);
-
-                Ok(sqlx::encode::IsNull::No)
+        impl ::sqlx::Decode<'_, $crate::ScyllaDB>
+            for ::std::collections::HashMap<$key_typ, $value_typ>
+        {
+            fn decode(
+                value: $crate::ScyllaDBValueRef<'_>,
+            ) -> Result<Self, ::sqlx::error::BoxDynError> {
+                let val: Self = value.deserialize()?;
+                Ok(val)
             }
         }
 
-        impl sqlx::Decode<'_, crate::ScyllaDB> for std::collections::HashMap<$key_typ, $value_typ> {
-            fn decode(
-                value: crate::ScyllaDBValueRef<'_>,
-            ) -> Result<Self, sqlx::error::BoxDynError> {
-                let val: Self = value.deserialize()?;
-                Ok(val)
+        impl ::sqlx::Encode<'_, $crate::ScyllaDB>
+            for ::std::collections::HashMap<$key_typ, $value_typ>
+        {
+            fn encode_by_ref(
+                &self,
+                buf: &mut $crate::ScyllaDBArgumentBuffer,
+            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
+                let argument = $arg_typ(self.clone());
+                buf.push(argument);
+
+                Ok(::sqlx::encode::IsNull::No)
+            }
+        }
+
+        impl ::sqlx::Encode<'_, $crate::ScyllaDB>
+            for ::std::rc::Rc<::std::collections::HashMap<$key_typ, $value_typ>>
+        {
+            fn encode_by_ref(
+                &self,
+                buf: &mut $crate::ScyllaDBArgumentBuffer,
+            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
+                use ::std::ops::Deref;
+
+                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
+            }
+        }
+
+        impl ::sqlx::Encode<'_, $crate::ScyllaDB>
+            for ::std::sync::Arc<::std::collections::HashMap<$key_typ, $value_typ>>
+        {
+            fn encode_by_ref(
+                &self,
+                buf: &mut $crate::ScyllaDBArgumentBuffer,
+            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
+                use ::std::ops::Deref;
+
+                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
             }
         }
     };
@@ -172,9 +192,9 @@ fn serialize_value<T>(
 where
     T: ::scylla::serialize::value::SerializeValue,
 {
-    let mut values = scylla_cql::serialize::row::SerializedValues::new();
+    let mut values = ::scylla_cql::serialize::row::SerializedValues::new();
     values.add_value(value, column_type)?;
-    let mut buf = Vec::new();
+    let mut buf = std::vec::Vec::new();
     for value in values.iter() {
         let val = value.as_value().ok_or("expect non-null value.")?;
         buf.extend_from_slice(val);
