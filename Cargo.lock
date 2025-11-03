@@ -2879,7 +2879,7 @@ dependencies = [
 
 [[package]]
 name = "sqlx-scylladb"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "bigdecimal",
@@ -2901,7 +2901,7 @@ dependencies = [
 
 [[package]]
 name = "sqlx-scylladb-cli"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "backoff",
@@ -2918,7 +2918,7 @@ dependencies = [
 
 [[package]]
 name = "sqlx-scylladb-core"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "anyhow",
  "base32",
@@ -2948,7 +2948,7 @@ dependencies = [
 
 [[package]]
 name = "sqlx-scylladb-ext"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "scylla",
  "scylla-cql",
@@ -2958,7 +2958,7 @@ dependencies = [
 
 [[package]]
 name = "sqlx-scylladb-macros"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "sqlx-scylladb-macros-core",
  "syn",
@@ -2966,7 +2966,7 @@ dependencies = [
 
 [[package]]
 name = "sqlx-scylladb-macros-core"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "convert_case",
  "darling 0.21.3",
