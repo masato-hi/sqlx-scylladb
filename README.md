@@ -112,8 +112,8 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 <details>
 <summary>List or Set type bindings.</summary>
 
-- LIST\<ASCII>, SET\<ASCII> ([&str], Vec\<String>)
-- LIST\<TEXT>, SET\<TEXT> ([&str], Vec\<String>)
+- LIST\<ASCII>, SET\<ASCII> (Vec\<String>)
+- LIST\<TEXT>, SET\<TEXT> (Vec\<String>)
 - LIST\<BOOLEAN>, SET\<BOOLEAN> (Vec\<bool>)
 - LIST\<TINYINT>, SET\<TINYINT> (Vec\<i8>)
 - LIST\<SMALLINT>, SET\<SMALLINT> (Vec\<i16>)

@@ -95,6 +95,11 @@ path = "tests/types/float.rs"
 required-features = ["migrate"]
 
 [[test]]
+name = "test-types-inet"
+path = "tests/types/inet.rs"
+required-features = ["migrate"]
+
+[[test]]
 name = "test-types-int"
 path = "tests/types/int.rs"
 required-features = ["migrate"]

@@ -29,6 +29,19 @@ pub fn expand_user_defined_type(item: DeriveInput) -> syn::Result<TokenStream> {
             }
         }
 
+        impl<'r> ::sqlx_scylladb::ScyllaDBHasArrayType for #struct_ident
+        where
+            Self: ::sqlx_scylladb::UserDefinedType<'r>,
+        {
+            fn array_type_info() -> ::sqlx_scylladb::ScyllaDBTypeInfo {
+                use ::sqlx_scylladb::UserDefinedType as _;
+
+                let ty = Self::type_name();
+                let ty = ::sqlx_scylladb::ext::ustr::UStr::new(&format!("{}[]", ty));
+                ::sqlx_scylladb::ScyllaDBTypeInfo::UserDefinedTypeArray(ty)
+            }
+        }
+
         #[automatically_derived]
         impl ::sqlx_scylladb::ext::sqlx::Type<::sqlx_scylladb::ScyllaDB> for #struct_ident {
             fn type_info() -> ::sqlx_scylladb::ScyllaDBTypeInfo {
