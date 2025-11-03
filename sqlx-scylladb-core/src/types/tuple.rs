@@ -3,8 +3,8 @@ macro_rules! impl_tuple {
         $($typs:ident),*;
         $length:expr
     ) => {
-        impl <$($typs),*> sqlx::Type<$crate::ScyllaDB> for ($($typs,)*)
-        where $($typs: sqlx::Type<$crate::ScyllaDB>),* {
+        impl <$($typs),*> ::sqlx::Type<$crate::ScyllaDB> for ($($typs,)*)
+        where $($typs: ::sqlx::Type<$crate::ScyllaDB>),* {
             fn type_info() -> $crate::ScyllaDBTypeInfo {
                 let type_infos = vec![$($typs::type_info()),*];
                 let type_name = $crate::type_info::tuple_type_name(&type_infos);
@@ -13,31 +13,21 @@ macro_rules! impl_tuple {
             }
         }
 
-        impl<$($typs), *> sqlx::Encode<'_, $crate::ScyllaDB> for ($($typs,)*)
-        where $($typs: scylla::serialize::value::SerializeValue + Clone + Send + Sync + 'static,)* {
-            fn encode(
-                self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $crate::ScyllaDBArgument::Tuple(Box::new(self));
-                buf.push(argument);
-
-                Ok(sqlx::encode::IsNull::No)
-            }
-
+        impl<$($typs), *> ::sqlx::Encode<'_, $crate::ScyllaDB> for ($($typs,)*)
+        where $($typs: ::scylla::serialize::value::SerializeValue + Clone + Send + Sync + 'static,)* {
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
-                let argument = $crate::ScyllaDBArgument::Tuple(Box::new(self.clone()));
+            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
+                let argument = $crate::ScyllaDBArgument::Tuple(::std::boxed::Box::new(self.clone()));
                 buf.push(argument);
 
-                Ok(sqlx::encode::IsNull::No)
+                Ok(::sqlx::encode::IsNull::No)
             }
         }
 
-        impl<$($typs),*> sqlx::Decode<'_, $crate::ScyllaDB> for ($($typs,)*)
-        where $($typs: for<'a> scylla::deserialize::value::DeserializeValue<'a, 'a>),* {
+        impl<$($typs),*> ::sqlx::Decode<'_, $crate::ScyllaDB> for ($($typs,)*)
+        where $($typs: for<'a> ::scylla::deserialize::value::DeserializeValue<'a, 'a>),* {
             fn decode(
                 value: $crate::ScyllaDBValueRef<'_>,
             ) -> Result<Self, sqlx::error::BoxDynError> {

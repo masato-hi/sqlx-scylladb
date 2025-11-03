@@ -2,9 +2,7 @@ use scylla::{deserialize::value::DeserializeValue, serialize::value::SerializeVa
 use sqlx::{Decode, Encode, encode::IsNull};
 use sqlx_core::ext::ustr::UStr;
 
-use crate::{
-    ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBHasArrayType, ScyllaDBTypeInfo,
-};
+use crate::{ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer};
 
 pub trait UserDefinedType<'r>:
     SerializeValue + DeserializeValue<'r, 'r> + Clone + Send + Sync
@@ -19,18 +17,19 @@ pub trait UserDefinedType<'r>:
     }
 }
 
-impl<'r, T> ScyllaDBHasArrayType for T
+impl<'r, T> Decode<'r, ScyllaDB> for Vec<T>
 where
     T: UserDefinedType<'r>,
 {
-    fn array_type_info() -> crate::ScyllaDBTypeInfo {
-        let ty = T::type_name();
-        let ty = UStr::new(&format!("{}[]", ty));
-        ScyllaDBTypeInfo::UserDefinedTypeArray(ty)
+    fn decode(
+        value: <ScyllaDB as sqlx::Database>::ValueRef<'r>,
+    ) -> Result<Self, sqlx::error::BoxDynError> {
+        let value: Self = value.deserialize()?;
+        Ok(value)
     }
 }
 
-impl<'r, T> Encode<'_, ScyllaDB> for Vec<T>
+impl<'r, T> Encode<'_, ScyllaDB> for [T]
 where
     T: UserDefinedType<'r> + Clone + 'static,
 {
@@ -48,14 +47,38 @@ where
     }
 }
 
-impl<'r, T> Decode<'r, ScyllaDB> for Vec<T>
+impl<'r, T, const N: usize> Encode<'_, ScyllaDB> for [T; N]
 where
-    T: UserDefinedType<'r>,
+    T: UserDefinedType<'r> + Clone + 'static,
 {
-    fn decode(
-        value: <ScyllaDB as sqlx::Database>::ValueRef<'r>,
-    ) -> Result<Self, sqlx::error::BoxDynError> {
-        let value: Self = value.deserialize()?;
-        Ok(value)
+    fn encode_by_ref(
+        &self,
+        buf: &mut ScyllaDBArgumentBuffer,
+    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
+    }
+}
+
+impl<'r, T> Encode<'_, ScyllaDB> for &[T]
+where
+    T: UserDefinedType<'r> + Clone + 'static,
+{
+    fn encode_by_ref(
+        &self,
+        buf: &mut ScyllaDBArgumentBuffer,
+    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(*self, buf)
+    }
+}
+
+impl<'r, T> Encode<'_, ScyllaDB> for Vec<T>
+where
+    T: UserDefinedType<'r> + Clone + 'static,
+{
+    fn encode_by_ref(
+        &self,
+        buf: &mut ScyllaDBArgumentBuffer,
+    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
     }
 }

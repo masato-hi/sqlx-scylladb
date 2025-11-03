@@ -11,7 +11,7 @@ pub trait ScyllaDBHasArrayType {
     }
 }
 
-impl<T> ScyllaDBHasArrayType for &[T]
+impl<T> ScyllaDBHasArrayType for &T
 where
     T: ScyllaDBHasArrayType,
 {
@@ -37,6 +37,19 @@ where
     }
 }
 
+impl<T, const N: usize> Type<ScyllaDB> for [T; N]
+where
+    T: ScyllaDBHasArrayType,
+{
+    fn type_info() -> ScyllaDBTypeInfo {
+        T::array_type_info()
+    }
+
+    fn compatible(ty: &ScyllaDBTypeInfo) -> bool {
+        T::array_compatible(ty)
+    }
+}
+
 impl<T> Type<ScyllaDB> for [T]
 where
     T: ScyllaDBHasArrayType,
@@ -51,19 +64,6 @@ where
 }
 
 impl<T> Type<ScyllaDB> for Vec<T>
-where
-    T: ScyllaDBHasArrayType,
-{
-    fn type_info() -> ScyllaDBTypeInfo {
-        T::array_type_info()
-    }
-
-    fn compatible(ty: &ScyllaDBTypeInfo) -> bool {
-        T::array_compatible(ty)
-    }
-}
-
-impl<T, const N: usize> Type<ScyllaDB> for [T; N]
 where
     T: ScyllaDBHasArrayType,
 {

@@ -141,6 +141,9 @@ pub enum ScyllaDBArgument {
     /// `text` or `ascii` type implemented with [secrecy_08] crate.
     #[cfg(feature = "secrecy-08")]
     SecretText(secrecy_08::SecretString),
+    /// array of `text` or `ascii` type implemented with [secrecy_08] crate.
+    #[cfg(feature = "secrecy-08")]
+    SecretTextArray(Vec<secrecy_08::SecretString>),
     /// `blob` type.
     Blob(Vec<u8>),
     /// array of `blob` type.
@@ -148,6 +151,9 @@ pub enum ScyllaDBArgument {
     /// `blob` type implemented with [secrecy_08] crate.
     #[cfg(feature = "secrecy-08")]
     SecretBlob(secrecy_08::SecretVec<u8>),
+    /// array of `blob` type implemented with [secrecy_08] crate.
+    #[cfg(feature = "secrecy-08")]
+    SecretBlobArray(Vec<secrecy_08::SecretVec<u8>>),
     /// `uuid` type.
     Uuid(Uuid),
     /// array of `uuid` type.
@@ -273,10 +279,14 @@ impl SerializeValue for ScyllaDBArgument {
             Self::TextArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
             Self::SecretText(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-08")]
+            Self::SecretTextArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Blob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::BlobArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
             Self::SecretBlob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-08")]
+            Self::SecretBlobArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Uuid(uuid) => <_ as SerializeValue>::serialize(uuid, typ, writer),
             Self::UuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Timeuuid(timeuuid) => <_ as SerializeValue>::serialize(timeuuid, typ, writer),

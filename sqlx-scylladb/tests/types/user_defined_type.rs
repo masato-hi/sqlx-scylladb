@@ -45,7 +45,7 @@ async fn it_can_select_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<(
         ]
     )
     .bind(
-        vec![
+        &[
             MyUserDefinedType{
                 my_bigint: 1,
                 my_text: String::from("Hello!")
