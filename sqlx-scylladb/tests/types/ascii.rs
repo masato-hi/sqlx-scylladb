@@ -76,7 +76,7 @@ async fn it_can_select_ascii_optional(pool: ScyllaDBPool) -> anyhow::Result<()> 
         Uuid,
         Option<String>,
         Option<Vec<String>>,
-        Option<Vec<String>>,
+        Vec<String>,
     ) = sqlx::query_as(
         "SELECT my_id, my_ascii, my_ascii_list, my_ascii_set FROM ascii_tests WHERE my_id = ?",
     )
@@ -87,7 +87,7 @@ async fn it_can_select_ascii_optional(pool: ScyllaDBPool) -> anyhow::Result<()> 
     assert_eq!(id, my_id);
     assert!(my_ascii.is_none());
     assert!(my_ascii_list.is_none());
-    assert!(my_ascii_set.is_none());
+    assert!(my_ascii_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO ascii_tests(my_id, my_ascii, my_ascii_list, my_ascii_set) VALUES(?, ?, ?, ?)",
@@ -103,7 +103,7 @@ async fn it_can_select_ascii_optional(pool: ScyllaDBPool) -> anyhow::Result<()> 
         Uuid,
         Option<String>,
         Option<Vec<String>>,
-        Option<Vec<String>>,
+        Vec<String>,
     ) = sqlx::query_as(
         "SELECT my_id, my_ascii, my_ascii_list, my_ascii_set FROM ascii_tests WHERE my_id = ?",
     )
@@ -117,10 +117,7 @@ async fn it_can_select_ascii_optional(pool: ScyllaDBPool) -> anyhow::Result<()> 
         vec!["Hello!", "Good morning!", "Bye.", "Good night."],
         my_ascii_list.unwrap()
     );
-    assert_eq!(
-        vec!["Bye.", "Good morning!", "Hello!",],
-        my_ascii_set.unwrap()
-    );
+    assert_eq!(vec!["Bye.", "Good morning!", "Hello!",], my_ascii_set);
 
     Ok(())
 }

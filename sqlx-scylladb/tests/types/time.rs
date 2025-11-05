@@ -103,7 +103,7 @@ async fn it_can_select_cql_time_optional(pool: ScyllaDBPool) -> anyhow::Result<(
         Uuid,
         Option<CqlTime>,
         Option<Vec<CqlTime>>,
-        Option<Vec<CqlTime>>,
+        Vec<CqlTime>,
     ) = sqlx::query_as(
         "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
     )
@@ -114,7 +114,7 @@ async fn it_can_select_cql_time_optional(pool: ScyllaDBPool) -> anyhow::Result<(
     assert_eq!(id, my_id);
     assert!(my_time.is_none());
     assert!(my_time_list.is_none());
-    assert!(my_time_set.is_none());
+    assert!(my_time_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO time_tests(my_id, my_time, my_time_list, my_time_set) VALUES(?, ?, ?, ?)",
@@ -140,7 +140,7 @@ async fn it_can_select_cql_time_optional(pool: ScyllaDBPool) -> anyhow::Result<(
         Uuid,
         Option<CqlTime>,
         Option<Vec<CqlTime>>,
-        Option<Vec<CqlTime>>,
+        Vec<CqlTime>,
     ) = sqlx::query_as(
         "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
     )
@@ -161,7 +161,7 @@ async fn it_can_select_cql_time_optional(pool: ScyllaDBPool) -> anyhow::Result<(
     );
     assert_eq!(
         vec![CqlTime(21845), CqlTime(22058), CqlTime(27874),],
-        my_time_set.unwrap()
+        my_time_set
     );
 
     Ok(())
@@ -285,7 +285,7 @@ async fn it_can_select_chrono_04_naive_time_optional(pool: ScyllaDBPool) -> anyh
         Uuid,
         Option<NaiveTime>,
         Option<Vec<NaiveTime>>,
-        Option<Vec<NaiveTime>>,
+        Vec<NaiveTime>,
     ) = sqlx::query_as(
         "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
     )
@@ -296,7 +296,7 @@ async fn it_can_select_chrono_04_naive_time_optional(pool: ScyllaDBPool) -> anyh
     assert_eq!(id, my_id);
     assert!(my_time.is_none());
     assert!(my_time_list.is_none());
-    assert!(my_time_set.is_none());
+    assert!(my_time_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO time_tests(my_id, my_time, my_time_list, my_time_set) VALUES(?, ?, ?, ?)",
@@ -322,7 +322,7 @@ async fn it_can_select_chrono_04_naive_time_optional(pool: ScyllaDBPool) -> anyh
         Uuid,
         Option<NaiveTime>,
         Option<Vec<NaiveTime>>,
-        Option<Vec<NaiveTime>>,
+        Vec<NaiveTime>,
     ) = sqlx::query_as(
         "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
     )
@@ -350,7 +350,7 @@ async fn it_can_select_chrono_04_naive_time_optional(pool: ScyllaDBPool) -> anyh
             NaiveTime::from_hms_opt(15, 07, 38).unwrap(),
             NaiveTime::from_hms_opt(16, 44, 34).unwrap(),
         ],
-        my_time_set.unwrap()
+        my_time_set
     );
 
     Ok(())
@@ -469,7 +469,7 @@ async fn it_can_select_time_03_time_optional(pool: ScyllaDBPool) -> anyhow::Resu
         Uuid,
         Option<Time>,
         Option<Vec<Time>>,
-        Option<Vec<Time>>,
+        Vec<Time>,
     ) = sqlx::query_as(
         "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
     )
@@ -480,7 +480,7 @@ async fn it_can_select_time_03_time_optional(pool: ScyllaDBPool) -> anyhow::Resu
     assert_eq!(id, my_id);
     assert!(my_time.is_none());
     assert!(my_time_list.is_none());
-    assert!(my_time_set.is_none());
+    assert!(my_time_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO time_tests(my_id, my_time, my_time_list, my_time_set) VALUES(?, ?, ?, ?)",
@@ -506,7 +506,7 @@ async fn it_can_select_time_03_time_optional(pool: ScyllaDBPool) -> anyhow::Resu
         Uuid,
         Option<Time>,
         Option<Vec<Time>>,
-        Option<Vec<Time>>,
+        Vec<Time>,
     ) = sqlx::query_as(
         "SELECT my_id, my_time, my_time_list, my_time_set FROM time_tests WHERE my_id = ?",
     )
@@ -531,7 +531,7 @@ async fn it_can_select_time_03_time_optional(pool: ScyllaDBPool) -> anyhow::Resu
             Time::from_hms(15, 07, 38)?,
             Time::from_hms(16, 44, 34)?,
         ],
-        my_time_set.unwrap()
+        my_time_set
     );
 
     Ok(())

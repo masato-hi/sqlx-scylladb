@@ -65,22 +65,18 @@ async fn it_can_select_int_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     .execute(&pool)
     .await?;
 
-    let (my_id, my_int, my_int_list, my_int_set): (
-        Uuid,
-        Option<i32>,
-        Option<Vec<i32>>,
-        Option<Vec<i32>>,
-    ) = sqlx::query_as(
-        "SELECT my_id, my_int, my_int_list, my_int_set FROM int_tests WHERE my_id = ?",
-    )
-    .bind(id)
-    .fetch_one(&pool)
-    .await?;
+    let (my_id, my_int, my_int_list, my_int_set): (Uuid, Option<i32>, Option<Vec<i32>>, Vec<i32>) =
+        sqlx::query_as(
+            "SELECT my_id, my_int, my_int_list, my_int_set FROM int_tests WHERE my_id = ?",
+        )
+        .bind(id)
+        .fetch_one(&pool)
+        .await?;
 
     assert_eq!(id, my_id);
     assert!(my_int.is_none());
     assert!(my_int_list.is_none());
-    assert!(my_int_set.is_none());
+    assert!(my_int_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO int_tests(my_id, my_int, my_int_list, my_int_set) VALUES(?, ?, ?, ?)",
@@ -92,22 +88,18 @@ async fn it_can_select_int_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     .execute(&pool)
     .await?;
 
-    let (my_id, my_int, my_int_list, my_int_set): (
-        Uuid,
-        Option<i32>,
-        Option<Vec<i32>>,
-        Option<Vec<i32>>,
-    ) = sqlx::query_as(
-        "SELECT my_id, my_int, my_int_list, my_int_set FROM int_tests WHERE my_id = ?",
-    )
-    .bind(id)
-    .fetch_one(&pool)
-    .await?;
+    let (my_id, my_int, my_int_list, my_int_set): (Uuid, Option<i32>, Option<Vec<i32>>, Vec<i32>) =
+        sqlx::query_as(
+            "SELECT my_id, my_int, my_int_list, my_int_set FROM int_tests WHERE my_id = ?",
+        )
+        .bind(id)
+        .fetch_one(&pool)
+        .await?;
 
     assert_eq!(id, my_id);
     assert_eq!(117, my_int.unwrap());
     assert_eq!(vec![11, 4, 7, 11], my_int_list.unwrap());
-    assert_eq!(vec![4, 7, 11], my_int_set.unwrap());
+    assert_eq!(vec![4, 7, 11], my_int_set);
 
     Ok(())
 }

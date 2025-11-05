@@ -80,6 +80,11 @@ path = "tests/types/boolean.rs"
 required-features = ["migrate"]
 
 [[test]]
+name = "test-types-counter"
+path = "tests/types/counter.rs"
+required-features = ["migrate"]
+
+[[test]]
 name = "test-types-date"
 path = "tests/types/date.rs"
 required-features = ["migrate"]
