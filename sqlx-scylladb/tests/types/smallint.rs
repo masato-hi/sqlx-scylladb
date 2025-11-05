@@ -65,7 +65,7 @@ async fn it_can_select_smallint_optional(pool: ScyllaDBPool) -> anyhow::Result<(
         Uuid,
         Option<i16>,
         Option<Vec<i16>>,
-        Option<Vec<i16>>,
+        Vec<i16>,
     ) = sqlx::query_as(
         "SELECT my_id, my_smallint, my_smallint_list, my_smallint_set FROM smallint_tests WHERE my_id = ?",
     )
@@ -76,7 +76,7 @@ async fn it_can_select_smallint_optional(pool: ScyllaDBPool) -> anyhow::Result<(
     assert_eq!(id, my_id);
     assert!(my_smallint.is_none());
     assert!(my_smallint_list.is_none());
-    assert!(my_smallint_set.is_none());
+    assert!(my_smallint_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO smallint_tests(my_id, my_smallint, my_smallint_list, my_smallint_set) VALUES(?, ?, ?, ?)",
@@ -92,7 +92,7 @@ async fn it_can_select_smallint_optional(pool: ScyllaDBPool) -> anyhow::Result<(
         Uuid,
         Option<i16>,
         Option<Vec<i16>>,
-        Option<Vec<i16>>,
+        Vec<i16>,
     ) = sqlx::query_as(
         "SELECT my_id, my_smallint, my_smallint_list, my_smallint_set FROM smallint_tests WHERE my_id = ?",
     )
@@ -103,7 +103,7 @@ async fn it_can_select_smallint_optional(pool: ScyllaDBPool) -> anyhow::Result<(
     assert_eq!(id, my_id);
     assert_eq!(117, my_smallint.unwrap());
     assert_eq!(vec![11, 4, 7, 11], my_smallint_list.unwrap());
-    assert_eq!(vec![4, 7, 11], my_smallint_set.unwrap());
+    assert_eq!(vec![4, 7, 11], my_smallint_set);
 
     Ok(())
 }

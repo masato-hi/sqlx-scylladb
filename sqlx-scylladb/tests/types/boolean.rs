@@ -65,7 +65,7 @@ async fn it_can_select_boolean_optional(pool: ScyllaDBPool) -> anyhow::Result<()
         Uuid,
         Option<bool>,
         Option<Vec<bool>>,
-        Option<Vec<bool>>,
+        Vec<bool>,
     ) = sqlx::query_as(
         "SELECT my_id, my_boolean, my_boolean_list, my_boolean_set FROM boolean_tests WHERE my_id = ?",
     )
@@ -76,7 +76,7 @@ async fn it_can_select_boolean_optional(pool: ScyllaDBPool) -> anyhow::Result<()
     assert_eq!(id, my_id);
     assert!(my_boolean.is_none());
     assert!(my_boolean_list.is_none());
-    assert!(my_boolean_set.is_none());
+    assert!(my_boolean_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO boolean_tests(my_id, my_boolean, my_boolean_list, my_boolean_set) VALUES(?, ?, ?, ?)",
@@ -92,7 +92,7 @@ async fn it_can_select_boolean_optional(pool: ScyllaDBPool) -> anyhow::Result<()
         Uuid,
         Option<bool>,
         Option<Vec<bool>>,
-        Option<Vec<bool>>,
+        Vec<bool>,
     ) = sqlx::query_as(
         "SELECT my_id, my_boolean, my_boolean_list, my_boolean_set FROM boolean_tests WHERE my_id = ?",
     )
@@ -103,7 +103,7 @@ async fn it_can_select_boolean_optional(pool: ScyllaDBPool) -> anyhow::Result<()
     assert_eq!(id, my_id);
     assert_eq!(true, my_boolean.unwrap());
     assert_eq!(vec![true, false, true], my_boolean_list.unwrap());
-    assert_eq!(vec![false, true], my_boolean_set.unwrap());
+    assert_eq!(vec![false, true], my_boolean_set);
 
     Ok(())
 }

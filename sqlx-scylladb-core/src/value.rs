@@ -76,6 +76,10 @@ impl<'r> ScyllaDBValueRef<'r> {
         }
     }
 
+    pub(crate) fn is_null(&self) -> bool {
+        self.type_info == ScyllaDBTypeInfo::Null
+    }
+
     /// Return the column name.
     #[inline(always)]
     pub fn column_name(&self) -> UStr {
@@ -94,8 +98,13 @@ impl<'r> ScyllaDBValueRef<'r> {
     where
         T: DeserializeValue<'r, 'r>,
     {
-        let frame_slice = FrameSlice::new(self.raw_value);
-        let val = <_ as DeserializeValue>::deserialize(self.column_type, Some(frame_slice))?;
+        let val = if !self.is_null() {
+            let frame_slice = FrameSlice::new(self.raw_value);
+            <_ as DeserializeValue>::deserialize(self.column_type, Some(frame_slice))?
+        } else {
+            <_ as DeserializeValue>::deserialize(self.column_type, None)?
+        };
+
         Ok(val)
     }
 }

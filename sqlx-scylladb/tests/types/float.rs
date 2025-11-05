@@ -70,7 +70,7 @@ async fn it_can_select_float_optional(pool: ScyllaDBPool) -> anyhow::Result<()> 
         Uuid,
         Option<f32>,
         Option<Vec<f32>>,
-        Option<Vec<f32>>,
+        Vec<f32>,
     ) = sqlx::query_as(
         "SELECT my_id, my_float, my_float_list, my_float_set FROM float_tests WHERE my_id = ?",
     )
@@ -81,7 +81,7 @@ async fn it_can_select_float_optional(pool: ScyllaDBPool) -> anyhow::Result<()> 
     assert_eq!(id, my_id);
     assert!(my_float.is_none());
     assert!(my_float_list.is_none());
-    assert!(my_float_set.is_none());
+    assert!(my_float_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO float_tests(my_id, my_float, my_float_list, my_float_set) VALUES(?, ?, ?, ?)",
@@ -97,7 +97,7 @@ async fn it_can_select_float_optional(pool: ScyllaDBPool) -> anyhow::Result<()> 
         Uuid,
         Option<f32>,
         Option<Vec<f32>>,
-        Option<Vec<f32>>,
+        Vec<f32>,
     ) = sqlx::query_as(
         "SELECT my_id, my_float, my_float_list, my_float_set FROM float_tests WHERE my_id = ?",
     )
@@ -108,7 +108,7 @@ async fn it_can_select_float_optional(pool: ScyllaDBPool) -> anyhow::Result<()> 
     assert_eq!(id, my_id);
     assert_eq!(117.5f32, my_float.unwrap());
     assert_eq!(vec![11.5f32, 4.25, 7.125, 11.5], my_float_list.unwrap());
-    assert_eq!(vec![4.25f32, 7.125, 11.5], my_float_set.unwrap());
+    assert_eq!(vec![4.25f32, 7.125, 11.5], my_float_set);
 
     Ok(())
 }

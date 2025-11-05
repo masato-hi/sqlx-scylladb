@@ -117,7 +117,7 @@ async fn it_can_select_uuid_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
         Uuid,
         Option<Uuid>,
         Option<Vec<Uuid>>,
-        Option<Vec<Uuid>>,
+        Vec<Uuid>,
     ) = sqlx::query_as(
         "SELECT my_id, my_uuid, my_uuid_list, my_uuid_set FROM uuid_tests WHERE my_id = ?",
     )
@@ -128,7 +128,7 @@ async fn it_can_select_uuid_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     assert_eq!(id, my_id);
     assert!(my_uuid.is_none());
     assert!(my_uuid_list.is_none());
-    assert!(my_uuid_set.is_none());
+    assert!(my_uuid_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO uuid_tests(my_id, my_uuid, my_uuid_list, my_uuid_set) VALUES(?, ?, ?, ?)",
@@ -156,7 +156,7 @@ async fn it_can_select_uuid_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
         Uuid,
         Option<Uuid>,
         Option<Vec<Uuid>>,
-        Option<Vec<Uuid>>,
+        Vec<Uuid>,
     ) = sqlx::query_as(
         "SELECT my_id, my_uuid, my_uuid_list, my_uuid_set FROM uuid_tests WHERE my_id = ?",
     )
@@ -184,7 +184,7 @@ async fn it_can_select_uuid_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
             Uuid::from_str("f8e9f4c2-3f5d-4437-920a-8644efb72676")?,
             Uuid::from_str("faab8e0b-9093-4819-86a1-145b66d317c7")?,
         ],
-        my_uuid_set.unwrap()
+        my_uuid_set
     );
 
     Ok(())

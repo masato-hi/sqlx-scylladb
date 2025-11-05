@@ -79,7 +79,7 @@ async fn it_can_select_text_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
         Uuid,
         Option<String>,
         Option<Vec<String>>,
-        Option<Vec<String>>,
+        Vec<String>,
     ) = sqlx::query_as(
         "SELECT my_id, my_text, my_text_list, my_text_set FROM text_tests WHERE my_id = ?",
     )
@@ -90,7 +90,7 @@ async fn it_can_select_text_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     assert_eq!(id, my_id);
     assert!(my_text.is_none());
     assert!(my_text_list.is_none());
-    assert!(my_text_set.is_none());
+    assert!(my_text_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO text_tests(my_id, my_text, my_text_list, my_text_set) VALUES(?, ?, ?, ?)",
@@ -106,7 +106,7 @@ async fn it_can_select_text_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
         Uuid,
         Option<String>,
         Option<Vec<String>>,
-        Option<Vec<String>>,
+        Vec<String>,
     ) = sqlx::query_as(
         "SELECT my_id, my_text, my_text_list, my_text_set FROM text_tests WHERE my_id = ?",
     )
@@ -120,10 +120,7 @@ async fn it_can_select_text_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
         vec!["こんにちは", "おはよう", "さようなら", "おやすみ"],
         my_text_list.unwrap()
     );
-    assert_eq!(
-        vec!["おはよう", "こんにちは", "さようなら",],
-        my_text_set.unwrap()
-    );
+    assert_eq!(vec!["おはよう", "こんにちは", "さようなら",], my_text_set);
 
     Ok(())
 }

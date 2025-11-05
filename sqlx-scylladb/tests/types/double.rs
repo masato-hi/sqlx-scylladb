@@ -70,7 +70,7 @@ async fn it_can_select_double_optional(pool: ScyllaDBPool) -> anyhow::Result<()>
         Uuid,
         Option<f64>,
         Option<Vec<f64>>,
-        Option<Vec<f64>>,
+        Vec<f64>,
     ) = sqlx::query_as(
         "SELECT my_id, my_double, my_double_list, my_double_set FROM double_tests WHERE my_id = ?",
     )
@@ -81,7 +81,7 @@ async fn it_can_select_double_optional(pool: ScyllaDBPool) -> anyhow::Result<()>
     assert_eq!(id, my_id);
     assert!(my_double.is_none());
     assert!(my_double_list.is_none());
-    assert!(my_double_set.is_none());
+    assert!(my_double_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO double_tests(my_id, my_double, my_double_list, my_double_set) VALUES(?, ?, ?, ?)",
@@ -97,7 +97,7 @@ async fn it_can_select_double_optional(pool: ScyllaDBPool) -> anyhow::Result<()>
         Uuid,
         Option<f64>,
         Option<Vec<f64>>,
-        Option<Vec<f64>>,
+        Vec<f64>,
     ) = sqlx::query_as(
         "SELECT my_id, my_double, my_double_list, my_double_set FROM double_tests WHERE my_id = ?",
     )
@@ -108,7 +108,7 @@ async fn it_can_select_double_optional(pool: ScyllaDBPool) -> anyhow::Result<()>
     assert_eq!(id, my_id);
     assert_eq!(117.5f64, my_double.unwrap());
     assert_eq!(vec![11.5f64, 4.25, 7.125, 11.5], my_double_list.unwrap());
-    assert_eq!(vec![4.25f64, 7.125, 11.5], my_double_set.unwrap());
+    assert_eq!(vec![4.25f64, 7.125, 11.5], my_double_set);
 
     Ok(())
 }

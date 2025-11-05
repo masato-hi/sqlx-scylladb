@@ -110,7 +110,7 @@ async fn it_can_select_blob_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
         Uuid,
         Option<Vec<u8>>,
         Option<Vec<Vec<u8>>>,
-        Option<Vec<Vec<u8>>>,
+        Vec<Vec<u8>>,
     ) = sqlx::query_as(
         "SELECT my_id, my_blob, my_blob_list, my_blob_set FROM blob_tests WHERE my_id = ?",
     )
@@ -121,7 +121,7 @@ async fn it_can_select_blob_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     assert_eq!(id, my_id);
     assert!(my_blob.is_none());
     assert!(my_blob_list.is_none());
-    assert!(my_blob_set.is_none());
+    assert!(my_blob_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO blob_tests(my_id, my_blob, my_blob_list, my_blob_set) VALUES(?, ?, ?, ?)",
@@ -146,7 +146,7 @@ async fn it_can_select_blob_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
         Uuid,
         Option<Vec<u8>>,
         Option<Vec<Vec<u8>>>,
-        Option<Vec<Vec<u8>>>,
+        Vec<Vec<u8>>,
     ) = sqlx::query_as(
         "SELECT my_id, my_blob, my_blob_list, my_blob_set FROM blob_tests WHERE my_id = ?",
     )
@@ -171,7 +171,7 @@ async fn it_can_select_blob_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
             vec![0x00u8, 0x61, 0x73, 0x6e],
             vec![0x00u8, 0x61, 0x73, 0x6f],
         ],
-        my_blob_set.unwrap()
+        my_blob_set
     );
 
     Ok(())

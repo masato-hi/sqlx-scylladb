@@ -65,7 +65,7 @@ async fn it_can_select_tinyint_optional(pool: ScyllaDBPool) -> anyhow::Result<()
         Uuid,
         Option<i8>,
         Option<Vec<i8>>,
-        Option<Vec<i8>>,
+        Vec<i8>,
     ) = sqlx::query_as(
         "SELECT my_id, my_tinyint, my_tinyint_list, my_tinyint_set FROM tinyint_tests WHERE my_id = ?",
     )
@@ -76,7 +76,7 @@ async fn it_can_select_tinyint_optional(pool: ScyllaDBPool) -> anyhow::Result<()
     assert_eq!(id, my_id);
     assert!(my_tinyint.is_none());
     assert!(my_tinyint_list.is_none());
-    assert!(my_tinyint_set.is_none());
+    assert!(my_tinyint_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO tinyint_tests(my_id, my_tinyint, my_tinyint_list, my_tinyint_set) VALUES(?, ?, ?, ?)",
@@ -92,7 +92,7 @@ async fn it_can_select_tinyint_optional(pool: ScyllaDBPool) -> anyhow::Result<()
         Uuid,
         Option<i8>,
         Option<Vec<i8>>,
-        Option<Vec<i8>>,
+        Vec<i8>,
     ) = sqlx::query_as(
         "SELECT my_id, my_tinyint, my_tinyint_list, my_tinyint_set FROM tinyint_tests WHERE my_id = ?",
     )
@@ -103,7 +103,7 @@ async fn it_can_select_tinyint_optional(pool: ScyllaDBPool) -> anyhow::Result<()
     assert_eq!(id, my_id);
     assert_eq!(117, my_tinyint.unwrap());
     assert_eq!(vec![11, 4, 7, 11], my_tinyint_list.unwrap());
-    assert_eq!(vec![4, 7, 11], my_tinyint_set.unwrap());
+    assert_eq!(vec![4, 7, 11], my_tinyint_set);
 
     Ok(())
 }

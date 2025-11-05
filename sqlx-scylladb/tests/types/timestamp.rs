@@ -111,7 +111,7 @@ async fn it_can_select_cql_timestamp_optional(pool: ScyllaDBPool) -> anyhow::Res
         Uuid,
         Option<CqlTimestamp>,
         Option<Vec<CqlTimestamp>>,
-        Option<Vec<CqlTimestamp>>,
+        Vec<CqlTimestamp>,
     ) = sqlx::query_as(
         "SELECT my_id, my_timestamp, my_timestamp_list, my_timestamp_set FROM timestamp_tests WHERE my_id = ?",
     )
@@ -122,7 +122,7 @@ async fn it_can_select_cql_timestamp_optional(pool: ScyllaDBPool) -> anyhow::Res
     assert_eq!(id, my_id);
     assert!(my_timestamp.is_none());
     assert!(my_timestamp_list.is_none());
-    assert!(my_timestamp_set.is_none());
+    assert!(my_timestamp_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO timestamp_tests(my_id, my_timestamp, my_timestamp_list, my_timestamp_set) VALUES(?, ?, ?, ?)",
@@ -148,7 +148,7 @@ async fn it_can_select_cql_timestamp_optional(pool: ScyllaDBPool) -> anyhow::Res
         Uuid,
         Option<CqlTimestamp>,
         Option<Vec<CqlTimestamp>>,
-        Option<Vec<CqlTimestamp>>,
+        Vec<CqlTimestamp>,
     ) = sqlx::query_as(
         "SELECT my_id, my_timestamp, my_timestamp_list, my_timestamp_set FROM timestamp_tests WHERE my_id = ?",
     )
@@ -173,7 +173,7 @@ async fn it_can_select_cql_timestamp_optional(pool: ScyllaDBPool) -> anyhow::Res
             CqlTimestamp(1756625378304),
             CqlTimestamp(1756625399100),
         ],
-        my_timestamp_set.unwrap()
+        my_timestamp_set
     );
 
     Ok(())
@@ -299,7 +299,7 @@ async fn it_can_select_chrono_04_datetime_optional(pool: ScyllaDBPool) -> anyhow
         Uuid,
         Option<DateTime<Utc>>,
         Option<Vec<DateTime<Utc>>>,
-        Option<Vec<DateTime<Utc>>>,
+        Vec<DateTime<Utc>>,
     ) = sqlx::query_as(
         "SELECT my_id, my_timestamp, my_timestamp_list, my_timestamp_set FROM timestamp_tests WHERE my_id = ?",
     )
@@ -310,7 +310,7 @@ async fn it_can_select_chrono_04_datetime_optional(pool: ScyllaDBPool) -> anyhow
     assert_eq!(id, my_id);
     assert!(my_timestamp.is_none());
     assert!(my_timestamp_list.is_none());
-    assert!(my_timestamp_set.is_none());
+    assert!(my_timestamp_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO timestamp_tests(my_id, my_timestamp, my_timestamp_list, my_timestamp_set) VALUES(?, ?, ?, ?)",
@@ -336,7 +336,7 @@ async fn it_can_select_chrono_04_datetime_optional(pool: ScyllaDBPool) -> anyhow
         Uuid,
         Option<DateTime<Utc>>,
         Option<Vec<DateTime<Utc>>>,
-        Option<Vec<DateTime<Utc>>>,
+        Vec<DateTime<Utc>>,
     ) = sqlx::query_as(
         "SELECT my_id, my_timestamp, my_timestamp_list, my_timestamp_set FROM timestamp_tests WHERE my_id = ?",
     )
@@ -364,7 +364,7 @@ async fn it_can_select_chrono_04_datetime_optional(pool: ScyllaDBPool) -> anyhow
             DateTime::parse_from_rfc3339("2006-01-02T15:04:05+00:00")?.to_utc(),
             DateTime::parse_from_rfc3339("2025-08-31T16:44:34+00:00")?.to_utc(),
         ],
-        my_timestamp_set.unwrap()
+        my_timestamp_set
     );
 
     Ok(())
@@ -490,7 +490,7 @@ async fn it_can_select_time_03_offset_date_time_optional(pool: ScyllaDBPool) -> 
         Uuid,
         Option<OffsetDateTime>,
         Option<Vec<OffsetDateTime>>,
-        Option<Vec<OffsetDateTime>>,
+        Vec<OffsetDateTime>,
     ) = sqlx::query_as(
         "SELECT my_id, my_timestamp, my_timestamp_list, my_timestamp_set FROM timestamp_tests WHERE my_id = ?",
     )
@@ -501,7 +501,7 @@ async fn it_can_select_time_03_offset_date_time_optional(pool: ScyllaDBPool) -> 
     assert_eq!(id, my_id);
     assert!(my_timestamp.is_none());
     assert!(my_timestamp_list.is_none());
-    assert!(my_timestamp_set.is_none());
+    assert!(my_timestamp_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO timestamp_tests(my_id, my_timestamp, my_timestamp_list, my_timestamp_set) VALUES(?, ?, ?, ?)",
@@ -527,7 +527,7 @@ async fn it_can_select_time_03_offset_date_time_optional(pool: ScyllaDBPool) -> 
         Uuid,
         Option<OffsetDateTime>,
         Option<Vec<OffsetDateTime>>,
-        Option<Vec<OffsetDateTime>>,
+        Vec<OffsetDateTime>,
     ) = sqlx::query_as(
         "SELECT my_id, my_timestamp, my_timestamp_list, my_timestamp_set FROM timestamp_tests WHERE my_id = ?",
     )
@@ -555,7 +555,7 @@ async fn it_can_select_time_03_offset_date_time_optional(pool: ScyllaDBPool) -> 
             OffsetDateTime::from_unix_timestamp(1756626953)?,
             OffsetDateTime::from_unix_timestamp(1756626963)?,
         ],
-        my_timestamp_set.unwrap()
+        my_timestamp_set
     );
 
     Ok(())

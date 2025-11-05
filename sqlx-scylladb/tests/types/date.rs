@@ -103,7 +103,7 @@ async fn it_can_select_cql_date_optional(pool: ScyllaDBPool) -> anyhow::Result<(
         Uuid,
         Option<CqlDate>,
         Option<Vec<CqlDate>>,
-        Option<Vec<CqlDate>>,
+        Vec<CqlDate>,
     ) = sqlx::query_as(
         "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
     )
@@ -114,7 +114,7 @@ async fn it_can_select_cql_date_optional(pool: ScyllaDBPool) -> anyhow::Result<(
     assert_eq!(id, my_id);
     assert!(my_date.is_none());
     assert!(my_date_list.is_none());
-    assert!(my_date_set.is_none());
+    assert!(my_date_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO date_tests(my_id, my_date, my_date_list, my_date_set) VALUES(?, ?, ?, ?)",
@@ -140,7 +140,7 @@ async fn it_can_select_cql_date_optional(pool: ScyllaDBPool) -> anyhow::Result<(
         Uuid,
         Option<CqlDate>,
         Option<Vec<CqlDate>>,
-        Option<Vec<CqlDate>>,
+        Vec<CqlDate>,
     ) = sqlx::query_as(
         "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
     )
@@ -161,7 +161,7 @@ async fn it_can_select_cql_date_optional(pool: ScyllaDBPool) -> anyhow::Result<(
     );
     assert_eq!(
         vec![CqlDate(8842), CqlDate(13149), CqlDate(20330),],
-        my_date_set.unwrap()
+        my_date_set
     );
 
     Ok(())
@@ -285,7 +285,7 @@ async fn it_can_select_chrono_04_naive_date_optional(pool: ScyllaDBPool) -> anyh
         Uuid,
         Option<NaiveDate>,
         Option<Vec<NaiveDate>>,
-        Option<Vec<NaiveDate>>,
+        Vec<NaiveDate>,
     ) = sqlx::query_as(
         "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
     )
@@ -296,7 +296,7 @@ async fn it_can_select_chrono_04_naive_date_optional(pool: ScyllaDBPool) -> anyh
     assert_eq!(id, my_id);
     assert!(my_date.is_none());
     assert!(my_date_list.is_none());
-    assert!(my_date_set.is_none());
+    assert!(my_date_set.is_empty());
     let _ = sqlx::query(
         "INSERT INTO date_tests(my_id, my_date, my_date_list, my_date_set) VALUES(?, ?, ?, ?)",
     )
@@ -321,7 +321,7 @@ async fn it_can_select_chrono_04_naive_date_optional(pool: ScyllaDBPool) -> anyh
         Uuid,
         Option<NaiveDate>,
         Option<Vec<NaiveDate>>,
-        Option<Vec<NaiveDate>>,
+        Vec<NaiveDate>,
     ) = sqlx::query_as(
         "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
     )
@@ -349,7 +349,7 @@ async fn it_can_select_chrono_04_naive_date_optional(pool: ScyllaDBPool) -> anyh
             NaiveDate::from_ymd_opt(2006, 1, 2).unwrap(),
             NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(),
         ],
-        my_date_set.unwrap()
+        my_date_set
     );
 
     Ok(())
@@ -475,7 +475,7 @@ async fn it_can_select_time_03_date_optional(pool: ScyllaDBPool) -> anyhow::Resu
         Uuid,
         Option<Date>,
         Option<Vec<Date>>,
-        Option<Vec<Date>>,
+        Vec<Date>,
     ) = sqlx::query_as(
         "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
     )
@@ -486,7 +486,7 @@ async fn it_can_select_time_03_date_optional(pool: ScyllaDBPool) -> anyhow::Resu
     assert_eq!(id, my_id);
     assert!(my_date.is_none());
     assert!(my_date_list.is_none());
-    assert!(my_date_set.is_none());
+    assert!(my_date_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO date_tests(my_id, my_date, my_date_list, my_date_set) VALUES(?, ?, ?, ?)",
@@ -512,7 +512,7 @@ async fn it_can_select_time_03_date_optional(pool: ScyllaDBPool) -> anyhow::Resu
         Uuid,
         Option<Date>,
         Option<Vec<Date>>,
-        Option<Vec<Date>>,
+        Vec<Date>,
     ) = sqlx::query_as(
         "SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests WHERE my_id = ?",
     )
@@ -540,7 +540,7 @@ async fn it_can_select_time_03_date_optional(pool: ScyllaDBPool) -> anyhow::Resu
             Date::from_calendar_date(2006, January, 2)?,
             Date::from_calendar_date(2025, August, 31)?,
         ],
-        my_date_set.unwrap()
+        my_date_set
     );
 
     Ok(())

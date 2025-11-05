@@ -112,7 +112,7 @@ async fn it_can_select_inet_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
         Uuid,
         Option<IpAddr>,
         Option<Vec<IpAddr>>,
-        Option<Vec<IpAddr>>,
+        Vec<IpAddr>,
     ) = sqlx::query_as(
         "SELECT my_id, my_inet, my_inet_list, my_inet_set FROM inet_tests WHERE my_id = ?",
     )
@@ -123,7 +123,7 @@ async fn it_can_select_inet_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
     assert_eq!(id, my_id);
     assert!(my_inet.is_none());
     assert!(my_inet_list.is_none());
-    assert!(my_inet_set.is_none());
+    assert!(my_inet_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO inet_tests(my_id, my_inet, my_inet_list, my_inet_set) VALUES(?, ?, ?, ?)",
@@ -149,7 +149,7 @@ async fn it_can_select_inet_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
         Uuid,
         Option<IpAddr>,
         Option<Vec<IpAddr>>,
-        Option<Vec<IpAddr>>,
+        Vec<IpAddr>,
     ) = sqlx::query_as(
         "SELECT my_id, my_inet, my_inet_list, my_inet_set FROM inet_tests WHERE my_id = ?",
     )
@@ -174,7 +174,7 @@ async fn it_can_select_inet_optional(pool: ScyllaDBPool) -> anyhow::Result<()> {
             IpAddr::from_str("127.0.0.1")?,
             IpAddr::from_str("192.0.2.2")?,
         ],
-        my_inet_set.unwrap()
+        my_inet_set
     );
 
     Ok(())

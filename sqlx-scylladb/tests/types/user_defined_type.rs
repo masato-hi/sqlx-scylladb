@@ -163,7 +163,7 @@ async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow:
         Uuid,
         Option<MyUserDefinedType>,
         Option<Vec<MyUserDefinedType>>,
-        Option<Vec<MyUserDefinedType>>,
+        Vec<MyUserDefinedType>,
     ) = sqlx::query_as(
         "SELECT my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set FROM user_defined_type_tests WHERE my_id = ?",
     )
@@ -174,7 +174,7 @@ async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow:
     assert_eq!(id, my_id);
     assert!(my_user_defined_type.is_none());
     assert!(my_user_defined_type_list.is_none());
-    assert!(my_user_defined_type_set.is_none());
+    assert!(my_user_defined_type_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO user_defined_type_tests(my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set) VALUES(?, ?, ?, ?)",
@@ -231,7 +231,7 @@ async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow:
         Uuid,
         Option<MyUserDefinedType>,
         Option<Vec<MyUserDefinedType>>,
-        Option<Vec<MyUserDefinedType>>,
+        Vec<MyUserDefinedType>,
     ) = sqlx::query_as(
         "SELECT my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set FROM user_defined_type_tests WHERE my_id = ?",
     )
@@ -259,7 +259,7 @@ async fn it_can_select_user_defined_type_optional(pool: ScyllaDBPool) -> anyhow:
     assert_eq!("Good night.", (&my_user_defined_type_list)[3].my_text);
 
     // assert my_user_defined_type_set
-    let my_user_defined_type_set = my_user_defined_type_set.unwrap();
+    let my_user_defined_type_set = my_user_defined_type_set;
     assert_eq!(3, my_user_defined_type_set.len());
     assert_eq!(1, (&my_user_defined_type_set)[0].my_bigint);
     assert_eq!("Hello!", (&my_user_defined_type_set)[0].my_text);

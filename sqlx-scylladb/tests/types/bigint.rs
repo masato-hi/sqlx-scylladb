@@ -66,7 +66,7 @@ async fn it_can_select_bigint_optional(pool: ScyllaDBPool) -> anyhow::Result<()>
         Uuid,
         Option<i64>,
         Option<Vec<i64>>,
-        Option<Vec<i64>>,
+        Vec<i64>,
     ) = sqlx::query_as(
         "SELECT my_id, my_bigint, my_bigint_list, my_bigint_set FROM bigint_tests WHERE my_id = ?",
     )
@@ -77,7 +77,7 @@ async fn it_can_select_bigint_optional(pool: ScyllaDBPool) -> anyhow::Result<()>
     assert_eq!(id, my_id);
     assert!(my_bigint.is_none());
     assert!(my_bigint_list.is_none());
-    assert!(my_bigint_set.is_none());
+    assert!(my_bigint_set.is_empty());
 
     let _ = sqlx::query(
         "INSERT INTO bigint_tests(my_id, my_bigint, my_bigint_list, my_bigint_set) VALUES(?, ?, ?, ?)",
@@ -93,7 +93,7 @@ async fn it_can_select_bigint_optional(pool: ScyllaDBPool) -> anyhow::Result<()>
         Uuid,
         Option<i64>,
         Option<Vec<i64>>,
-        Option<Vec<i64>>,
+        Vec<i64>,
     ) = sqlx::query_as(
         "SELECT my_id, my_bigint, my_bigint_list, my_bigint_set FROM bigint_tests WHERE my_id = ?",
     )
@@ -104,7 +104,7 @@ async fn it_can_select_bigint_optional(pool: ScyllaDBPool) -> anyhow::Result<()>
     assert_eq!(id, my_id);
     assert_eq!(117, my_bigint.unwrap());
     assert_eq!(vec![11, 4, 7, 11], my_bigint_list.unwrap());
-    assert_eq!(vec![4, 7, 11], my_bigint_set.unwrap());
+    assert_eq!(vec![4, 7, 11], my_bigint_set);
 
     Ok(())
 }
