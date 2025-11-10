@@ -203,7 +203,8 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
                 .await
                 .map_err(ScyllaDBError::PrepareError)?;
 
-            let column_specs = prepared_statement.get_result_set_col_specs();
+            let column_specs_guard = prepared_statement.get_current_result_set_col_specs();
+            let column_specs = column_specs_guard.get();
             let metadata = ScyllaDBStatementMetadata::from_column_specs(column_specs)?;
 
             let is_affect_statement = column_specs.is_affect_statement();
@@ -231,7 +232,8 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
                 .add_prepared_statement(&statement)
                 .await
                 .map_err(ScyllaDBError::PrepareError)?;
-            let column_specs = prepared_statement.get_result_set_col_specs();
+            let column_specs_guard = prepared_statement.get_current_result_set_col_specs();
+            let column_specs = column_specs_guard.get();
 
             let capacity = column_specs.len();
             let mut columns = Vec::with_capacity(capacity);
