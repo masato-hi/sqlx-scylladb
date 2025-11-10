@@ -28,7 +28,7 @@ jobs:
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
-        key: ${{ runner.os }}-${{ matrix.case }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ matrix.case }}-${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Make certification files.
       run: make mkcert
