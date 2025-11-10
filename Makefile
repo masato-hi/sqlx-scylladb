@@ -12,6 +12,10 @@ CERTKEY := $(CERTDIR)/client-key.pem
 CERTCSR := $(CERTDIR)/client-csr.pem
 CERT := $(CERTDIR)/client-cert.pem
 
+TEST_FEATURES := time-03,chrono-04,bigdecimal-04,secrecy-08
+OPENSSL_TEST_FEATURES := migrate,openssl-010
+RUSTLS_TEST_FEATURES := migrate,rustls-023
+
 mkcert:
 	openssl genpkey -algorithm ec -pkeyopt ec_paramgen_curve:P-256 -out $(CAKEY) # CA秘密鍵の作成
 	openssl req -new -key $(CAKEY) -out $(CACSR) -subj $(CERTSUBJ) # 証明書署名要求の作成
@@ -28,12 +32,12 @@ mkcert:
 	chmod 0644 $(CERTDIR)/*.pem
 
 test:
-	cargo test --features time-03,chrono-04,bigdecimal-04,secrecy-08
+	cargo test --features $(TEST_FEATURES)
 
 test-openssl:
-	cargo test --features migrate,openssl-010 it_can_connect_by_openssl
+	cargo test --features $(OPENSSL_TEST_FEATURES) it_can_connect_by_openssl
 
 test-rustls:
-	cargo test --features migrate,rustls-023 it_can_connect_by_rustls
+	cargo test --features $(RUSTLS_TEST_FEATURES) it_can_connect_by_rustls
 
 .PHONY: mkcert test test-openssl test-rustls
