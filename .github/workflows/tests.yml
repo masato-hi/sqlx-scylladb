@@ -14,9 +14,10 @@ env:
 
 jobs:
   test:
-
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        case: [test, test-openssl, test-rustls]
     steps:
     - uses: actions/checkout@v4
 
@@ -27,7 +28,7 @@ jobs:
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ runner.os }}-${{ matrix.case }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
     - name: Make certification files.
       run: make mkcert
@@ -47,11 +48,5 @@ jobs:
       run: |
         echo "CREATE KEYSPACE IF NOT EXISTS test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};" | docker compose exec -T scylladb cqlsh
 
-    - name: Run tests
-      run: make test
-
-    - name: Run the openssl-010 tests
-      run: make test-openssl
-
-    - name: Run the rustls-023 tests
-      run: make test-rustls
+    - name: Run ${{ matrix.case }}
+      run: make ${{ matrix.case }}
