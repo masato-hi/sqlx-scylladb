@@ -45,7 +45,7 @@ rustls-023 = { version = "0.23", package = "rustls", optional = true }
 thiserror = "2.0"
 log = "0.4"
 url = { workspace = true }
-bytes = "1.10"
+bytes = "1.11"
 tracing = { version = "0.1", features = ["log"] }
 crc = { version = "3", optional = true }
 base32 = "0.5.1"
