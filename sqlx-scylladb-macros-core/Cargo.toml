@@ -14,7 +14,7 @@ derive = []
 [dependencies]
 proc-macro2 = "1.0.103"
 quote = "1.0.42"
-syn = { version = "2.0.110", features = ["full"] }
+syn = { version = "2.0.111", features = ["full"] }
 darling = "0.21.3"
 convert_case = "0.10.0"
 sqlx-scylladb-core = { workspace = true }
