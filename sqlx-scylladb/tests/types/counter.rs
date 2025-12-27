@@ -7,9 +7,9 @@ use uuid::Uuid;
 async fn it_can_select_counter(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let id = Uuid::new_v4();
 
-    let _ = sqlx::query("UPDATE counter_tests SET my_counter = my_counter + 2 WHERE my_id = ?")
-        .bind(id)
+    let _ = sqlx::query("UPDATE counter_tests SET my_counter = my_counter + ? WHERE my_id = ?")
         .bind(2)
+        .bind(id)
         .execute(&pool)
         .await?;
 

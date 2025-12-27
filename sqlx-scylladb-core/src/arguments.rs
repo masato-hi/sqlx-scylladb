@@ -6,14 +6,14 @@ use std::{
 };
 
 use scylla::{
-    cluster::metadata::ColumnType,
+    cluster::metadata::{ColumnType, NativeType},
     errors::SerializationError,
     serialize::{
         row::{RowSerializationContext, SerializeRow},
         value::SerializeValue,
         writers::{CellWriter, RowWriter, WrittenCellProof},
     },
-    value::{CqlDate, CqlDuration, CqlTime, CqlTimestamp, CqlTimeuuid},
+    value::{Counter, CqlDate, CqlDuration, CqlTime, CqlTimestamp, CqlTimeuuid},
 };
 use sqlx::Arguments;
 use uuid::Uuid;
@@ -263,13 +263,37 @@ impl SerializeValue for ScyllaDBArgument {
             Self::Null => Ok(writer.set_null()),
             Self::Boolean(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::BooleanArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TinyInt(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TinyInt(value) => {
+                if ColumnType::Native(NativeType::Counter) == *typ {
+                    <_ as SerializeValue>::serialize(&Counter(*value as i64), typ, writer)
+                } else {
+                    <_ as SerializeValue>::serialize(value, typ, writer)
+                }
+            }
             Self::TinyIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::SmallInt(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::SmallInt(value) => {
+                if ColumnType::Native(NativeType::Counter) == *typ {
+                    <_ as SerializeValue>::serialize(&Counter(*value as i64), typ, writer)
+                } else {
+                    <_ as SerializeValue>::serialize(value, typ, writer)
+                }
+            }
             Self::SmallIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::Int(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Int(value) => {
+                if ColumnType::Native(NativeType::Counter) == *typ {
+                    <_ as SerializeValue>::serialize(&Counter(*value as i64), typ, writer)
+                } else {
+                    <_ as SerializeValue>::serialize(value, typ, writer)
+                }
+            }
             Self::IntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::BigInt(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::BigInt(value) => {
+                if ColumnType::Native(NativeType::Counter) == *typ {
+                    <_ as SerializeValue>::serialize(&Counter(*value as i64), typ, writer)
+                } else {
+                    <_ as SerializeValue>::serialize(value, typ, writer)
+                }
+            }
             Self::BigIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Float(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::FloatArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
