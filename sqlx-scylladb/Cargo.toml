@@ -41,7 +41,7 @@ chrono-04 = { workspace = true }
 time-03 = { workspace = true }
 bigdecimal-04 = { workspace = true }
 secrecy-08 = { workspace = true }
-criterion = { version = "0.8.1", features = ["stable", "async_tokio"] }
+criterion = { version = "0.8.1", features = ["async_tokio"] }
 pprof = { version = "0.15.0", features = ["protobuf", "protobuf-codec"] }
 
 [[example]]
