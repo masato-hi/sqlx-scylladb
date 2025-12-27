@@ -5,7 +5,10 @@ pub use sqlx_scylladb_core::*;
 
 /// Re-exported external crates.
 pub mod ext {
-    pub use sqlx_scylladb_ext::*;
+    pub use ::scylla;
+    pub use ::scylla_cql;
+    pub use ::sqlx;
+    pub use ::sqlx_core::ext::ustr;
 }
 
 /// Runtime-generic database driver. `any` feature is required.

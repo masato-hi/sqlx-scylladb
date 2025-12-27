@@ -4,7 +4,6 @@ members = [
   "sqlx-scylladb",
   "sqlx-scylladb-cli",
   "sqlx-scylladb-core",
-  "sqlx-scylladb-ext",
   "sqlx-scylladb-macros",
   "sqlx-scylladb-macros-core",
 ]
@@ -18,7 +17,6 @@ keywords = ["database", "sqlx", "scylla", "scylladb"]
 authors = ["Masato Hirahata <masato.hirahata@gmail.com>"]
 
 [workspace.dependencies]
-sqlx-scylladb-ext = { version = "=0.2.2", path = "sqlx-scylladb-ext" }
 sqlx-scylladb-core = { version = "=0.2.2", path = "sqlx-scylladb-core" }
 sqlx-scylladb-macros = { version = "=0.2.2", path = "sqlx-scylladb-macros" }
 sqlx-scylladb-macros-core = { version = "=0.2.2", path = "sqlx-scylladb-macros-core" }

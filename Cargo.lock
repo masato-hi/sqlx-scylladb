@@ -2820,10 +2820,11 @@ dependencies = [
  "dotenvy",
  "pprof",
  "scylla",
+ "scylla-cql",
  "secrecy",
  "sqlx",
+ "sqlx-core",
  "sqlx-scylladb-core",
- "sqlx-scylladb-ext",
  "sqlx-scylladb-macros",
  "time",
  "tokio",
@@ -2876,16 +2877,6 @@ dependencies = [
  "tracing",
  "url",
  "uuid",
-]
-
-[[package]]
-name = "sqlx-scylladb-ext"
-version = "0.2.2"
-dependencies = [
- "scylla",
- "scylla-cql",
- "sqlx",
- "sqlx-core",
 ]
 
 [[package]]

@@ -55,19 +55,19 @@ pub fn expand_user_defined_type(item: DeriveInput) -> syn::Result<TokenStream> {
         #[automatically_derived]
         impl<'r> ::sqlx_scylladb::ext::sqlx::Encode<'_, ::sqlx_scylladb::ScyllaDB> for #struct_ident
         where Self: ::sqlx_scylladb::UserDefinedType<'r> {
-            fn encode_by_ref(&self, buf: &mut ::sqlx_scylladb::ScyllaDBArgumentBuffer) -> Result<::sqlx_scylladb::ext::sqlx::IsNull, ::sqlx_scylladb::ext::sqlx::BoxDynError> {
+            fn encode_by_ref(&self, buf: &mut ::sqlx_scylladb::ScyllaDBArgumentBuffer) -> Result<::sqlx_scylladb::ext::sqlx::encode::IsNull, ::sqlx_scylladb::ext::sqlx::error::BoxDynError> {
                 use ::sqlx_scylladb::UserDefinedType as _;
 
                 let argument = ::sqlx_scylladb::ScyllaDBArgument::UserDefinedType(self.box_cloned());
                 buf.push(argument);
 
-                Ok(::sqlx_scylladb::ext::sqlx::IsNull::No)
+                Ok(::sqlx_scylladb::ext::sqlx::encode::IsNull::No)
             }
         }
 
         #[automatically_derived]
         impl ::sqlx_scylladb::ext::sqlx::Decode<'_, ::sqlx_scylladb::ScyllaDB> for #struct_ident {
-            fn decode(value: ::sqlx_scylladb::ScyllaDBValueRef<'_>) -> Result<Self, ::sqlx_scylladb::ext::sqlx::BoxDynError> {
+            fn decode(value: ::sqlx_scylladb::ScyllaDBValueRef<'_>) -> Result<Self, ::sqlx_scylladb::ext::sqlx::error::BoxDynError> {
                 let value: Self = value.deserialize()?;
 
                 Ok(value)

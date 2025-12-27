@@ -27,7 +27,11 @@ rustls-023 = ["sqlx-scylladb-core/rustls-023"]
 [dependencies]
 sqlx-scylladb-macros = { workspace = true, optional = true }
 sqlx-scylladb-core = { workspace = true }
-sqlx-scylladb-ext = { workspace = true }
+
+scylla = { workspace = true }
+scylla-cql = { workspace = true }
+sqlx = { workspace = true }
+sqlx-core = { workspace = true }
 
 [dev-dependencies]
 tokio = { workspace = true }
