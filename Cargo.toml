@@ -9,7 +9,7 @@ members = [
 ]
 
 [workspace.package]
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/masato-hi/sqlx-scylladb"
@@ -17,9 +17,9 @@ keywords = ["database", "sqlx", "scylla", "scylladb"]
 authors = ["Masato Hirahata <masato.hirahata@gmail.com>"]
 
 [workspace.dependencies]
-sqlx-scylladb-core = { version = "=0.3.0", path = "sqlx-scylladb-core" }
-sqlx-scylladb-macros = { version = "=0.3.0", path = "sqlx-scylladb-macros" }
-sqlx-scylladb-macros-core = { version = "=0.3.0", path = "sqlx-scylladb-macros-core" }
+sqlx-scylladb-core = { version = "=0.3.1", path = "sqlx-scylladb-core" }
+sqlx-scylladb-macros = { version = "=0.3.1", path = "sqlx-scylladb-macros" }
+sqlx-scylladb-macros-core = { version = "=0.3.1", path = "sqlx-scylladb-macros-core" }
 
 scylla = { version = "1.4" }
 scylla-cql = { version = "1.4" }
