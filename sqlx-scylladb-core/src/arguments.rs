@@ -104,6 +104,8 @@ impl<'q> DerefMut for ScyllaDBArgumentBuffer {
 pub enum ScyllaDBArgument {
     /// Internally used NULL.
     Null,
+    /// Internally used Unset.
+    Unset,
     /// Any type can be used.
     Any(Arc<dyn SerializeValue + Send + Sync>),
     /// `boolean` type.
@@ -261,6 +263,7 @@ impl SerializeValue for ScyllaDBArgument {
         match self {
             Self::Any(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Null => Ok(writer.set_null()),
+            Self::Unset => Ok(writer.set_unset()),
             Self::Boolean(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::BooleanArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::TinyInt(value) => {

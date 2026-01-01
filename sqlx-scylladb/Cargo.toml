@@ -139,6 +139,11 @@ path = "tests/types/tinyint.rs"
 required-features = ["migrate"]
 
 [[test]]
+name = "test-types-unset"
+path = "tests/types/unset.rs"
+required-features = ["migrate"]
+
+[[test]]
 name = "test-types-uuid"
 path = "tests/types/uuid.rs"
 required-features = ["migrate"]

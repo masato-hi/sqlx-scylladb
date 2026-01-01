@@ -86,6 +86,8 @@ pub enum ScyllaDBTypeInfo {
     Timeuuid,
     /// array of `timeuuid` type.
     TimeuuidArray,
+    /// Unset type.
+    Unset,
     /// `uuid` type.
     Uuid,
     /// array of `uuid` type.
@@ -190,6 +192,7 @@ impl TypeInfo for ScyllaDBTypeInfo {
             Self::TinyIntArray => "TINYINT[]",
             Self::Time => "TIME",
             Self::TimeArray => "TIME[]",
+            Self::Unset => "UNSET",
             Self::Uuid => "UUID",
             Self::UuidArray => "UUID[]",
             Self::Timeuuid => "TIMEUUID",
