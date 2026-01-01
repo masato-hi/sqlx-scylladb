@@ -181,6 +181,7 @@ pub mod text;
 pub mod time;
 pub mod timestamp;
 pub mod tuple;
+pub mod unset;
 pub mod user_defined_type;
 pub mod uuid;
 
