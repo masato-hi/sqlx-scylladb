@@ -8,27 +8,22 @@ async fn it_can_select_maybe_unset_text(pool: ScyllaDBPool) -> anyhow::Result<()
     let id = Uuid::new_v4();
 
     let _ = sqlx::query(
-        "INSERT INTO text_tests(my_id, my_text, my_text_list, my_text_set) VALUES(?, ?, ?, ?)",
+        "INSERT INTO unset_tests(my_id, my_text, my_bigint, my_tinyint) VALUES(?, ?, ?, ?)",
     )
     .bind(id)
-    .bind(MaybeUnset::Set("こんにちは"))
-    .bind(MaybeUnset::Set([
-        "こんにちは",
-        "おはよう",
-        "さようなら",
-        "おやすみ",
-    ]))
+    .bind(MaybeUnset::<String>::Unset)
+    .bind(MaybeUnset::Set(7i64))
     .bind(Unset)
     .execute(&pool)
     .await?;
 
-    let (my_id, my_text, my_text_list, my_text_set): (
+    let (my_id, my_text, my_bigint, my_tinyint): (
         Uuid,
         MaybeUnset<String>,
-        Option<Vec<String>>,
-        MaybeUnset<Vec<String>>,
+        Option<i64>,
+        MaybeUnset<i8>,
     ) = sqlx::query_as(
-        "SELECT my_id, my_text, my_text_list, my_text_set FROM text_tests WHERE my_id = ?",
+        "SELECT my_id, my_text, my_bigint, my_tinyint FROM unset_tests WHERE my_id = ?",
     )
     .bind(id)
     .fetch_one(&pool)
@@ -37,22 +32,18 @@ async fn it_can_select_maybe_unset_text(pool: ScyllaDBPool) -> anyhow::Result<()
     assert_eq!(id, my_id);
 
     // assert my_text
-    let MaybeUnset::Set(my_text) = my_text else {
+    if let MaybeUnset::Set(_) = my_text {
+        panic!("expect unset");
+    };
+
+    // assert my_bigint
+    let Some(my_bigint) = my_bigint else {
         panic!("expect set");
     };
-    assert_eq!("こんにちは", my_text);
+    assert_eq!(7, my_bigint);
 
-    // assert my_text_list
-    let Some(my_text_list) = my_text_list else {
-        panic!("expect set");
-    };
-    assert_eq!(
-        vec!["こんにちは", "おはよう", "さようなら", "おやすみ"],
-        my_text_list
-    );
-
-    // assert my_text_set
-    if let MaybeUnset::Set(_) = my_text_set {
+    // assert my_tinyint
+    if let MaybeUnset::Set(_) = my_tinyint {
         panic!("expect unset");
     }
 
@@ -60,12 +51,12 @@ async fn it_can_select_maybe_unset_text(pool: ScyllaDBPool) -> anyhow::Result<()
     struct TextTest {
         my_id: Uuid,
         my_text: MaybeUnset<String>,
-        my_text_list: MaybeUnset<Vec<String>>,
-        my_text_set: Option<Vec<String>>,
+        my_bigint: MaybeUnset<i64>,
+        my_tinyint: Option<i8>,
     }
 
     let row: TextTest = sqlx::query_as(
-        "SELECT my_id, my_text, my_text_list, my_text_set FROM text_tests WHERE my_id = ?",
+        "SELECT my_id, my_text, my_bigint, my_tinyint FROM unset_tests WHERE my_id = ?",
     )
     .bind(id)
     .fetch_one(&pool)
@@ -74,22 +65,18 @@ async fn it_can_select_maybe_unset_text(pool: ScyllaDBPool) -> anyhow::Result<()
     assert_eq!(id, row.my_id);
 
     // assert my_text
-    let MaybeUnset::Set(my_text) = &row.my_text else {
+    if let MaybeUnset::Set(_) = row.my_text {
+        panic!("expect unset");
+    };
+
+    // assert my_bigint
+    let MaybeUnset::Set(my_bigint) = row.my_bigint else {
         panic!("expect set");
     };
-    assert_eq!("こんにちは", my_text);
+    assert_eq!(7, my_bigint);
 
-    // assert my_text_list
-    let MaybeUnset::Set(my_text_list) = &row.my_text_list else {
-        panic!("expect set");
-    };
-    assert_eq!(
-        vec!["こんにちは", "おはよう", "さようなら", "おやすみ"],
-        *my_text_list
-    );
-
-    // assert my_text_set
-    if row.my_text_set.is_some() {
+    // assert my_tinyint
+    if row.my_tinyint.is_some() {
         panic!("expect unset");
     }
 
