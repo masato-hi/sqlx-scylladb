@@ -47,7 +47,7 @@ where
                 let argument = ScyllaDBArgument::Unset;
                 buf.push(argument);
 
-                Ok(IsNull::Yes)
+                Ok(IsNull::No)
             }
         }
     }
@@ -58,6 +58,6 @@ impl Encode<'_, ScyllaDB> for Unset {
         let argument = ScyllaDBArgument::Unset;
         buf.push(argument);
 
-        Ok(IsNull::Yes)
+        Ok(IsNull::No)
     }
 }
