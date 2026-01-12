@@ -13,7 +13,7 @@ derive = []
 
 [dependencies]
 proc-macro2 = "1.0.104"
-quote = "1.0.42"
+quote = "1.0.43"
 syn = { version = "2.0.113", features = ["full"] }
 darling = "0.23.0"
 convert_case = "0.10.0"
