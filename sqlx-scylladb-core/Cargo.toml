@@ -51,7 +51,7 @@ crc = { version = "3", optional = true }
 base32 = "0.5.1"
 sha2 = { version = "0.10.9", default-features = false }
 dotenvy = { workspace = true }
-futures-core = "0.3.31"
+futures-core = "0.3.32"
 futures-util = "0.3.31"
 
 [dev-dependencies]
