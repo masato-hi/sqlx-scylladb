@@ -49,7 +49,7 @@ bytes = "1.11"
 tracing = { version = "0.1", features = ["log"] }
 crc = { version = "3", optional = true }
 base32 = "0.5.1"
-sha2 = { version = "0.10.9", default-features = false }
+sha2 = { version = "0.11.0", default-features = false }
 dotenvy = { workspace = true }
 futures-core = "0.3.32"
 futures-util = "0.3.31"
