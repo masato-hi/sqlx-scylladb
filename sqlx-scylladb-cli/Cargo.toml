@@ -27,5 +27,5 @@ chrono-04 = { workspace = true }
 clap = { version = "4.6.0", features = ["derive", "env", "wrap_help"] }
 console = "0.16.3"
 dialoguer = { version = "0.12", default-features = false }
-futures-util = "0.3.31"
+futures-util = "0.3.32"
 backoff = { version = "0.4.0", features = ["futures", "tokio"] }
