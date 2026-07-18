@@ -23,11 +23,13 @@ sqlx-scylladb-macros-core = { version = "=0.3.2", path = "sqlx-scylladb-macros-c
 
 scylla = { version = "1.6" }
 scylla-cql = { version = "1.4" }
-sqlx = { version = "0.8", default-features = false, features = [
+sqlx = { version = "0.9", default-features = false, features = [
+  "sqlx-toml",
   "uuid",
   "runtime-tokio",
 ] }
-sqlx-core = { version = "0.8" }
+sqlx-core = { version = "0.9" }
+sqlx-cli = { version = "0.9" }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 

@@ -1,10 +1,9 @@
-use std::fmt::Write;
 use std::time::SystemTime;
 use std::{ops::Deref, str::FromStr, sync::OnceLock, time::Duration};
 
-use futures_core::future::BoxFuture;
 use scylla::value::CqlTimestamp;
 use sha2::{Digest, Sha512};
+use sqlx::{AssertSqlSafe, QueryBuilder};
 use sqlx::{Connection as _, Error, Executor, Pool, pool::PoolOptions};
 use sqlx_core::testing::{FixtureSnapshot, TestArgs, TestContext, TestSupport};
 
@@ -14,11 +13,13 @@ use crate::{ScyllaDB, ScyllaDBConnectOptions, ScyllaDBConnection};
 static MASTER_POOL: OnceLock<Pool<ScyllaDB>> = OnceLock::new();
 
 impl TestSupport for ScyllaDB {
-    fn test_context(args: &TestArgs) -> BoxFuture<'_, Result<TestContext<Self>, Error>> {
+    fn test_context(
+        args: &TestArgs,
+    ) -> impl Future<Output = Result<TestContext<Self>, Error>> + Send + '_ {
         Box::pin(async move { test_context(args).await })
     }
 
-    fn cleanup_test(db_name: &str) -> BoxFuture<'_, Result<(), Error>> {
+    fn cleanup_test(db_name: &str) -> impl Future<Output = Result<(), Error>> + Send + '_ {
         Box::pin(async move {
             let mut conn = MASTER_POOL
                 .get()
@@ -30,13 +31,11 @@ impl TestSupport for ScyllaDB {
         })
     }
 
-    fn cleanup_test_dbs() -> BoxFuture<'static, Result<Option<usize>, Error>> {
+    fn cleanup_test_dbs() -> impl Future<Output = Result<Option<usize>, Error>> + Send + 'static {
         Box::pin(async move { cleanup_test_dbs().await })
     }
 
-    fn snapshot(
-        _conn: &mut Self::Connection,
-    ) -> BoxFuture<'_, Result<FixtureSnapshot<Self>, Error>> {
+    async fn snapshot(_conn: &mut Self::Connection) -> Result<FixtureSnapshot<Self>, Error> {
         todo!()
     }
 
@@ -124,7 +123,10 @@ async fn test_context(args: &TestArgs) -> Result<TestContext<ScyllaDB>, Error> {
         .execute(&mut *conn)
         .await?;
 
-    conn.execute(format!("CREATE KEYSPACE IF NOT EXISTS {db_name} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': 1}}").as_str()).await?;
+    let query = AssertSqlSafe(format!(
+        "CREATE KEYSPACE IF NOT EXISTS {db_name} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': 1}}"
+    ));
+    conn.execute(query).await?;
 
     eprintln!("CREATED KEYSPACE {db_name}");
 
@@ -143,8 +145,8 @@ async fn test_context(args: &TestArgs) -> Result<TestContext<ScyllaDB>, Error> {
 }
 
 async fn do_cleanup(conn: &mut ScyllaDBConnection, db_name: &str) -> Result<(), Error> {
-    let delete_db_command = format!("DROP KEYSPACE IF EXISTS {db_name};");
-    conn.execute(delete_db_command.as_str()).await?;
+    let delete_db_command = AssertSqlSafe(format!("DROP KEYSPACE IF EXISTS {db_name};"));
+    conn.execute(delete_db_command).await?;
     sqlx::query("DELETE FROM sqlx_test_databases WHERE db_name = ?")
         .bind(db_name)
         .execute(&mut *conn)
@@ -169,13 +171,12 @@ async fn cleanup_test_dbs() -> Result<Option<usize>, Error> {
 
     let mut deleted_db_names = Vec::with_capacity(delete_db_names.len());
 
-    let mut command = String::new();
+    let mut builder = QueryBuilder::new("drop database if exists ");
 
     for db_name in &delete_db_names {
-        command.clear();
+        builder.push(db_name);
 
-        writeln!(command, "drop database if exists {db_name};").ok();
-        match conn.execute(&*command).await {
+        match builder.build().execute(&mut conn).await {
             Ok(_deleted) => {
                 deleted_db_names.push(db_name);
             }

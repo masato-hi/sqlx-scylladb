@@ -1,4 +1,4 @@
-use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
+use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
@@ -119,7 +119,10 @@ async fn describe_double(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let conn = conn.acquire().await?;
 
     let describe = conn
-        .describe("SELECT my_id, my_double, my_double_list, my_double_set FROM double_tests")
+        .describe(
+            "SELECT my_id, my_double, my_double_list, my_double_set FROM double_tests"
+                .into_sql_str(),
+        )
         .await?;
 
     assert_eq!("my_id", describe.columns()[0].name());

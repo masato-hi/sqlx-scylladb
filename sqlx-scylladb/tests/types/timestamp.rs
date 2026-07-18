@@ -1,5 +1,5 @@
 use scylla::value::CqlTimestamp;
-use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
+use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
@@ -568,7 +568,8 @@ async fn describe_timestamp(pool: ScyllaDBPool) -> anyhow::Result<()> {
 
     let describe = conn
         .describe(
-            "SELECT my_id, my_timestamp, my_timestamp_list, my_timestamp_set FROM timestamp_tests",
+            "SELECT my_id, my_timestamp, my_timestamp_list, my_timestamp_set FROM timestamp_tests"
+                .into_sql_str(),
         )
         .await?;
 

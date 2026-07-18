@@ -1,7 +1,4 @@
-use std::borrow::Cow;
-
-use futures_core::future::BoxFuture;
-use sqlx::TransactionManager;
+use sqlx_core::{error::Error, sql_str::SqlStr, transaction::TransactionManager};
 
 use crate::{ScyllaDB, ScyllaDBConnection};
 
@@ -13,8 +10,8 @@ impl TransactionManager for ScyllaDBTransactionManager {
 
     fn begin<'conn>(
         conn: &'conn mut ScyllaDBConnection,
-        statement: Option<Cow<'static, str>>,
-    ) -> BoxFuture<'conn, Result<(), sqlx::Error>> {
+        statement: Option<SqlStr>,
+    ) -> impl Future<Output = Result<(), Error>> + Send + 'conn {
         Box::pin(async {
             conn.begin_transaction(statement).await?;
 
@@ -22,7 +19,9 @@ impl TransactionManager for ScyllaDBTransactionManager {
         })
     }
 
-    fn commit(conn: &mut ScyllaDBConnection) -> BoxFuture<'_, Result<(), sqlx::Error>> {
+    fn commit(
+        conn: &mut ScyllaDBConnection,
+    ) -> impl Future<Output = Result<(), sqlx::Error>> + Send + '_ {
         Box::pin(async {
             conn.commit_transaction().await?;
 
@@ -30,7 +29,9 @@ impl TransactionManager for ScyllaDBTransactionManager {
         })
     }
 
-    fn rollback(conn: &mut ScyllaDBConnection) -> BoxFuture<'_, Result<(), sqlx::Error>> {
+    fn rollback(
+        conn: &mut ScyllaDBConnection,
+    ) -> impl Future<Output = Result<(), sqlx::Error>> + Send + '_ {
         Box::pin(async {
             let _ = conn.rollback_transaction();
 

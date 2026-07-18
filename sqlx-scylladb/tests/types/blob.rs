@@ -1,4 +1,4 @@
-use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
+use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
@@ -222,7 +222,7 @@ async fn describe_blob(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let conn = conn.acquire().await?;
 
     let describe = conn
-        .describe("SELECT my_id, my_blob, my_blob_list, my_blob_set FROM blob_tests")
+        .describe("SELECT my_id, my_blob, my_blob_list, my_blob_set FROM blob_tests".into_sql_str())
         .await?;
 
     assert_eq!("my_id", describe.columns()[0].name());

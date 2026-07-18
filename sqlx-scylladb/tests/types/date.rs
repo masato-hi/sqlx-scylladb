@@ -1,5 +1,5 @@
 use scylla::value::CqlDate;
-use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
+use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
@@ -552,7 +552,7 @@ async fn describe_date(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let conn = conn.acquire().await?;
 
     let describe = conn
-        .describe("SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests")
+        .describe("SELECT my_id, my_date, my_date_list, my_date_set FROM date_tests".into_sql_str())
         .await?;
 
     assert_eq!("my_id", describe.columns()[0].name());

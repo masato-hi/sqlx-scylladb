@@ -5,7 +5,7 @@ use std::{
 };
 
 use scylla::value::CqlTimestamp;
-use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
+use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::{
     ScyllaDB, ScyllaDBArgument, ScyllaDBPool, ScyllaDBTypeInfo,
     ext::{
@@ -43,7 +43,7 @@ impl Type<ScyllaDB> for AnyMap {
 impl Encode<'_, ScyllaDB> for AnyMap {
     fn encode_by_ref(
         &self,
-        buf: &mut <ScyllaDB as sqlx::Database>::ArgumentBuffer<'_>,
+        buf: &mut <ScyllaDB as sqlx::Database>::ArgumentBuffer,
     ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         let argument = ScyllaDBArgument::Any(Arc::new(self.0.clone()));
         buf.push(argument);
@@ -172,7 +172,9 @@ async fn describe_any(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;
     let conn = conn.acquire().await?;
 
-    let describe = conn.describe("SELECT my_id, my_any FROM any_tests").await?;
+    let describe = conn
+        .describe("SELECT my_id, my_any FROM any_tests".into_sql_str())
+        .await?;
 
     assert_eq!("my_id", describe.columns()[0].name());
     assert_eq!("my_any", describe.columns()[1].name());

@@ -1,6 +1,6 @@
 use std::{net::IpAddr, str::FromStr};
 
-use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
+use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
@@ -186,7 +186,7 @@ async fn describe_inet(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let conn = conn.acquire().await?;
 
     let describe = conn
-        .describe("SELECT my_id, my_inet, my_inet_list, my_inet_set FROM inet_tests")
+        .describe("SELECT my_id, my_inet, my_inet_list, my_inet_set FROM inet_tests".into_sql_str())
         .await?;
 
     assert_eq!("my_id", describe.columns()[0].name());

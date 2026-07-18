@@ -1,4 +1,4 @@
-use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
+use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
@@ -115,7 +115,8 @@ async fn describe_smallint(pool: ScyllaDBPool) -> anyhow::Result<()> {
 
     let describe = conn
         .describe(
-            "SELECT my_id, my_smallint, my_smallint_list, my_smallint_set FROM smallint_tests",
+            "SELECT my_id, my_smallint, my_smallint_list, my_smallint_set FROM smallint_tests"
+                .into_sql_str(),
         )
         .await?;
 

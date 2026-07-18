@@ -6,10 +6,15 @@ license.workspace = true
 repository.workspace = true
 authors.workspace = true
 description = "Command-line utility for sqlx-scylladb."
+default-run = "sqlx-scylladb"
 
 [[bin]]
 name = "sqlx-scylladb"
-path = "src/bin/sqlx-scylladb.rs"
+path = "src/sqlx-scylladb.rs"
+
+[[bin]]
+name = "cargo-sqlx-scylladb"
+path = "src/cargo-sqlx-scylladb.rs"
 
 [features]
 rustls = ["sqlx-scylladb-core/rustls-023"]
@@ -17,6 +22,7 @@ native-tls = ["sqlx-scylladb-core/openssl-010"]
 
 [dependencies]
 sqlx = { workspace = true }
+sqlx-cli = { workspace = true }
 sqlx-scylladb-core = { workspace = true, features = ["migrate", "any"] }
 
 anyhow = { workspace = true }

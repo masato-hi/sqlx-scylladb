@@ -1,6 +1,5 @@
 use std::{fmt::Display, num::ParseIntError, str::FromStr, time::Duration};
 
-use futures_core::future::BoxFuture;
 use log::LevelFilter;
 use scylla::{client::session::TlsContext, frame::Compression};
 use sqlx::{ConnectOptions, Error};
@@ -18,7 +17,7 @@ const DEFAULT_STATEMENT_CACHE_CAPACITY: usize = 128;
 pub struct ScyllaDBConnectOptions {
     pub(crate) host: String,
     pub(crate) port: u16,
-    nodes: Vec<String>,
+    pub(crate) nodes: Vec<String>,
     pub(crate) keyspace: Option<String>,
     pub(crate) statement_cache_capacity: usize,
     pub(crate) log_settings: LogSettings,
@@ -241,6 +240,18 @@ impl ScyllaDBConnectOptions {
     }
 }
 
+impl ScyllaDBConnectOptions {
+    /// Get the nodes.
+    pub fn get_nodes(&self) -> &[String] {
+        &self.nodes
+    }
+
+    /// Get the current keyspace.
+    pub fn get_keyspace(&self) -> Option<&str> {
+        self.keyspace.as_deref()
+    }
+}
+
 impl ConnectOptions for ScyllaDBConnectOptions {
     type Connection = ScyllaDBConnection;
 
@@ -306,7 +317,7 @@ impl ConnectOptions for ScyllaDBConnectOptions {
         url
     }
 
-    fn connect(&self) -> BoxFuture<'_, Result<Self::Connection, Error>>
+    fn connect(&self) -> impl Future<Output = Result<Self::Connection, Error>> + Send + '_
     where
         Self::Connection: Sized,
     {

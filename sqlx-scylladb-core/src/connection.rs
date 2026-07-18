@@ -4,9 +4,8 @@ mod transaction;
 
 use std::fmt::Debug;
 
-use futures_core::future::BoxFuture;
 use scylla::client::caching_session::CachingSession;
-use sqlx::{Connection, Transaction};
+use sqlx::{Connection, Error, Transaction};
 
 use crate::{ScyllaDB, ScyllaDBConnectOptions, connection::transaction::ScyllaDBTransaction};
 
@@ -31,15 +30,15 @@ impl Connection for ScyllaDBConnection {
 
     type Options = ScyllaDBConnectOptions;
 
-    fn close(self) -> BoxFuture<'static, Result<(), sqlx::Error>> {
+    fn close(self) -> impl Future<Output = Result<(), Error>> + Send + 'static {
         Box::pin(async move { Ok(()) })
     }
 
-    fn close_hard(self) -> BoxFuture<'static, Result<(), sqlx::Error>> {
+    fn close_hard(self) -> impl Future<Output = Result<(), Error>> + Send + 'static {
         Box::pin(async move { Ok(()) })
     }
 
-    fn ping(&mut self) -> BoxFuture<'_, Result<(), sqlx::Error>> {
+    fn ping(&mut self) -> impl Future<Output = Result<(), Error>> + Send + '_ {
         Box::pin(async move {
             let state = self.caching_session.get_session().get_cluster_state();
             let nodes = state.get_nodes_info();
@@ -52,7 +51,9 @@ impl Connection for ScyllaDBConnection {
         })
     }
 
-    fn begin(&mut self) -> BoxFuture<'_, Result<sqlx::Transaction<'_, Self::Database>, sqlx::Error>>
+    fn begin(
+        &mut self,
+    ) -> impl Future<Output = Result<sqlx::Transaction<'_, Self::Database>, Error>> + Send + '_
     where
         Self: Sized,
     {
@@ -63,7 +64,7 @@ impl Connection for ScyllaDBConnection {
         ()
     }
 
-    fn flush(&mut self) -> BoxFuture<'_, Result<(), sqlx::Error>> {
+    fn flush(&mut self) -> impl Future<Output = Result<(), Error>> + Send + '_ {
         Box::pin(async move { Ok(()) })
     }
 

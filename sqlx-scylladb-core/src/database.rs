@@ -27,11 +27,11 @@ impl Database for ScyllaDB {
 
     type ValueRef<'r> = ScyllaDBValueRef<'r>;
 
-    type Arguments<'q> = ScyllaDBArguments;
+    type Arguments = ScyllaDBArguments;
 
-    type ArgumentBuffer<'q> = ScyllaDBArgumentBuffer;
+    type ArgumentBuffer = ScyllaDBArgumentBuffer;
 
-    type Statement<'q> = ScyllaDBStatement<'q>;
+    type Statement = ScyllaDBStatement;
 
     const NAME: &'static str = "ScyllaDB";
 

@@ -76,24 +76,6 @@ macro_rules! impl_array_type {
             }
         }
 
-        impl ::sqlx::Encode<'_, $crate::ScyllaDB> for std::rc::Rc<::std::vec::Vec<$typ>> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
-            }
-        }
-
-        impl ::sqlx::Encode<'_, $crate::ScyllaDB> for std::sync::Arc<::std::vec::Vec<$typ>> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
-            }
-        }
-
         impl ::sqlx::Decode<'_, $crate::ScyllaDB> for ::std::vec::Vec<$typ> {
             fn decode(
                 value: $crate::ScyllaDBValueRef<'_>,
@@ -135,32 +117,6 @@ macro_rules! impl_map_type {
                 buf.push(argument);
 
                 Ok(::sqlx::encode::IsNull::No)
-            }
-        }
-
-        impl ::sqlx::Encode<'_, $crate::ScyllaDB>
-            for ::std::rc::Rc<::std::collections::HashMap<$key_typ, $value_typ>>
-        {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
-            }
-        }
-
-        impl ::sqlx::Encode<'_, $crate::ScyllaDB>
-            for ::std::sync::Arc<::std::collections::HashMap<$key_typ, $value_typ>>
-        {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
             }
         }
     };

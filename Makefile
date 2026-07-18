@@ -12,6 +12,8 @@ CERTKEY := $(CERTDIR)/client-key.pem
 CERTCSR := $(CERTDIR)/client-csr.pem
 CERT := $(CERTDIR)/client-cert.pem
 
+CREATE_KEYSPACE := CREATE KEYSPACE IF NOT EXISTS test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}
+
 TEST_FEATURES := time-03,chrono-04,bigdecimal-04,secrecy-08
 OPENSSL_TEST_FEATURES := migrate,openssl-010
 RUSTLS_TEST_FEATURES := migrate,rustls-023
@@ -31,6 +33,9 @@ mkcert:
 
 	chmod 0644 $(CERTDIR)/*.pem
 
+create-test-keyspace:
+	docker compose exec scylladb cqlsh -e "$(CREATE_KEYSPACE)"
+
 test:
 	cargo test --features $(TEST_FEATURES)
 
@@ -40,4 +45,4 @@ test-openssl:
 test-rustls:
 	cargo test --features $(RUSTLS_TEST_FEATURES) it_can_connect_by_rustls
 
-.PHONY: mkcert test test-openssl test-rustls
+.PHONY: mkcert test test-openssl test-rustls create-test-keyspace
