@@ -53,42 +53,6 @@ impl Encode<'_, ScyllaDB> for &[u8] {
     }
 }
 
-impl<const N: usize> Encode<'_, ScyllaDB> for Rc<[u8; N]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl<const N: usize> Encode<'_, ScyllaDB> for Arc<[u8; N]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl<const N: usize> Encode<'_, ScyllaDB> for Rc<&[u8; N]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl<const N: usize> Encode<'_, ScyllaDB> for Arc<&[u8; N]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl Encode<'_, ScyllaDB> for Rc<&[u8]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl Encode<'_, ScyllaDB> for Arc<&[u8]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
 impl Encode<'_, ScyllaDB> for Rc<[u8]> {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
         <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
@@ -102,18 +66,6 @@ impl Encode<'_, ScyllaDB> for Arc<[u8]> {
 }
 
 impl Encode<'_, ScyllaDB> for Vec<u8> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
-    }
-}
-
-impl Encode<'_, ScyllaDB> for Rc<Vec<u8>> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
-    }
-}
-
-impl Encode<'_, ScyllaDB> for Arc<Vec<u8>> {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
         <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
     }
@@ -150,18 +102,6 @@ impl<const N: usize, const M: usize> Encode<'_, ScyllaDB> for [[u8; N]; M] {
     }
 }
 
-impl<const N: usize, const M: usize> Encode<'_, ScyllaDB> for Rc<[[u8; N]; M]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl<const N: usize, const M: usize> Encode<'_, ScyllaDB> for Arc<[[u8; N]; M]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
 impl<const N: usize> Encode<'_, ScyllaDB> for [[u8; N]] {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
         let mut blobs = Vec::with_capacity(self.len());
@@ -193,18 +133,6 @@ impl<const N: usize> Encode<'_, ScyllaDB> for &[[u8; N]] {
     }
 }
 
-impl<const N: usize> Encode<'_, ScyllaDB> for Rc<&[[u8; N]]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl<const N: usize> Encode<'_, ScyllaDB> for Arc<&[[u8; N]]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
 impl<const N: usize> Encode<'_, ScyllaDB> for [&[u8]; N] {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
         let mut blobs = Vec::with_capacity(self.len());
@@ -215,18 +143,6 @@ impl<const N: usize> Encode<'_, ScyllaDB> for [&[u8]; N] {
         buf.push(argument);
 
         Ok(IsNull::No)
-    }
-}
-
-impl<const N: usize> Encode<'_, ScyllaDB> for Rc<[&[u8]; N]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl<const N: usize> Encode<'_, ScyllaDB> for Arc<[&[u8]; N]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
     }
 }
 
@@ -261,33 +177,9 @@ impl Encode<'_, ScyllaDB> for &[&[u8]] {
     }
 }
 
-impl Encode<'_, ScyllaDB> for Rc<&[&[u8]]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl Encode<'_, ScyllaDB> for Arc<&[&[u8]]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
 impl<const N: usize> Encode<'_, ScyllaDB> for [Vec<u8>; N] {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
         <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
-    }
-}
-
-impl<const N: usize> Encode<'_, ScyllaDB> for Rc<[Vec<u8>; N]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl<const N: usize> Encode<'_, ScyllaDB> for Arc<[Vec<u8>; N]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
     }
 }
 
@@ -322,18 +214,6 @@ impl Encode<'_, ScyllaDB> for &[Vec<u8>] {
     }
 }
 
-impl Encode<'_, ScyllaDB> for Rc<&[Vec<u8>]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
-impl Encode<'_, ScyllaDB> for Arc<&[Vec<u8>]> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-    }
-}
-
 impl Encode<'_, ScyllaDB> for Vec<Vec<u8>> {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
         let argument = ScyllaDBArgument::BlobArray(self.clone());
@@ -343,28 +223,8 @@ impl Encode<'_, ScyllaDB> for Vec<Vec<u8>> {
     }
 }
 
-impl Encode<'_, ScyllaDB> for Rc<Vec<Vec<u8>>> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::BlobArray(self.to_vec());
-        buf.push(argument);
-
-        Ok(IsNull::No)
-    }
-}
-
-impl Encode<'_, ScyllaDB> for Arc<Vec<Vec<u8>>> {
-    fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::BlobArray(self.to_vec());
-        buf.push(argument);
-
-        Ok(IsNull::No)
-    }
-}
-
 #[cfg(feature = "secrecy-08")]
 mod secrecy {
-    use std::{rc::Rc, sync::Arc};
-
     use secrecy_08::SecretVec;
     use sqlx::{Decode, Encode, Type, encode::IsNull, error::BoxDynError};
 
@@ -396,22 +256,6 @@ mod secrecy {
             buf.push(argument);
 
             Ok(IsNull::No)
-        }
-    }
-
-    impl Encode<'_, ScyllaDB> for Rc<SecretVec<u8>> {
-        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            use ::std::ops::Deref;
-
-            <_ as ::sqlx::Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-        }
-    }
-
-    impl Encode<'_, ScyllaDB> for Arc<SecretVec<u8>> {
-        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            use ::std::ops::Deref;
-
-            <_ as ::sqlx::Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
         }
     }
 
@@ -472,22 +316,6 @@ mod secrecy {
     impl Encode<'_, ScyllaDB> for Vec<SecretVec<u8>> {
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
             <_ as ::sqlx::Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
-        }
-    }
-
-    impl Encode<'_, ScyllaDB> for Rc<Vec<SecretVec<u8>>> {
-        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            use ::std::ops::Deref;
-
-            <_ as ::sqlx::Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-        }
-    }
-
-    impl Encode<'_, ScyllaDB> for Arc<Vec<SecretVec<u8>>> {
-        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            use ::std::ops::Deref;
-
-            <_ as ::sqlx::Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
         }
     }
 }

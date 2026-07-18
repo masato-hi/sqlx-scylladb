@@ -2,7 +2,7 @@ use std::{str::FromStr, time::Instant};
 
 use futures_core::future::BoxFuture;
 use sqlx::{
-    Acquire, ConnectOptions, Error,
+    Acquire, AssertSqlSafe, ConnectOptions, Error,
     migrate::{AppliedMigration, Migrate, MigrateDatabase, MigrateError},
 };
 use sqlx::{Executor, query_as};
@@ -44,91 +44,112 @@ fn parse_for_maintenance(
 }
 
 impl MigrateDatabase for ScyllaDB {
-    fn create_database(url: &str) -> BoxFuture<'_, Result<(), sqlx::Error>> {
-        Box::pin(async move {
-            let (options, (replication_strategy, replication_factor), keyspace) =
-                parse_for_maintenance(url)?;
-            let mut conn = options.connect().await?;
+    async fn create_database(url: &str) -> Result<(), sqlx::Error> {
+        let (options, (replication_strategy, replication_factor), keyspace) =
+            parse_for_maintenance(url)?;
+        let mut conn = options.connect().await?;
 
-            const QUERY: &'static str = r#"
+        const QUERY: &'static str = r#"
                 CREATE KEYSPACE IF NOT EXISTS %KEYSPACE_NAME%
                 WITH replication = {'class': '%REPLICATION_STRATEGY%', 'replication_factor' : %REPLICATION_FACTOR%}
             "#;
-            let query = QUERY
-                .replace("%KEYSPACE_NAME%", &keyspace)
-                .replace(
-                    "%REPLICATION_STRATEGY%",
-                    replication_strategy.to_string().as_str(),
-                )
-                .replace(
-                    "%REPLICATION_FACTOR%",
-                    replication_factor.to_string().as_str(),
-                );
-            let _ = conn.execute(query.as_str()).await?;
-
-            Ok(())
-        })
-    }
-
-    fn database_exists(url: &str) -> BoxFuture<'_, Result<bool, sqlx::Error>> {
-        Box::pin(async move {
-            let (options, _, keyspace) = parse_for_maintenance(url)?;
-            let mut conn = options.connect().await?;
-
-            let row: Option<(String,)> = query_as(
-                "SELECT keyspace_name FROM system_schema.keyspaces WHERE keyspace_name = ?",
+        let query = QUERY
+            .replace("%KEYSPACE_NAME%", &keyspace)
+            .replace(
+                "%REPLICATION_STRATEGY%",
+                replication_strategy.to_string().as_str(),
             )
-            .bind(keyspace)
-            .fetch_optional(&mut conn)
-            .await?;
+            .replace(
+                "%REPLICATION_FACTOR%",
+                replication_factor.to_string().as_str(),
+            );
+        let query = AssertSqlSafe(query);
+        let _ = conn.execute(query).await?;
 
-            let exists = row.is_some();
-
-            Ok(exists)
-        })
+        Ok(())
     }
 
-    fn drop_database(url: &str) -> BoxFuture<'_, Result<(), sqlx::Error>> {
-        Box::pin(async move {
-            let (options, _, keyspace) = parse_for_maintenance(url)?;
-            let mut conn = options.connect().await?;
+    async fn database_exists(url: &str) -> Result<bool, sqlx::Error> {
+        let (options, _, keyspace) = parse_for_maintenance(url)?;
+        let mut conn = options.connect().await?;
 
-            const QUERY: &'static str = "DROP KEYSPACE IF EXISTS %KEYSPACE_NAME%";
-            let query = QUERY.replace("%KEYSPACE_NAME%", &keyspace);
-            let _ = conn.execute(query.as_str()).await?;
+        let row: Option<(String,)> =
+            query_as("SELECT keyspace_name FROM system_schema.keyspaces WHERE keyspace_name = ?")
+                .bind(keyspace)
+                .fetch_optional(&mut conn)
+                .await?;
 
-            Ok(())
-        })
+        let exists = row.is_some();
+
+        Ok(exists)
+    }
+
+    async fn drop_database(url: &str) -> Result<(), sqlx::Error> {
+        let (options, _, keyspace) = parse_for_maintenance(url)?;
+        let mut conn = options.connect().await?;
+
+        const QUERY: &'static str = "DROP KEYSPACE IF EXISTS %KEYSPACE_NAME%";
+        let query = QUERY.replace("%KEYSPACE_NAME%", &keyspace);
+        let query = AssertSqlSafe(query);
+        let _ = conn.execute(query).await?;
+
+        Ok(())
     }
 }
 
 impl Migrate for ScyllaDBConnection {
-    fn ensure_migrations_table(
-        &mut self,
-    ) -> BoxFuture<'_, Result<(), sqlx::migrate::MigrateError>> {
+    fn create_schema_if_not_exists<'e>(
+        &'e mut self,
+        schema_name: &'e str,
+    ) -> BoxFuture<'e, Result<(), MigrateError>> {
         Box::pin(async move {
-            const QUERY: &'static str = r#"
-                CREATE TABLE IF NOT EXISTS sqlx_migrations (
-                    version BIGINT PRIMARY KEY,
-                    description TEXT,
-                    installed_on TIMESTAMP,
-                    success BOOLEAN,
-                    checksum BLOB,
-                    execution_time BIGINT
-                )
-            "#;
-            self.execute(QUERY).await?;
+            let row: Option<(String,)> = query_as(
+                "SELECT keyspace_name FROM system_schema.keyspaces WHERE keyspace_name = ?",
+            )
+            .bind(schema_name)
+            .fetch_optional(&mut *self)
+            .await?;
+
+            if row.is_some() {
+                return Ok(());
+            }
+
+            Err(MigrateError::CreateSchemasNotSupported(format!(
+                "cannot create new keyspace {schema_name}"
+            )))
+        })
+    }
+
+    fn ensure_migrations_table<'e>(
+        &'e mut self,
+        table_name: &'e str,
+    ) -> BoxFuture<'e, Result<(), sqlx::migrate::MigrateError>> {
+        Box::pin(async move {
+            let query = AssertSqlSafe(format!(
+                r#"
+CREATE TABLE IF NOT EXISTS {table_name} (
+    version BIGINT PRIMARY KEY,
+    description TEXT,
+    installed_on TIMESTAMP,
+    success BOOLEAN,
+    checksum BLOB,
+    execution_time BIGINT
+)
+                "#
+            ));
+            self.execute(query).await?;
 
             Ok(())
         })
     }
 
-    fn dirty_version(&mut self) -> BoxFuture<'_, Result<Option<i64>, sqlx::migrate::MigrateError>> {
+    fn dirty_version<'e>(
+        &'e mut self,
+        table_name: &'e str,
+    ) -> BoxFuture<'e, Result<Option<i64>, sqlx::migrate::MigrateError>> {
         Box::pin(async move {
-            let migrations =
-                query_as::<_, (i64, bool)>("SELECT version, success FROM sqlx_migrations")
-                    .fetch_all(self)
-                    .await?;
+            let query = AssertSqlSafe(format!("SELECT version, success FROM {table_name}"));
+            let migrations = query_as::<_, (i64, bool)>(query).fetch_all(self).await?;
             let dirty_migration = migrations
                 .iter()
                 .filter(|migration| !migration.1)
@@ -139,15 +160,14 @@ impl Migrate for ScyllaDBConnection {
         })
     }
 
-    fn list_applied_migrations(
-        &mut self,
-    ) -> BoxFuture<'_, Result<Vec<sqlx::migrate::AppliedMigration>, sqlx::migrate::MigrateError>>
+    fn list_applied_migrations<'e>(
+        &'e mut self,
+        table_name: &'e str,
+    ) -> BoxFuture<'e, Result<Vec<sqlx::migrate::AppliedMigration>, sqlx::migrate::MigrateError>>
     {
         Box::pin(async move {
-            let rows: Vec<(i64, Vec<u8>)> =
-                query_as("SELECT version, checksum FROM sqlx_migrations")
-                    .fetch_all(self)
-                    .await?;
+            let query = AssertSqlSafe(format!("SELECT version, checksum FROM {table_name}"));
+            let rows: Vec<(i64, Vec<u8>)> = query_as(query).fetch_all(self).await?;
 
             let mut migrations: Vec<AppliedMigration> = rows
                 .into_iter()
@@ -215,20 +235,23 @@ impl Migrate for ScyllaDBConnection {
         })
     }
 
-    fn apply<'e: 'm, 'm>(
+    fn apply<'e>(
         &'e mut self,
-        migration: &'m sqlx::migrate::Migration,
-    ) -> BoxFuture<'m, Result<std::time::Duration, sqlx::migrate::MigrateError>> {
+        table_name: &'e str,
+        migration: &'e sqlx::migrate::Migration,
+    ) -> BoxFuture<'e, Result<std::time::Duration, sqlx::migrate::MigrateError>> {
         Box::pin(async move {
             let start = Instant::now();
 
             let conn = self.acquire().await?;
 
-            const QUERY: &'static str = r#"
-                INSERT INTO sqlx_migrations ( version, description, success, checksum, execution_time )
-                VALUES ( ?, ?, FALSE, ?, -1 )
-            "#;
-            let _ = sqlx::query(QUERY)
+            let query = AssertSqlSafe(format!(
+                r#"
+INSERT INTO {table_name} ( version, description, success, checksum, execution_time )
+VALUES ( ?, ?, FALSE, ?, -1 )
+                "#
+            ));
+            let _ = sqlx::query(query)
                 .bind(migration.version)
                 .bind(&*migration.description)
                 .bind(&*migration.checksum)
@@ -236,18 +259,24 @@ impl Migrate for ScyllaDBConnection {
                 .await?;
 
             let _ = conn
-                .execute(&*migration.sql)
+                .execute(migration.sql.clone())
                 .await
                 .map_err(|e| MigrateError::ExecuteMigration(e, migration.version))?;
 
-            let _ = sqlx::query("UPDATE sqlx_migrations SET success = TRUE WHERE version = ?")
+            let query = AssertSqlSafe(format!(
+                "UPDATE {table_name} SET success = TRUE WHERE version = ?"
+            ));
+            let _ = sqlx::query(query)
                 .bind(migration.version)
                 .execute(&mut *conn)
                 .await?;
 
             let elapsed = start.elapsed();
 
-            let _ = sqlx::query("UPDATE sqlx_migrations SET execution_time = ? WHERE version = ?")
+            let query = AssertSqlSafe(format!(
+                "UPDATE {table_name} SET execution_time = ? WHERE version = ?"
+            ));
+            let _ = sqlx::query(query)
                 .bind(elapsed.as_nanos() as i64)
                 .bind(migration.version)
                 .execute(&mut *conn)
@@ -257,21 +286,26 @@ impl Migrate for ScyllaDBConnection {
         })
     }
 
-    fn revert<'e: 'm, 'm>(
+    fn revert<'e>(
         &'e mut self,
-        migration: &'m sqlx::migrate::Migration,
-    ) -> BoxFuture<'m, Result<std::time::Duration, sqlx::migrate::MigrateError>> {
+        table_name: &'e str,
+        migration: &'e sqlx::migrate::Migration,
+    ) -> BoxFuture<'e, Result<std::time::Duration, sqlx::migrate::MigrateError>> {
         Box::pin(async move {
             let start = Instant::now();
 
-            let _ = sqlx::query("UPDATE sqlx_migrations SET success = FALSE WHERE version = ?")
+            let query = AssertSqlSafe(format!(
+                "UPDATE {table_name} SET success = FALSE WHERE version = ?"
+            ));
+            let _ = sqlx::query(query)
                 .bind(migration.version)
                 .execute(&mut *self)
                 .await?;
 
-            let _ = self.execute(&*migration.sql).await?;
+            let _ = self.execute(migration.sql.clone()).await?;
 
-            let _ = sqlx::query("DELETE FROM sqlx_migrations WHERE version = ?")
+            let query = AssertSqlSafe(format!("DELETE FROM {table_name} WHERE version = ?"));
+            let _ = sqlx::query(query)
                 .bind(migration.version)
                 .execute(&mut *self)
                 .await?;

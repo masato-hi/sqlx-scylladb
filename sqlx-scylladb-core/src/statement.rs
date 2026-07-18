@@ -1,33 +1,27 @@
-use std::{borrow::Cow, sync::Arc};
+use std::sync::Arc;
 
-use scylla::{response::query_result::ColumnSpecs, statement::prepared::PreparedStatement};
+use scylla::response::query_result::ColumnSpecs;
 use sqlx::{ColumnIndex, Error, Statement};
-use sqlx_core::{HashMap, ext::ustr::UStr, impl_statement_query};
+use sqlx_core::{HashMap, ext::ustr::UStr, impl_statement_query, sql_str::SqlStr};
 
 use crate::{ScyllaDB, ScyllaDBArguments, ScyllaDBColumn, ScyllaDBError, ScyllaDBTypeInfo};
 
 /// Implementation of [sqlx::Statement] for ScyllaDB.
 #[derive(Clone)]
-pub struct ScyllaDBStatement<'q> {
-    pub(crate) sql: Cow<'q, str>,
-    pub(crate) prepared_statement: PreparedStatement,
+pub struct ScyllaDBStatement {
+    pub(crate) sql: SqlStr,
     pub(crate) metadata: ScyllaDBStatementMetadata,
     pub(crate) is_affect_statement: bool,
 }
 
-impl<'q> Statement<'q> for ScyllaDBStatement<'q> {
+impl Statement for ScyllaDBStatement {
     type Database = ScyllaDB;
 
-    fn to_owned(&self) -> ScyllaDBStatement<'static> {
-        ScyllaDBStatement::<'static> {
-            sql: Cow::Owned(self.sql.clone().into_owned()),
-            prepared_statement: self.prepared_statement.clone(),
-            metadata: self.metadata.clone(),
-            is_affect_statement: self.is_affect_statement,
-        }
+    fn into_sql(self) -> SqlStr {
+        self.sql
     }
 
-    fn sql(&self) -> &str {
+    fn sql(&self) -> &SqlStr {
         &self.sql
     }
 
@@ -42,8 +36,8 @@ impl<'q> Statement<'q> for ScyllaDBStatement<'q> {
     impl_statement_query!(ScyllaDBArguments);
 }
 
-impl ColumnIndex<ScyllaDBStatement<'_>> for &'_ str {
-    fn index(&self, statement: &ScyllaDBStatement<'_>) -> Result<usize, Error> {
+impl ColumnIndex<ScyllaDBStatement> for &'_ str {
+    fn index(&self, statement: &ScyllaDBStatement) -> Result<usize, Error> {
         statement
             .metadata
             .column_names

@@ -1,0 +1,2 @@
+[migrate]
+table-name = "sqlx_migrations"

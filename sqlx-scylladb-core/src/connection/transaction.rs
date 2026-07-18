@@ -1,11 +1,10 @@
-use std::borrow::Cow;
-
 use scylla::statement::{Statement, batch::Batch};
 
 use crate::{ScyllaDBArguments, ScyllaDBConnection, ScyllaDBError};
+use sqlx_core::sql_str::SqlStr;
 
 pub(crate) struct ScyllaDBTransaction {
-    statements: Vec<String>,
+    statements: Vec<SqlStr>,
     arguments: Vec<ScyllaDBArguments>,
 }
 
@@ -21,14 +20,14 @@ impl Default for ScyllaDBTransaction {
 impl ScyllaDBConnection {
     pub(crate) async fn begin_transaction(
         &mut self,
-        statement: Option<Cow<'_, str>>,
+        statement: Option<SqlStr>,
     ) -> Result<(), ScyllaDBError> {
         if self.transaction.is_none() {
             self.transaction = Some(ScyllaDBTransaction::default())
         }
 
         if let Some(statement) = statement {
-            self.append_to_transaction(&statement, None).await?;
+            self.append_to_transaction(statement, None).await?;
         }
 
         Ok(())
@@ -38,7 +37,7 @@ impl ScyllaDBConnection {
         if let Some(transaction) = &self.transaction {
             let mut batch = Batch::default();
             for statement in &transaction.statements {
-                let statement = Statement::new(statement);
+                let statement = Statement::new(statement.as_str());
                 batch.append_statement(statement);
             }
 
@@ -64,11 +63,11 @@ impl ScyllaDBConnection {
 
     pub(crate) async fn append_to_transaction<'e, 'c: 'e, 'q: 'e>(
         &'c mut self,
-        sql: &'q str,
+        sql: SqlStr,
         arguments: Option<ScyllaDBArguments>,
     ) -> Result<(), ScyllaDBError> {
         if let Some(transaction) = &mut self.transaction {
-            transaction.statements.push(sql.to_string());
+            transaction.statements.push(sql);
             transaction.arguments.push(arguments.unwrap_or_default());
         } else {
             return Err(ScyllaDBError::TransactionNotStarted);

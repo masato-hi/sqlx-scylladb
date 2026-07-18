@@ -1,7 +1,7 @@
 use std::{collections::HashMap, net::IpAddr, str::FromStr};
 
-use sqlx::Column;
 use sqlx::{Acquire, Executor, FromRow, TypeInfo};
+use sqlx::{Column, SqlSafeStr};
 use sqlx_scylladb::ScyllaDBPool;
 use uuid::Uuid;
 
@@ -370,13 +370,14 @@ async fn describe_text_map(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let describe = conn
         .describe(
             r#"
-            SELECT
-                my_id, my_ascii_ascii, my_text_text, my_text_boolean,
-                my_text_tinyint, my_text_smallint, my_text_int, my_text_bigint,
-                my_text_float, my_text_double, my_text_uuid, my_text_inet
-            FROM text_map_tests
-            WHERE my_id = ?
-        "#,
+                SELECT
+                    my_id, my_ascii_ascii, my_text_text, my_text_boolean,
+                    my_text_tinyint, my_text_smallint, my_text_int, my_text_bigint,
+                    my_text_float, my_text_double, my_text_uuid, my_text_inet
+                FROM text_map_tests
+                WHERE my_id = ?
+            "#
+            .into_sql_str(),
         )
         .await?;
 

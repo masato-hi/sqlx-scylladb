@@ -1,4 +1,4 @@
-use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
+use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::ScyllaDBPool;
 use std::str::FromStr;
 use uuid::Uuid;
@@ -196,7 +196,7 @@ async fn describe_uuid(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let conn = conn.acquire().await?;
 
     let describe = conn
-        .describe("SELECT my_id, my_uuid, my_uuid_list, my_uuid_set FROM uuid_tests")
+        .describe("SELECT my_id, my_uuid, my_uuid_list, my_uuid_set FROM uuid_tests".into_sql_str())
         .await?;
 
     assert_eq!("my_id", describe.columns()[0].name());

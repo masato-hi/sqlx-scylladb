@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use sqlx::{Decode, error::BoxDynError};
 
 use crate::{ScyllaDB, ScyllaDBValueRef};
@@ -79,39 +81,6 @@ macro_rules! impl_string_type {
             }
         }
 
-        impl<const N: usize> ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::boxed::Box<[$typ; N]> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
-            }
-        }
-
-        impl<const N: usize> ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::rc::Rc<[$typ; N]> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
-            }
-        }
-
-        impl<const N: usize> ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::sync::Arc<[$typ; N]> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
-            }
-        }
-
         impl ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::boxed::Box<[$typ]> {
             fn encode_by_ref(
                 &self,
@@ -145,59 +114,8 @@ macro_rules! impl_string_type {
             }
         }
 
-        impl ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::boxed::Box<&[$typ]> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
-            }
-        }
-
-        impl ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::rc::Rc<&[$typ]> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
-            }
-        }
-
-        impl ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::sync::Arc<&[$typ]> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.deref(), buf)
-            }
-        }
-
         // Vec
         impl ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::vec::Vec<$typ> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
-            }
-        }
-
-        impl ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::rc::Rc<::std::vec::Vec<$typ>> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
-                <_ as ::sqlx::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
-            }
-        }
-
-        impl ::sqlx::Encode<'_, $crate::ScyllaDB> for ::std::sync::Arc<::std::vec::Vec<$typ>> {
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
@@ -211,17 +129,10 @@ macro_rules! impl_string_type {
 impl_string_type!(&str);
 impl_string_type!(String);
 impl_string_type!(std::borrow::Cow<'_, str>);
-impl_string_type!(std::boxed::Box<&str>);
-impl_string_type!(std::boxed::Box<String>);
-impl_string_type!(std::rc::Rc<&str>);
-impl_string_type!(std::rc::Rc<String>);
-impl_string_type!(std::sync::Arc<&str>);
-impl_string_type!(std::sync::Arc<String>);
+impl_string_type!(Arc<str>);
 
 #[cfg(feature = "secrecy-08")]
 pub mod secrecy {
-    use std::{ops::Deref, rc::Rc, sync::Arc};
-
     use secrecy_08::SecretString;
     use sqlx::{Decode, Encode, Type, encode::IsNull, error::BoxDynError};
 
@@ -231,18 +142,6 @@ pub mod secrecy {
     };
 
     impl Type<ScyllaDB> for SecretString {
-        fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Text
-        }
-    }
-
-    impl Type<ScyllaDB> for Rc<SecretString> {
-        fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Text
-        }
-    }
-
-    impl Type<ScyllaDB> for Arc<SecretString> {
         fn type_info() -> ScyllaDBTypeInfo {
             ScyllaDBTypeInfo::Text
         }
@@ -274,18 +173,6 @@ pub mod secrecy {
             buf.push(argument);
 
             Ok(IsNull::No)
-        }
-    }
-
-    impl Encode<'_, ScyllaDB> for Rc<SecretString> {
-        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
-        }
-    }
-
-    impl Encode<'_, ScyllaDB> for Arc<SecretString> {
-        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.deref(), buf)
         }
     }
 
@@ -402,177 +289,6 @@ mod tests {
             <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(vec![String::from("Hello!")]), &mut buf)?;
         let _ =
             <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(vec![String::from("Hello!")]), &mut buf)?;
-
-        // [Rc<&str>; N]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Rc::new("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(&[Rc::new("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Box::new([Rc::new("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new([Rc::new("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new([Rc::new("Hello!")]), &mut buf)?;
-
-        // &[Rc<&str>]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Rc::new("Hello!")].as_slice(), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Box::new([Rc::new("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-        let _ =
-            <_ as Encode<'_, ScyllaDB>>::encode(Rc::new([Rc::new("Hello!")].as_slice()), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Rc::new("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-
-        // Vec<Rc<&str>>
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(vec![Rc::new("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(vec![Rc::new("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(vec![Rc::new("Hello!")]), &mut buf)?;
-
-        // [Arc<&str>; N]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Arc::new("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(&[Arc::new("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Box::new([Arc::new("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new([Arc::new("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new([Arc::new("Hello!")]), &mut buf)?;
-
-        // &[Arc<&str>]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Arc::new("Hello!")].as_slice(), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Box::new([Arc::new("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Arc::new("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Arc::new("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-
-        // Vec<Arc<&str>>
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(vec![Arc::new("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(vec![Arc::new("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(vec![Arc::new("Hello!")]), &mut buf)?;
-
-        // [Box<&str>; N]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Box::new("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(&[Box::new("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Box::new([Box::new("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new([Box::new("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new([Box::new("Hello!")]), &mut buf)?;
-
-        // &[Box<&str>]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Box::new("Hello!")].as_slice(), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Box::new([Box::new("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Box::new("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Box::new("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-
-        // Vec<Box<&str>>
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(vec![Box::new("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(vec![Box::new("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(vec![Box::new("Hello!")]), &mut buf)?;
-
-        // [Rc<String>; N]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Rc::new(String::from("Hello!"))], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(&[Rc::new(String::from("Hello!"))], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Box::new([Rc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Rc::new([Rc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Rc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
-
-        // &[Rc<String>]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            [Rc::new(String::from("Hello!"))].as_slice(),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Box::new([Rc::new(String::from("Hello!"))].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Rc::new([Rc::new(String::from("Hello!"))].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Rc::new(String::from("Hello!"))].as_slice()),
-            &mut buf,
-        )?;
-
-        // Vec<Rc<String>>
-        let _ =
-            <_ as Encode<'_, ScyllaDB>>::encode(vec![Rc::new(String::from("Hello!"))], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Rc::new(vec![Rc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new(vec![Rc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
-
-        // [Arc<String>; N]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Arc::new(String::from("Hello!"))], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(&[Arc::new(String::from("Hello!"))], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Box::new([Arc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Rc::new([Arc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Arc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
-
-        // &[Arc<String>]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            [Arc::new(String::from("Hello!"))].as_slice(),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Box::new([Arc::new(String::from("Hello!"))].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Rc::new([Arc::new(String::from("Hello!"))].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Arc::new(String::from("Hello!"))].as_slice()),
-            &mut buf,
-        )?;
-
-        // Vec<Arc<String>>
-        let _ =
-            <_ as Encode<'_, ScyllaDB>>::encode(vec![Arc::new(String::from("Hello!"))], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Rc::new(vec![Arc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new(vec![Arc::new(String::from("Hello!"))]),
-            &mut buf,
-        )?;
 
         // [Cow<'_, str>; N]
         let _ = <_ as Encode<'_, ScyllaDB>>::encode([Cow::from("Hello!")], &mut buf)?;

@@ -1,17 +1,22 @@
 #![allow(missing_docs)]
 
-use std::{borrow::Cow, pin::pin};
+use std::pin::pin;
 
 use futures_core::{future::BoxFuture, stream::BoxStream};
-use futures_util::{StreamExt, TryFutureExt, TryStreamExt};
+use futures_util::{FutureExt, StreamExt, TryFutureExt, TryStreamExt};
 use sqlx::{
-    Connection, Database, Describe, Either, Executor, TransactionManager,
+    Connection, Database, Describe, Either, Executor,
     any::{
         AnyArguments, AnyConnectOptions, AnyQueryResult, AnyRow, AnyStatement, AnyTypeInfo,
         AnyTypeInfoKind,
     },
 };
-use sqlx_core::any::{AnyColumn, AnyConnectionBackend, AnyValueKind};
+pub use sqlx_core::any::driver::install_drivers;
+use sqlx_core::{
+    any::{AnyColumn, AnyConnectionBackend, AnyValueKind},
+    sql_str::SqlStr,
+    transaction::TransactionManager,
+};
 
 use crate::{
     ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArguments, ScyllaDBColumn,
@@ -27,30 +32,27 @@ impl AnyConnectionBackend for ScyllaDBConnection {
     }
 
     fn close(self: Box<Self>) -> BoxFuture<'static, sqlx_core::Result<()>> {
-        Connection::close(*self)
+        Connection::close(*self).boxed()
     }
 
     fn close_hard(self: Box<Self>) -> BoxFuture<'static, sqlx_core::Result<()>> {
-        Connection::close_hard(*self)
+        Connection::close_hard(*self).boxed()
     }
 
     fn ping(&mut self) -> BoxFuture<'_, sqlx_core::Result<()>> {
-        Connection::ping(self)
+        Connection::ping(self).boxed()
     }
 
-    fn begin(
-        &mut self,
-        statement: Option<Cow<'static, str>>,
-    ) -> BoxFuture<'_, sqlx_core::Result<()>> {
-        ScyllaDBTransactionManager::begin(self, statement)
+    fn begin(&mut self, statement: Option<SqlStr>) -> BoxFuture<'_, sqlx_core::Result<()>> {
+        ScyllaDBTransactionManager::begin(self, statement).boxed()
     }
 
     fn commit(&mut self) -> BoxFuture<'_, sqlx_core::Result<()>> {
-        ScyllaDBTransactionManager::commit(self)
+        ScyllaDBTransactionManager::commit(self).boxed()
     }
 
     fn rollback(&mut self) -> BoxFuture<'_, sqlx_core::Result<()>> {
-        ScyllaDBTransactionManager::rollback(self)
+        ScyllaDBTransactionManager::rollback(self).boxed()
     }
 
     fn start_rollback(&mut self) {
@@ -62,7 +64,7 @@ impl AnyConnectionBackend for ScyllaDBConnection {
     }
 
     fn flush(&mut self) -> BoxFuture<'_, sqlx_core::Result<()>> {
-        Connection::flush(self)
+        Connection::flush(self).boxed()
     }
 
     fn should_flush(&self) -> bool {
@@ -76,13 +78,12 @@ impl AnyConnectionBackend for ScyllaDBConnection {
         Ok(self)
     }
 
-    fn fetch_many<'q>(
-        &'q mut self,
-        query: &'q str,
+    fn fetch_many(
+        &mut self,
+        query: SqlStr,
         persistent: bool,
-        arguments: Option<sqlx::any::AnyArguments<'q>>,
-    ) -> BoxStream<'q, sqlx_core::Result<sqlx::Either<sqlx::any::AnyQueryResult, sqlx::any::AnyRow>>>
-    {
+        arguments: Option<AnyArguments>,
+    ) -> BoxStream<'_, sqlx_core::Result<sqlx::Either<AnyQueryResult, AnyRow>>> {
         let persistent = persistent && arguments.is_some();
 
         let arguments = arguments.map(map_arguments);
@@ -99,20 +100,19 @@ impl AnyConnectionBackend for ScyllaDBConnection {
         })
     }
 
-    fn fetch_optional<'q>(
-        &'q mut self,
-        query: &'q str,
+    fn fetch_optional(
+        &mut self,
+        query: SqlStr,
         persistent: bool,
-        arguments: Option<sqlx::any::AnyArguments<'q>>,
-    ) -> BoxFuture<'q, sqlx_core::Result<Option<sqlx::any::AnyRow>>> {
+        arguments: Option<AnyArguments>,
+    ) -> BoxFuture<'_, sqlx_core::Result<Option<AnyRow>>> {
         let persistent = persistent && arguments.is_some();
+        let arguments = arguments
+            .map(AnyArguments::convert_into)
+            .transpose()
+            .map_err(sqlx_core::Error::Encode);
 
         Box::pin(async move {
-            let arguments = arguments
-                .as_ref()
-                .map(AnyArguments::convert_to)
-                .transpose()
-                .map_err(sqlx_core::Error::Encode);
             let arguments = arguments?;
             let mut stream = pin!(self.run(query, arguments, persistent).await?);
 
@@ -126,23 +126,20 @@ impl AnyConnectionBackend for ScyllaDBConnection {
 
     fn prepare_with<'c, 'q: 'c>(
         &'c mut self,
-        sql: &'q str,
+        sql: SqlStr,
         _parameters: &[sqlx::any::AnyTypeInfo],
-    ) -> BoxFuture<'c, sqlx_core::Result<sqlx::any::AnyStatement<'q>>> {
+    ) -> BoxFuture<'c, sqlx_core::Result<AnyStatement>> {
         Box::pin(async move {
             let statement = Executor::prepare_with(self, sql, &[]).await?;
-            AnyStatement::try_from_statement(
-                sql,
-                &statement,
-                statement.metadata.column_names.clone(),
-            )
+            let column_names = statement.metadata.column_names.clone();
+            AnyStatement::try_from_statement(statement, column_names)
         })
     }
 
-    fn describe<'q>(
-        &'q mut self,
-        sql: &'q str,
-    ) -> BoxFuture<'q, sqlx_core::Result<sqlx::Describe<sqlx::Any>>> {
+    fn describe<'c>(
+        &mut self,
+        sql: SqlStr,
+    ) -> BoxFuture<'_, sqlx_core::Result<sqlx::Describe<sqlx::Any>>> {
         Box::pin(async move {
             let describe = Executor::describe(self, sql).await?;
 
@@ -242,7 +239,7 @@ impl<'a> TryFrom<&'a ScyllaDBRow> for AnyRow {
     }
 }
 
-fn map_arguments(args: AnyArguments<'_>) -> ScyllaDBArguments {
+fn map_arguments(args: AnyArguments) -> ScyllaDBArguments {
     let capacity = args.values.0.capacity();
     let mut types = Vec::with_capacity(capacity);
     let mut buffer = Vec::with_capacity(capacity);

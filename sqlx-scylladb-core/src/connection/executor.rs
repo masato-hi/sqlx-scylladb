@@ -1,4 +1,4 @@
-use std::{borrow::Cow, ops::ControlFlow, pin::pin};
+use std::{ops::ControlFlow, pin::pin};
 
 use bytes::Bytes;
 use futures_core::{Stream, future::BoxFuture, stream::BoxStream};
@@ -11,7 +11,8 @@ use scylla::{
     },
     statement::Statement,
 };
-use sqlx::{Connection, Describe, Either, Error, Executor, Row};
+
+use sqlx::{Connection, Describe, Either, Error, Executor, Row, SqlStr};
 use sqlx_core::{ext::ustr::UStr, try_stream};
 
 use crate::{
@@ -59,7 +60,7 @@ impl ScyllaDBConnection {
 
     pub(crate) async fn run<'e, 'c: 'e, 'q: 'e>(
         &'c mut self,
-        sql: &'q str,
+        sql: SqlStr,
         arguments: Option<ScyllaDBArguments>,
         persistent: bool,
     ) -> Result<
@@ -67,7 +68,7 @@ impl ScyllaDBConnection {
         Error,
     > {
         Ok(try_stream! {
-            let statement = self.prepare(sql).await?;
+            let statement = self.prepare(sql.clone()).await?;
 
             // INSERT, UPDATE, and DELETE queries during transactions are processed in batches.
             let in_batch = self.is_in_transaction() && statement.is_affect_statement;
@@ -76,7 +77,7 @@ impl ScyllaDBConnection {
                 let mut paging_state = PagingState::start();
 
                 loop {
-                    let (query_result, paging_state_response) = self.execute_single_page(&statement.sql, &arguments, persistent, paging_state.clone()).await?;
+                    let (query_result, paging_state_response) = self.execute_single_page(statement.sql.as_str(), &arguments, persistent, paging_state.clone()).await?;
 
                     if !query_result.is_rows() {
                         break;
@@ -141,18 +142,19 @@ impl ScyllaDBConnection {
 impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
     type Database = ScyllaDB;
 
-    fn fetch_many<'e, 'q: 'e, E>(
+    fn fetch_many<'e, 'q, E>(
         self,
-        query: E,
+        mut query: E,
     ) -> BoxStream<'e, Result<Either<ScyllaDBQueryResult, ScyllaDBRow>, sqlx::Error>>
     where
         'c: 'e,
         E: 'q + sqlx::Execute<'q, ScyllaDB>,
+        'q: 'e,
+        E: 'q,
     {
-        let sql = query.sql();
-        let mut query = query;
         let arguments = query.take_arguments().map_err(Error::Encode);
         let persistent = query.persistent();
+        let sql = query.sql();
 
         Box::pin(try_stream! {
             let arguments = arguments?;
@@ -187,16 +189,16 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
         })
     }
 
-    fn prepare_with<'e, 'q: 'e>(
+    fn prepare_with<'e>(
         self,
-        sql: &'q str,
+        sql: SqlStr,
         _parameters: &'e [ScyllaDBTypeInfo],
-    ) -> BoxFuture<'e, Result<ScyllaDBStatement<'q>, sqlx::Error>>
+    ) -> BoxFuture<'e, Result<ScyllaDBStatement, sqlx::Error>>
     where
         'c: 'e,
     {
         Box::pin(async move {
-            let statement = Statement::new(sql).with_page_size(self.page_size);
+            let statement = Statement::new(sql.as_str()).with_page_size(self.page_size);
             let prepared_statement = self
                 .caching_session
                 .add_prepared_statement(&statement)
@@ -210,23 +212,22 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
             let is_affect_statement = column_specs.is_affect_statement();
 
             Ok(ScyllaDBStatement {
-                sql: Cow::Borrowed(sql),
-                prepared_statement,
+                sql,
                 metadata,
                 is_affect_statement,
             })
         })
     }
 
-    fn describe<'e, 'q: 'e>(
+    fn describe<'e>(
         self,
-        sql: &'q str,
+        sql: SqlStr,
     ) -> BoxFuture<'e, Result<Describe<Self::Database>, sqlx::Error>>
     where
         'c: 'e,
     {
         Box::pin(async move {
-            let statement = Statement::new(sql);
+            let statement = Statement::new(sql.as_str());
             let prepared_statement = self
                 .caching_session
                 .add_prepared_statement(&statement)

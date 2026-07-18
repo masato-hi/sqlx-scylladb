@@ -1,4 +1,4 @@
-use sqlx::{Acquire, Column, Executor, FromRow, TypeInfo};
+use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::macros::UserDefinedType;
 use sqlx_scylladb::{
     ScyllaDBPool,
@@ -277,7 +277,7 @@ async fn describe_user_defined_type(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let conn = conn.acquire().await?;
 
     let describe = conn
-        .describe("SELECT my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set FROM user_defined_type_tests")
+        .describe("SELECT my_id, my_user_defined_type, my_user_defined_type_list, my_user_defined_type_set FROM user_defined_type_tests".into_sql_str())
         .await?;
 
     assert_eq!("my_id", describe.columns()[0].name());

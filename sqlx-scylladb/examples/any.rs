@@ -45,7 +45,7 @@ impl Type<ScyllaDB> for AnyMap {
 impl Encode<'_, ScyllaDB> for AnyMap {
     fn encode_by_ref(
         &self,
-        buf: &mut <ScyllaDB as sqlx::Database>::ArgumentBuffer<'_>,
+        buf: &mut <ScyllaDB as sqlx::Database>::ArgumentBuffer,
     ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
         let argument = ScyllaDBArgument::Any(Arc::new(self.0.clone()));
         buf.push(argument);
