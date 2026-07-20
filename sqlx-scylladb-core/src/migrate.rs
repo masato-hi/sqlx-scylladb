@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS {table_name} (
     fn lock(&mut self) -> BoxFuture<'_, Result<(), sqlx::migrate::MigrateError>> {
         Box::pin(async {
             const CREATE_LOCK_TABLE_QUERY: &'static str = r#"
-                CREATE TABLE IF NOT EXISTS sqlx_advisory_lock (
+                CREATE TABLE IF NOT EXISTS sqlx_migration_lock (
                     lock_id BIGINT PRIMARY KEY,
                     keyspace_name TEXT
                 )
@@ -199,7 +199,7 @@ CREATE TABLE IF NOT EXISTS {table_name} (
             let lock_id = generate_lock_id(&keyspace);
 
             const INSERT_LOCK_QUERY: &'static str = r#"
-                INSERT INTO sqlx_advisory_lock (lock_id, keyspace_name)
+                INSERT INTO sqlx_migration_lock (lock_id, keyspace_name)
                 VALUES (?, ?)
                 IF NOT EXISTS
             "#;
@@ -226,7 +226,7 @@ CREATE TABLE IF NOT EXISTS {table_name} (
 
             let lock_id = generate_lock_id(&keyspace);
 
-            sqlx::query("DELETE FROM sqlx_advisory_lock WHERE lock_id = ?")
+            sqlx::query("DELETE FROM sqlx_migration_lock WHERE lock_id = ?")
                 .bind(lock_id)
                 .execute(self)
                 .await?;
