@@ -15,5 +15,5 @@ macros = ["sqlx-scylladb-macros-core/macros"]
 derive = ["sqlx-scylladb-macros-core/derive"]
 
 [dependencies]
-syn = "2.0.117"
+syn = "3.0.2"
 sqlx-scylladb-macros-core = { workspace = true }
