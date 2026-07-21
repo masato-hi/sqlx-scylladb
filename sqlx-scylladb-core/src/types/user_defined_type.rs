@@ -1,6 +1,9 @@
 use scylla::{deserialize::value::DeserializeValue, serialize::value::SerializeValue};
-use sqlx::{Decode, Encode, encode::IsNull};
-use sqlx_core::ext::ustr::UStr;
+use sqlx_core::{
+    decode::Decode,
+    encode::{Encode, IsNull},
+    ext::ustr::UStr,
+};
 
 use crate::{ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer};
 
@@ -22,8 +25,8 @@ where
     T: UserDefinedType<'r>,
 {
     fn decode(
-        value: <ScyllaDB as sqlx::Database>::ValueRef<'r>,
-    ) -> Result<Self, sqlx::error::BoxDynError> {
+        value: <ScyllaDB as sqlx_core::database::Database>::ValueRef<'r>,
+    ) -> Result<Self, sqlx_core::error::BoxDynError> {
         let value: Self = value.deserialize()?;
         Ok(value)
     }
@@ -36,7 +39,7 @@ where
     fn encode_by_ref(
         &self,
         buf: &mut ScyllaDBArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+    ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
         let mut values = Vec::with_capacity(self.len());
         for value in self {
             values.push(value.box_cloned());
@@ -54,7 +57,7 @@ where
     fn encode_by_ref(
         &self,
         buf: &mut ScyllaDBArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+    ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
         <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
     }
 }
@@ -66,7 +69,7 @@ where
     fn encode_by_ref(
         &self,
         buf: &mut ScyllaDBArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+    ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
         <_ as Encode<'_, ScyllaDB>>::encode_by_ref(*self, buf)
     }
 }
@@ -78,7 +81,7 @@ where
     fn encode_by_ref(
         &self,
         buf: &mut ScyllaDBArgumentBuffer,
-    ) -> Result<sqlx::encode::IsNull, sqlx::error::BoxDynError> {
+    ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
         <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
     }
 }

@@ -4,8 +4,7 @@ use std::{
 };
 
 use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
-use sqlx::TypeInfo;
-use sqlx_core::ext::ustr::UStr;
+use sqlx_core::{ext::ustr::UStr, type_info::TypeInfo};
 
 use crate::ScyllaDBError;
 

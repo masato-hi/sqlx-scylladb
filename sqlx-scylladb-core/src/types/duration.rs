@@ -23,8 +23,7 @@ mod tests {
         value::CqlDuration,
     };
 
-    use sqlx::{Decode, Encode, error::BoxDynError};
-    use sqlx_core::ext::ustr::UStr;
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
     use crate::{
         ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,

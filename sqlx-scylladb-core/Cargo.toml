@@ -8,18 +8,23 @@ authors.workspace = true
 description = "Core of sqlx-scylladb. Not intended to be used directly."
 
 [features]
-migrate = ["dep:crc", "sqlx/migrate"]
-any = ["sqlx/any"]
-time-03 = ["dep:time-03", "sqlx/time", "scylla/time-03", "scylla-cql/time-03"]
+migrate = ["dep:crc", "sqlx-core/migrate"]
+any = ["sqlx-core/any"]
+time-03 = [
+  "dep:time-03",
+  "sqlx-core/time",
+  "scylla/time-03",
+  "scylla-cql/time-03",
+]
 chrono-04 = [
   "dep:chrono-04",
-  "sqlx/chrono",
+  "sqlx-core/chrono",
   "scylla/chrono-04",
   "scylla-cql/chrono-04",
 ]
 bigdecimal-04 = [
   "dep:bigdecimal-04",
-  "sqlx/bigdecimal",
+  "sqlx-core/bigdecimal",
   "scylla/bigdecimal-04",
   "scylla-cql/bigdecimal-04",
 ]
@@ -30,7 +35,6 @@ rustls-023 = ["dep:rustls-023", "scylla/rustls-023"]
 [dependencies]
 scylla = { workspace = true }
 scylla-cql = { workspace = true }
-sqlx = { workspace = true }
 sqlx-core = { workspace = true }
 
 uuid = { workspace = true }

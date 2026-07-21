@@ -1,8 +1,10 @@
 use std::sync::Arc;
 
 use scylla::response::query_result::ColumnSpecs;
-use sqlx::{ColumnIndex, Error, Statement};
-use sqlx_core::{HashMap, ext::ustr::UStr, impl_statement_query, sql_str::SqlStr};
+use sqlx_core::{
+    Error, HashMap, column::ColumnIndex, ext::ustr::UStr, impl_statement_query, sql_str::SqlStr,
+    statement::Statement,
+};
 
 use crate::{ScyllaDB, ScyllaDBArguments, ScyllaDBColumn, ScyllaDBError, ScyllaDBTypeInfo};
 
@@ -25,8 +27,8 @@ impl Statement for ScyllaDBStatement {
         &self.sql
     }
 
-    fn parameters(&self) -> Option<sqlx::Either<&[ScyllaDBTypeInfo], usize>> {
-        Some(sqlx::Either::Right(self.metadata.parameters))
+    fn parameters(&self) -> Option<sqlx_core::Either<&[ScyllaDBTypeInfo], usize>> {
+        Some(sqlx_core::Either::Right(self.metadata.parameters))
     }
 
     fn columns(&self) -> &[ScyllaDBColumn] {

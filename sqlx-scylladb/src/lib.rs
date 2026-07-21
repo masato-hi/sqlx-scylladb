@@ -7,7 +7,7 @@ pub use sqlx_scylladb_core::*;
 pub mod ext {
     pub use ::scylla;
     pub use ::scylla_cql;
-    pub use ::sqlx;
+    pub use ::sqlx_core;
     pub use ::sqlx_core::ext::ustr;
 }
 

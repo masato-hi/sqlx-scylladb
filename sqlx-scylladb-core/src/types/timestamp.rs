@@ -53,8 +53,7 @@ mod tests {
         value::CqlTimestamp,
     };
 
-    use sqlx::{Decode, Encode, error::BoxDynError};
-    use sqlx_core::ext::ustr::UStr;
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
     use crate::{
         ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
@@ -146,8 +145,7 @@ mod tests {
         use chrono_04::{DateTime, Utc};
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-        use sqlx::{Decode, Encode, error::BoxDynError};
-        use sqlx_core::ext::ustr::UStr;
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
         use crate::{
             ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
@@ -260,8 +258,7 @@ mod tests {
 
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-        use sqlx::{Decode, Encode, error::BoxDynError};
-        use sqlx_core::ext::ustr::UStr;
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
         use time_03::OffsetDateTime;
 
         use crate::{

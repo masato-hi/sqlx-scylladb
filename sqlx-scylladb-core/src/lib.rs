@@ -14,6 +14,7 @@ mod options;
 mod query_result;
 mod row;
 mod statement;
+#[cfg(feature = "migrate")]
 mod testing;
 mod transaction;
 mod type_info;
@@ -28,10 +29,12 @@ pub use error::ScyllaDBError;
 pub use options::{ScyllaDBCompression, ScyllaDBConnectOptions, ScyllaDBReplicationStrategy};
 pub use query_result::ScyllaDBQueryResult;
 pub use row::ScyllaDBRow;
-use sqlx::{Executor, Pool, Transaction, pool::PoolOptions};
 use sqlx_core::{
+    executor::Executor,
     impl_acquire, impl_column_index_for_row, impl_column_index_for_statement,
     impl_encode_for_option, impl_into_arguments_for_arguments,
+    pool::{Pool, PoolOptions},
+    transaction::Transaction,
 };
 pub use statement::ScyllaDBStatement;
 pub use transaction::ScyllaDBTransactionManager;
@@ -54,7 +57,7 @@ impl<'c, T: Executor<'c, Database = ScyllaDB>> ScyllaDBExecutor<'c> for T {}
 pub type ScyllaDBTransaction<'c> = Transaction<'c, ScyllaDB>;
 
 /// An alias for [`sqlx::Type<ScyllaDB>`][sqlx::Type].
-pub trait ScyllaDBType: sqlx::Type<ScyllaDB> {}
+pub trait ScyllaDBType: sqlx_core::types::Type<ScyllaDB> {}
 
 impl_into_arguments_for_arguments!(ScyllaDBArguments);
 impl_acquire!(ScyllaDB, ScyllaDBConnection);

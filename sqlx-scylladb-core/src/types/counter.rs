@@ -1,5 +1,5 @@
 use scylla::value::Counter;
-use sqlx::{Decode, Type, error::BoxDynError};
+use sqlx_core::{decode::Decode, error::BoxDynError, types::Type};
 
 use crate::{ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef};
 
@@ -23,8 +23,7 @@ mod tests {
         value::Counter,
     };
 
-    use sqlx::{Decode, error::BoxDynError};
-    use sqlx_core::ext::ustr::UStr;
+    use sqlx_core::{decode::Decode, error::BoxDynError, ext::ustr::UStr};
 
     use crate::{ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef, types::serialize_value};
 

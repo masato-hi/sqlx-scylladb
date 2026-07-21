@@ -8,7 +8,7 @@ use scylla::{
         UseKeyspaceError,
     },
 };
-use sqlx::error::{DatabaseError, ErrorKind};
+use sqlx_core::error::{DatabaseError, ErrorKind};
 use sqlx_core::ext::ustr::UStr;
 use thiserror::Error;
 

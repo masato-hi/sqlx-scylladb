@@ -1,5 +1,5 @@
 use bytes::Bytes;
-use sqlx::{ColumnIndex, Error, Row};
+use sqlx_core::{Error, column::ColumnIndex, row::Row};
 
 use crate::{ScyllaDB, ScyllaDBColumn, ScyllaDBValueRef, statement::ScyllaDBStatementMetadata};
 
@@ -38,9 +38,9 @@ impl Row for ScyllaDBRow {
         &self.metadata.columns
     }
 
-    fn try_get_raw<I>(&self, index: I) -> Result<ScyllaDBValueRef<'_>, sqlx::Error>
+    fn try_get_raw<I>(&self, index: I) -> Result<ScyllaDBValueRef<'_>, sqlx_core::Error>
     where
-        I: sqlx::ColumnIndex<Self>,
+        I: sqlx_core::column::ColumnIndex<Self>,
     {
         let index = index.index(self)?;
         let column_metadata =
@@ -72,7 +72,7 @@ impl Row for ScyllaDBRow {
 }
 
 impl ColumnIndex<ScyllaDBRow> for &'_ str {
-    fn index(&self, row: &ScyllaDBRow) -> Result<usize, sqlx::Error> {
+    fn index(&self, row: &ScyllaDBRow) -> Result<usize, sqlx_core::Error> {
         row.metadata
             .column_names
             .get(*self)

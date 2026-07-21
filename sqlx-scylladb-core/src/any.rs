@@ -4,16 +4,16 @@ use std::pin::pin;
 
 use futures_core::{future::BoxFuture, stream::BoxStream};
 use futures_util::{FutureExt, StreamExt, TryFutureExt, TryStreamExt};
-use sqlx::{
-    Connection, Database, Describe, Either, Executor,
-    any::{
-        AnyArguments, AnyConnectOptions, AnyQueryResult, AnyRow, AnyStatement, AnyTypeInfo,
-        AnyTypeInfoKind,
-    },
-};
 pub use sqlx_core::any::driver::install_drivers;
 use sqlx_core::{
-    any::{AnyColumn, AnyConnectionBackend, AnyValueKind},
+    Either,
+    any::{
+        AnyArguments, AnyColumn, AnyConnectOptions, AnyConnectionBackend, AnyQueryResult, AnyRow,
+        AnyStatement, AnyTypeInfo, AnyTypeInfoKind, AnyValueKind,
+    },
+    connection::Connection,
+    database::Database,
+    executor::Executor,
     sql_str::SqlStr,
     transaction::TransactionManager,
 };
@@ -83,7 +83,7 @@ impl AnyConnectionBackend for ScyllaDBConnection {
         query: SqlStr,
         persistent: bool,
         arguments: Option<AnyArguments>,
-    ) -> BoxStream<'_, sqlx_core::Result<sqlx::Either<AnyQueryResult, AnyRow>>> {
+    ) -> BoxStream<'_, sqlx_core::Result<sqlx_core::Either<AnyQueryResult, AnyRow>>> {
         let persistent = persistent && arguments.is_some();
 
         let arguments = arguments.map(map_arguments);
@@ -127,7 +127,7 @@ impl AnyConnectionBackend for ScyllaDBConnection {
     fn prepare_with<'c, 'q: 'c>(
         &'c mut self,
         sql: SqlStr,
-        _parameters: &[sqlx::any::AnyTypeInfo],
+        _parameters: &[sqlx_core::any::AnyTypeInfo],
     ) -> BoxFuture<'c, sqlx_core::Result<AnyStatement>> {
         Box::pin(async move {
             let statement = Executor::prepare_with(self, sql, &[]).await?;
@@ -139,7 +139,7 @@ impl AnyConnectionBackend for ScyllaDBConnection {
     fn describe<'c>(
         &mut self,
         sql: SqlStr,
-    ) -> BoxFuture<'_, sqlx_core::Result<sqlx::Describe<sqlx::Any>>> {
+    ) -> BoxFuture<'_, sqlx_core::Result<sqlx_core::describe::Describe<sqlx_core::any::Any>>> {
         Box::pin(async move {
             let describe = Executor::describe(self, sql).await?;
 
@@ -170,7 +170,7 @@ impl AnyConnectionBackend for ScyllaDBConnection {
                 None => None,
             };
 
-            Ok(Describe {
+            Ok(sqlx_core::describe::Describe {
                 columns,
                 parameters,
                 nullable: describe.nullable,

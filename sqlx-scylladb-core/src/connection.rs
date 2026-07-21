@@ -5,7 +5,7 @@ mod transaction;
 use std::fmt::Debug;
 
 use scylla::client::caching_session::CachingSession;
-use sqlx::{Connection, Error, Transaction};
+use sqlx_core::{Error, connection::Connection, transaction::Transaction};
 
 use crate::{ScyllaDB, ScyllaDBConnectOptions, connection::transaction::ScyllaDBTransaction};
 
@@ -44,7 +44,7 @@ impl Connection for ScyllaDBConnection {
             let nodes = state.get_nodes_info();
             for node in nodes {
                 if !node.is_connected() {
-                    return Err(sqlx::Error::PoolClosed);
+                    return Err(sqlx_core::Error::PoolClosed);
                 }
             }
             Ok(())
@@ -53,7 +53,9 @@ impl Connection for ScyllaDBConnection {
 
     fn begin(
         &mut self,
-    ) -> impl Future<Output = Result<sqlx::Transaction<'_, Self::Database>, Error>> + Send + '_
+    ) -> impl Future<Output = Result<sqlx_core::transaction::Transaction<'_, Self::Database>, Error>>
+    + Send
+    + '_
     where
         Self: Sized,
     {

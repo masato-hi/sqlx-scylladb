@@ -5,8 +5,10 @@ use scylla::{
     cluster::metadata::ColumnType,
     deserialize::{FrameSlice, value::DeserializeValue},
 };
-use sqlx::{Value, ValueRef};
-use sqlx_core::ext::ustr::UStr;
+use sqlx_core::{
+    ext::ustr::UStr,
+    value::{Value, ValueRef},
+};
 
 use crate::{ScyllaDB, ScyllaDBError, ScyllaDBTypeInfo};
 
