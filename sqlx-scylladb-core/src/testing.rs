@@ -3,9 +3,11 @@ use std::{ops::Deref, str::FromStr, sync::OnceLock, time::Duration};
 
 use scylla::value::CqlTimestamp;
 use sha2::{Digest, Sha512};
-use sqlx::{AssertSqlSafe, QueryBuilder};
-use sqlx::{Connection as _, Error, Executor, Pool, pool::PoolOptions};
 use sqlx_core::testing::{FixtureSnapshot, TestArgs, TestContext, TestSupport};
+use sqlx_core::{
+    Error, connection::Connection as _, executor::Executor, pool::Pool, pool::PoolOptions,
+    query_builder::QueryBuilder, sql_str::AssertSqlSafe,
+};
 
 use crate::{ScyllaDB, ScyllaDBConnectOptions, ScyllaDBConnection};
 
@@ -116,12 +118,14 @@ async fn test_context(args: &TestArgs) -> Result<TestContext<ScyllaDB>, Error> {
         .as_millis() as i64;
     let timestamp = CqlTimestamp(timestamp);
 
-    sqlx::query("INSERT INTO sqlx_test_databases(db_name, test_path, created_at) values (?, ?, ?)")
-        .bind(&db_name)
-        .bind(args.test_path)
-        .bind(timestamp)
-        .execute(&mut *conn)
-        .await?;
+    sqlx_core::query::query(
+        "INSERT INTO sqlx_test_databases(db_name, test_path, created_at) values (?, ?, ?)",
+    )
+    .bind(&db_name)
+    .bind(args.test_path)
+    .bind(timestamp)
+    .execute(&mut *conn)
+    .await?;
 
     let query = AssertSqlSafe(format!(
         "CREATE KEYSPACE IF NOT EXISTS {db_name} WITH replication = {{'class': 'SimpleStrategy', 'replication_factor': 1}}"
@@ -147,7 +151,7 @@ async fn test_context(args: &TestArgs) -> Result<TestContext<ScyllaDB>, Error> {
 async fn do_cleanup(conn: &mut ScyllaDBConnection, db_name: &str) -> Result<(), Error> {
     let delete_db_command = AssertSqlSafe(format!("DROP KEYSPACE IF EXISTS {db_name};"));
     conn.execute(delete_db_command).await?;
-    sqlx::query("DELETE FROM sqlx_test_databases WHERE db_name = ?")
+    sqlx_core::query::query("DELETE FROM sqlx_test_databases WHERE db_name = ?")
         .bind(db_name)
         .execute(&mut *conn)
         .await?;
@@ -161,7 +165,7 @@ async fn cleanup_test_dbs() -> Result<Option<usize>, Error> {
     let mut conn = ScyllaDBConnection::connect(&url).await?;
 
     let delete_db_names: Vec<String> =
-        sqlx::query_scalar("SELECT db_name from sqlx_test_databases")
+        sqlx_core::query_scalar::query_scalar("SELECT db_name from sqlx_test_databases")
             .fetch_all(&mut conn)
             .await?;
 
@@ -193,7 +197,7 @@ async fn cleanup_test_dbs() -> Result<Option<usize>, Error> {
         return Ok(None);
     }
 
-    sqlx::query("DELETE FROM sqlx_test_databases WHERE db_name IN(?)")
+    sqlx_core::query::query("DELETE FROM sqlx_test_databases WHERE db_name IN(?)")
         .bind(delete_db_names.as_slice())
         .execute(&mut conn)
         .await?;

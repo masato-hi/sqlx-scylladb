@@ -12,8 +12,8 @@ description = "A database driver for ScyllaDB to be used with the Rust sqlx fram
 [features]
 default = ["any", "migrate", "macros"]
 
-migrate = ["sqlx-scylladb-core/migrate"]
-any = ["sqlx-scylladb-core/any"]
+migrate = ["sqlx-scylladb-core/migrate", "sqlx/migrate"]
+any = ["sqlx-scylladb-core/any", "sqlx/any"]
 derive = ["sqlx-scylladb-macros/derive"]
 macros = ["derive", "sqlx-scylladb-macros/macros"]
 time-03 = ["sqlx-scylladb-core/time-03"]
@@ -51,6 +51,7 @@ pprof = { version = "0.15.0", features = ["protobuf", "protobuf-codec"] }
 [[example]]
 name = "basic"
 path = "examples/basic.rs"
+dependencies = ["sqlx"]
 required-features = ["migrate"]
 
 [[example]]

@@ -12,13 +12,14 @@ use scylla::{
     statement::Statement,
 };
 
-use sqlx::{Connection, Describe, Either, Error, Executor, Row, SqlStr};
-use sqlx_core::{ext::ustr::UStr, try_stream};
+use sqlx_core::{
+    Either, Error, connection::Connection, executor::Executor, row::Row, sql_str::SqlStr,
+    try_stream,
+};
 
 use crate::{
-    ScyllaDB, ScyllaDBArguments, ScyllaDBColumn, ScyllaDBConnection, ScyllaDBError,
-    ScyllaDBQueryResult, ScyllaDBRow, ScyllaDBStatement, ScyllaDBTypeInfo,
-    statement::ScyllaDBStatementMetadata,
+    ScyllaDB, ScyllaDBArguments, ScyllaDBConnection, ScyllaDBError, ScyllaDBQueryResult,
+    ScyllaDBRow, ScyllaDBStatement, ScyllaDBTypeInfo, statement::ScyllaDBStatementMetadata,
 };
 
 const APPLIED_COLUMN: &'static str = "[applied]";
@@ -145,10 +146,10 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
     fn fetch_many<'e, 'q, E>(
         self,
         mut query: E,
-    ) -> BoxStream<'e, Result<Either<ScyllaDBQueryResult, ScyllaDBRow>, sqlx::Error>>
+    ) -> BoxStream<'e, Result<Either<ScyllaDBQueryResult, ScyllaDBRow>, sqlx_core::Error>>
     where
         'c: 'e,
-        E: 'q + sqlx::Execute<'q, ScyllaDB>,
+        E: 'q + sqlx_core::executor::Execute<'q, ScyllaDB>,
         'q: 'e,
         E: 'q,
     {
@@ -171,10 +172,10 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
     fn fetch_optional<'e, 'q: 'e, E>(
         self,
         query: E,
-    ) -> BoxFuture<'e, Result<Option<ScyllaDBRow>, sqlx::Error>>
+    ) -> BoxFuture<'e, Result<Option<ScyllaDBRow>, sqlx_core::Error>>
     where
         'c: 'e,
-        E: 'q + sqlx::Execute<'q, Self::Database>,
+        E: 'q + sqlx_core::executor::Execute<'q, Self::Database>,
     {
         let mut s = self.fetch_many(query);
 
@@ -193,7 +194,7 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
         self,
         sql: SqlStr,
         _parameters: &'e [ScyllaDBTypeInfo],
-    ) -> BoxFuture<'e, Result<ScyllaDBStatement, sqlx::Error>>
+    ) -> BoxFuture<'e, Result<ScyllaDBStatement, sqlx_core::Error>>
     where
         'c: 'e,
     {
@@ -222,7 +223,7 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
     fn describe<'e>(
         self,
         sql: SqlStr,
-    ) -> BoxFuture<'e, Result<Describe<Self::Database>, sqlx::Error>>
+    ) -> BoxFuture<'e, Result<sqlx_core::describe::Describe<Self::Database>, sqlx_core::Error>>
     where
         'c: 'e,
     {
@@ -241,11 +242,11 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
             let mut parameters = Vec::with_capacity(capacity);
             let mut nullable = Vec::with_capacity(capacity);
             for (i, column_spec) in column_specs.iter().enumerate() {
-                let name = UStr::new(column_spec.name());
+                let name = sqlx_core::ext::ustr::UStr::new(column_spec.name());
                 let column_type = column_spec.typ();
                 let type_info = ScyllaDBTypeInfo::from_column_type(column_type)?;
 
-                columns.push(ScyllaDBColumn {
+                columns.push(crate::ScyllaDBColumn {
                     ordinal: i,
                     name,
                     type_info: type_info.clone(),
@@ -255,7 +256,7 @@ impl<'c> Executor<'c> for &'c mut ScyllaDBConnection {
                 nullable.push(Some(true));
             }
 
-            let describe = Describe::<ScyllaDB> {
+            let describe = sqlx_core::describe::Describe::<ScyllaDB> {
                 columns,
                 parameters: Some(Either::Left(parameters)),
                 nullable,

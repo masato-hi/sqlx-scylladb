@@ -2,8 +2,8 @@ use std::{fmt::Display, num::ParseIntError, str::FromStr, time::Duration};
 
 use log::LevelFilter;
 use scylla::{client::session::TlsContext, frame::Compression};
-use sqlx::{ConnectOptions, Error};
 use sqlx_core::connection::LogSettings;
+use sqlx_core::{Error, connection::ConnectOptions};
 use url::Url;
 
 use crate::{ScyllaDBError, connection::ScyllaDBConnection};
@@ -431,7 +431,7 @@ impl Display for ScyllaDBCompression {
 }
 
 impl TryInto<TlsContext> for &ScyllaDBConnectOptions {
-    type Error = sqlx::Error;
+    type Error = sqlx_core::Error;
 
     fn try_into(self) -> Result<TlsContext, Self::Error> {
         #[cfg(feature = "openssl-010")]
@@ -456,7 +456,7 @@ impl TryInto<TlsContext> for &ScyllaDBConnectOptions {
 
 #[cfg(feature = "openssl-010")]
 impl TryInto<openssl_010::ssl::SslContext> for &ScyllaDBConnectOptions {
-    type Error = sqlx::Error;
+    type Error = sqlx_core::Error;
 
     fn try_into(self) -> Result<openssl_010::ssl::SslContext, Self::Error> {
         use std::{fs, fs::File, io::Read, path::PathBuf};
@@ -538,7 +538,7 @@ impl TryInto<openssl_010::ssl::SslContext> for &ScyllaDBConnectOptions {
 
 #[cfg(feature = "rustls-023")]
 impl TryInto<rustls_023::ClientConfig> for &ScyllaDBConnectOptions {
-    type Error = sqlx::Error;
+    type Error = sqlx_core::Error;
 
     fn try_into(self) -> Result<rustls_023::ClientConfig, Self::Error> {
         use rustls_023::{
@@ -590,7 +590,7 @@ mod tests {
     use std::{str::FromStr, time::Duration};
 
     use claims::{assert_none, assert_some_eq};
-    use sqlx::ConnectOptions;
+    use sqlx_core::connection::ConnectOptions;
 
     use crate::{
         ScyllaDBConnectOptions,

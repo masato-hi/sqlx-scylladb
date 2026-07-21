@@ -2,7 +2,12 @@ use scylla::{
     deserialize::value::DeserializeValue,
     value::{MaybeUnset, Unset},
 };
-use sqlx::{Decode, Encode, Type, encode::IsNull, error::BoxDynError};
+use sqlx_core::{
+    decode::Decode,
+    encode::{Encode, IsNull},
+    error::BoxDynError,
+    types::Type,
+};
 
 use crate::{
     ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,

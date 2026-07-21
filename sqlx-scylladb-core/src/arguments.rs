@@ -15,7 +15,7 @@ use scylla::{
     },
     value::{Counter, CqlDate, CqlDuration, CqlTime, CqlTimestamp, CqlTimeuuid},
 };
-use sqlx::{Arguments, Encode, Type};
+use sqlx_core::{arguments::Arguments, encode::Encode, types::Type};
 use uuid::Uuid;
 
 use crate::{ScyllaDB, ScyllaDBTypeInfo};
@@ -35,9 +35,9 @@ impl Arguments for ScyllaDBArguments {
         self.buffer.reserve(size);
     }
 
-    fn add<'t, T>(&mut self, value: T) -> Result<(), sqlx::error::BoxDynError>
+    fn add<'t, T>(&mut self, value: T) -> Result<(), sqlx_core::error::BoxDynError>
     where
-        T: Encode<'t, Self::Database> + Type<Self::Database>
+        T: Encode<'t, Self::Database> + Type<Self::Database>,
     {
         let ty = value.produces().unwrap_or_else(T::type_info);
         let is_null = value.encode(&mut self.buffer)?;

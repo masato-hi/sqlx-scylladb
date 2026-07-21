@@ -1,7 +1,7 @@
 use scylla::client::{
     caching_session::CachingSessionBuilder, session::TlsContext, session_builder::SessionBuilder,
 };
-use sqlx::Error;
+use sqlx_core::Error;
 
 use crate::{ScyllaDBConnectOptions, ScyllaDBConnection, ScyllaDBError};
 

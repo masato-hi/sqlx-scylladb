@@ -29,8 +29,7 @@ mod tests {
 
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-    use sqlx::{Decode, Encode, error::BoxDynError};
-    use sqlx_core::ext::ustr::UStr;
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
     use uuid::Uuid;
 
     use crate::{

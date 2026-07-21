@@ -1,4 +1,4 @@
-use sqlx::{Type, TypeInfo};
+use sqlx_core::{type_info::TypeInfo, types::Type};
 
 use crate::{ScyllaDB, ScyllaDBTypeInfo};
 

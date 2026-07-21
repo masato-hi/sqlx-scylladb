@@ -13,7 +13,7 @@ use sqlx_scylladb::{
     ScyllaDB, ScyllaDBArgument, ScyllaDBExecutor, ScyllaDBPoolOptions, ScyllaDBTypeInfo,
     ext::{
         scylla_cql::frame::response::result::{CollectionType, ColumnType, NativeType},
-        sqlx::{Decode, Encode, Type, encode::IsNull},
+        sqlx_core::{decode::Decode, encode::Encode, encode::IsNull, types::Type},
         ustr::UStr,
     },
 };

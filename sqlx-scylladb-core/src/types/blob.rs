@@ -1,6 +1,11 @@
 use std::{ops::Deref, rc::Rc, sync::Arc};
 
-use sqlx::{Decode, Encode, Type, encode::IsNull, error::BoxDynError};
+use sqlx_core::{
+    decode::Decode,
+    encode::{Encode, IsNull},
+    error::BoxDynError,
+    types::Type,
+};
 
 use crate::{
     ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef,
@@ -226,7 +231,12 @@ impl Encode<'_, ScyllaDB> for Vec<Vec<u8>> {
 #[cfg(feature = "secrecy-08")]
 mod secrecy {
     use secrecy_08::SecretVec;
-    use sqlx::{Decode, Encode, Type, encode::IsNull, error::BoxDynError};
+    use sqlx_core::{
+        decode::Decode,
+        encode::{Encode, IsNull},
+        error::BoxDynError,
+        types::Type,
+    };
 
     use crate::{
         ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef,
@@ -286,7 +296,7 @@ mod secrecy {
 
     impl<const N: usize> Encode<'_, ScyllaDB> for [SecretVec<u8>; N] {
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            <_ as ::sqlx::Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
+            <_ as ::sqlx_core::encode::Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
         }
     }
 
@@ -309,13 +319,13 @@ mod secrecy {
 
     impl Encode<'_, ScyllaDB> for &[SecretVec<u8>] {
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            <_ as ::sqlx::Encode<'_, ScyllaDB>>::encode_by_ref(*self, buf)
+            <_ as ::sqlx_core::encode::Encode<'_, ScyllaDB>>::encode_by_ref(*self, buf)
         }
     }
 
     impl Encode<'_, ScyllaDB> for Vec<SecretVec<u8>> {
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            <_ as ::sqlx::Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
+            <_ as ::sqlx_core::encode::Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
         }
     }
 }
@@ -326,8 +336,8 @@ mod tests {
 
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-    use sqlx::{Decode, Encode, error::BoxDynError};
     use sqlx_core::ext::ustr::UStr;
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{
         ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
@@ -585,8 +595,7 @@ mod tests {
     mod secrecy {
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
         use secrecy_08::{ExposeSecret, SecretVec};
-        use sqlx::{Decode, Encode, error::BoxDynError};
-        use sqlx_core::ext::ustr::UStr;
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
         use crate::{
             ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,

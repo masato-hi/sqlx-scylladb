@@ -1,4 +1,4 @@
-use sqlx::{Database, database::HasStatementCache};
+use sqlx_core::database::{Database, HasStatementCache};
 
 use crate::{
     ScyllaDBArguments, ScyllaDBColumn, ScyllaDBConnection, ScyllaDBQueryResult, ScyllaDBRow,

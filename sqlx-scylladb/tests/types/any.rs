@@ -10,7 +10,11 @@ use sqlx_scylladb::{
     ScyllaDB, ScyllaDBArgument, ScyllaDBPool, ScyllaDBTypeInfo,
     ext::{
         scylla_cql::frame::response::result::{CollectionType, ColumnType, NativeType},
-        sqlx::{Decode, Encode, Type, encode::IsNull},
+        sqlx_core::{
+            decode::Decode,
+            encode::{Encode, IsNull},
+            types::Type,
+        },
         ustr::UStr,
     },
 };

@@ -21,7 +21,7 @@ impl TransactionManager for ScyllaDBTransactionManager {
 
     fn commit(
         conn: &mut ScyllaDBConnection,
-    ) -> impl Future<Output = Result<(), sqlx::Error>> + Send + '_ {
+    ) -> impl Future<Output = Result<(), sqlx_core::Error>> + Send + '_ {
         Box::pin(async {
             conn.commit_transaction().await?;
 
@@ -31,7 +31,7 @@ impl TransactionManager for ScyllaDBTransactionManager {
 
     fn rollback(
         conn: &mut ScyllaDBConnection,
-    ) -> impl Future<Output = Result<(), sqlx::Error>> + Send + '_ {
+    ) -> impl Future<Output = Result<(), sqlx_core::Error>> + Send + '_ {
         Box::pin(async {
             let _ = conn.rollback_transaction();
 

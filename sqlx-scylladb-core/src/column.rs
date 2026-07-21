@@ -1,6 +1,5 @@
 use scylla::cluster::metadata::ColumnType;
-use sqlx::Column;
-use sqlx_core::ext::ustr::UStr;
+use sqlx_core::{column::Column, ext::ustr::UStr};
 
 use crate::{ScyllaDB, ScyllaDBTypeInfo};
 

@@ -24,12 +24,12 @@ sqlx-scylladb-macros-core = { version = "=0.4.0", path = "sqlx-scylladb-macros-c
 scylla = { version = "1.7" }
 scylla-cql = { version = "1.7" }
 sqlx = { version = "0.9", default-features = false, features = [
-  "sqlx-toml",
-  "uuid",
   "runtime-tokio",
 ] }
-sqlx-core = { version = "0.9" }
-sqlx-cli = { version = "0.9" }
+sqlx-core = { version = "0.9", features = ["sqlx-toml", "uuid"] }
+sqlx-cli = { version = "0.9", default-features = false, features = [
+  "sqlx-toml",
+] }
 
 tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
 

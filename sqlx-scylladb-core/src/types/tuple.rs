@@ -3,8 +3,8 @@ macro_rules! impl_tuple {
         $($typs:ident),*;
         $length:expr
     ) => {
-        impl <$($typs),*> ::sqlx::Type<$crate::ScyllaDB> for ($($typs,)*)
-        where $($typs: ::sqlx::Type<$crate::ScyllaDB>),* {
+        impl <$($typs),*> ::sqlx_core::types::Type<$crate::ScyllaDB> for ($($typs,)*)
+        where $($typs: ::sqlx_core::types::Type<$crate::ScyllaDB>),* {
             fn type_info() -> $crate::ScyllaDBTypeInfo {
                 let type_infos = vec![$($typs::type_info()),*];
                 let type_name = $crate::type_info::tuple_type_name(&type_infos);
@@ -13,24 +13,24 @@ macro_rules! impl_tuple {
             }
         }
 
-        impl<$($typs), *> ::sqlx::Encode<'_, $crate::ScyllaDB> for ($($typs,)*)
+        impl<$($typs), *> ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for ($($typs,)*)
         where $($typs: ::scylla::serialize::value::SerializeValue + Clone + Send + Sync + 'static,)* {
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx::encode::IsNull, ::sqlx::error::BoxDynError> {
+            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
                 let argument = $crate::ScyllaDBArgument::Tuple(::std::boxed::Box::new(self.clone()));
                 buf.push(argument);
 
-                Ok(::sqlx::encode::IsNull::No)
+                Ok(::sqlx_core::encode::IsNull::No)
             }
         }
 
-        impl<$($typs),*> ::sqlx::Decode<'_, $crate::ScyllaDB> for ($($typs,)*)
+        impl<$($typs),*> ::sqlx_core::decode::Decode<'_, $crate::ScyllaDB> for ($($typs,)*)
         where $($typs: for<'a> ::scylla::deserialize::value::DeserializeValue<'a, 'a>),* {
             fn decode(
                 value: $crate::ScyllaDBValueRef<'_>,
-            ) -> Result<Self, sqlx::error::BoxDynError> {
+            ) -> Result<Self, ::sqlx_core::error::BoxDynError> {
                 let val: ($($typs,)*) = value.deserialize()?;
                 Ok(val)
             }
