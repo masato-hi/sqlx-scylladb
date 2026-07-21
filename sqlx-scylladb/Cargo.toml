@@ -30,7 +30,6 @@ sqlx-scylladb-core = { workspace = true }
 
 scylla = { workspace = true }
 scylla-cql = { workspace = true }
-sqlx = { workspace = true }
 sqlx-core = { workspace = true }
 
 [dev-dependencies]
@@ -51,7 +50,6 @@ pprof = { version = "0.15.0", features = ["protobuf", "protobuf-codec"] }
 [[example]]
 name = "basic"
 path = "examples/basic.rs"
-dependencies = ["sqlx"]
 required-features = ["migrate"]
 
 [[example]]
