@@ -35,7 +35,10 @@ rustls-023 = ["dep:rustls-023", "scylla/rustls-023"]
 [dependencies]
 scylla = { workspace = true }
 scylla-cql = { workspace = true }
-sqlx-core = { workspace = true }
+sqlx-core = { workspace = true, features = [
+  # Since there’s no way to enable sqlx‑core/offline only when sqlx/macros is enabled, we always turn on the offline flag.
+  "offline",
+] }
 
 uuid = { workspace = true }
 chrono-04 = { workspace = true, optional = true }
