@@ -2,8 +2,20 @@
 #![doc = include_str!("lib.md")]
 
 use proc_macro::TokenStream;
-use sqlx_scylladb_macros_core::derives::expand_user_defined_type;
+use sqlx_scylladb_macros_core::derives::{expand_from_row, expand_user_defined_type};
 use syn::{DeriveInput, parse_macro_input};
+
+/// Implement `sqlx::FromRow`, with `#[sqlx(default_when_null)]` support.
+#[cfg(feature = "derive")]
+#[proc_macro_derive(FromRow, attributes(sqlx))]
+pub fn from_row(input: TokenStream) -> TokenStream {
+    let item = parse_macro_input!(input as DeriveInput);
+
+    match expand_from_row(item) {
+        Ok(ts) => ts.into(),
+        Err(e) => e.to_compile_error().into(),
+    }
+}
 
 /// Implement a user-defined type in sqlx-scylladb that supports binding and fetching.
 ///
