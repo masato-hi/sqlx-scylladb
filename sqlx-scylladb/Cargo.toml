@@ -69,6 +69,11 @@ path = "tests/types/any.rs"
 required-features = ["migrate"]
 
 [[test]]
+name = "test-macros-from-row"
+path = "tests/macros/from_row.rs"
+required-features = ["derive"]
+
+[[test]]
 name = "test-types-ascii"
 path = "tests/types/ascii.rs"
 required-features = ["migrate"]
