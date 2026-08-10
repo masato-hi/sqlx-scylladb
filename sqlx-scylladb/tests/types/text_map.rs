@@ -1,8 +1,9 @@
 use std::{collections::HashMap, net::IpAddr, str::FromStr};
 
-use sqlx::{Acquire, Executor, FromRow, TypeInfo};
-use sqlx::{Column, SqlSafeStr};
-use sqlx_scylladb::ScyllaDBPool;
+use sqlx_scylladb::{
+    ScyllaDBPool,
+    ext::sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo},
+};
 use uuid::Uuid;
 
 #[sqlx::test(migrations = "tests/types/migrations")]
