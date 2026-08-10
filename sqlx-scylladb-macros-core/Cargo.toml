@@ -12,9 +12,9 @@ macros = []
 derive = []
 
 [dependencies]
-proc-macro2 = "1.0.106"
-quote = "1.0.45"
-syn = { version = "2.0.117", features = ["full"] }
-darling = "0.23.0"
-convert_case = "0.11.0"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = { version = "3.0", features = ["full"] }
+darling = "0.24"
+convert_case = "0.11"
 sqlx-scylladb-core = { workspace = true }
