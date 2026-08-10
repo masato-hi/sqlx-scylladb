@@ -1,6 +1,8 @@
 use scylla::value::CqlDuration;
-use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
-use sqlx_scylladb::ScyllaDBPool;
+use sqlx_scylladb::{
+    ScyllaDBPool,
+    ext::sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo},
+};
 use uuid::Uuid;
 
 #[sqlx::test(migrations = "tests/types/migrations")]

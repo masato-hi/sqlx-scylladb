@@ -1,5 +1,7 @@
-use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
-use sqlx_scylladb::ScyllaDBPool;
+use sqlx_scylladb::{
+    ScyllaDBPool,
+    ext::sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo},
+};
 use std::str::FromStr;
 use uuid::Uuid;
 

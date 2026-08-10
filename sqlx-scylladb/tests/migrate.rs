@@ -1,5 +1,7 @@
-use sqlx::migrate::{Migrate, Migration, Migrator};
-use sqlx_scylladb::ScyllaDBPool;
+use sqlx_scylladb::{
+    ScyllaDBPool,
+    ext::sqlx::migrate::{Migrate, Migration, Migrator},
+};
 
 static MIGRATOR: Migrator = sqlx::migrate!("./tests/migrations");
 // Set same value of migrate.table_name in sqlx.toml

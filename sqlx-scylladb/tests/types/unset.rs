@@ -1,6 +1,5 @@
 use scylla::value::{MaybeUnset, Unset};
-use sqlx::FromRow;
-use sqlx_scylladb::ScyllaDBPool;
+use sqlx_scylladb::{ScyllaDBPool, ext::sqlx::FromRow};
 use uuid::Uuid;
 
 #[sqlx::test(migrations = "tests/types/migrations")]

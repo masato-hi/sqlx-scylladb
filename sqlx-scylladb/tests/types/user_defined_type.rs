@@ -1,8 +1,10 @@
-use sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo};
 use sqlx_scylladb::macros::UserDefinedType;
 use sqlx_scylladb::{
     ScyllaDBPool,
-    ext::scylla::{DeserializeValue, SerializeValue},
+    ext::{
+        scylla::{DeserializeValue, SerializeValue},
+        sqlx::{Acquire, Column, Executor, FromRow, SqlSafeStr, TypeInfo},
+    },
 };
 use uuid::Uuid;
 
