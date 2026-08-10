@@ -5,15 +5,18 @@ use std::{
     sync::Arc,
 };
 
-use sqlx::{
-    FromRow,
-    migrate::{MigrateDatabase, Migrator},
-};
 use sqlx_scylladb::{
     ScyllaDB, ScyllaDBArgument, ScyllaDBExecutor, ScyllaDBPoolOptions, ScyllaDBTypeInfo,
     ext::{
         scylla_cql::frame::response::result::{CollectionType, ColumnType, NativeType},
-        sqlx_core::{decode::Decode, encode::Encode, encode::IsNull, types::Type},
+        sqlx::{
+            FromRow,
+            decode::Decode,
+            encode::Encode,
+            encode::IsNull,
+            migrate::{MigrateDatabase, Migrator},
+            types::Type,
+        },
         ustr::UStr,
     },
 };
