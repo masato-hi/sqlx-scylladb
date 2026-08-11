@@ -1,6 +1,6 @@
 # sqlx-scylladb
 
-A ScyllaDB database driver for the Rust [sqlx](https://github.com/launchbadge/sqlx) framework.
+A ScyllaDB database driver for the Rust [sqlx](https://github.com/transact-rs/sqlx) framework.
 
 This crate adapts the [scylla-rust-driver](https://github.com/scylladb/scylla-rust-driver) to the sqlx interface, allowing sqlx queries, connection pools, migrations, tests, and type conversions to be used with ScyllaDB.
 
@@ -155,6 +155,25 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 ### User defined type
 
 - Define a Rust type with the `UserDefinedType` derive macro. See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/sqlx-scylladb/examples/user_defined_type.rs).
+
+### `FromRow` derive macro
+
+The `FromRow` derive macro supports the same field and container attributes as
+SQLx's standard `FromRow` derive macro, including `rename`, `rename_all`,
+`default`, `flatten`, `try_from`, `json`, and `skip`. It also supports the
+`#[sqlx(default_when_null)]` field attribute, which uses the field type's
+`Default` value when the corresponding database column is `NULL`.
+
+```rust
+use sqlx_scylladb::macros::FromRow;
+
+#[derive(FromRow)]
+struct User {
+    id: i64,
+    #[sqlx(default_when_null)]
+    display_name: String,
+}
+```
 
 ### Testing
 
