@@ -1,8 +1,11 @@
-use std::sync::Arc;
+use std::{borrow::Cow, sync::Arc};
 
-use sqlx_core::{decode::Decode, error::BoxDynError};
+use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, types::Type};
 
-use crate::{ScyllaDB, ScyllaDBValueRef};
+use crate::{
+    ScyllaDB, ScyllaDBArgumentNativeArrayText, ScyllaDBArgumentNativeText, ScyllaDBHasArrayType,
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef,
+};
 
 impl Decode<'_, ScyllaDB> for String {
     fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
@@ -18,133 +21,158 @@ impl Decode<'_, ScyllaDB> for Vec<String> {
     }
 }
 
-macro_rules! impl_string_type {
-    ($typ:ty) => {
-        impl ::sqlx_core::types::Type<$crate::ScyllaDB> for $typ {
-            fn type_info() -> $crate::ScyllaDBTypeInfo {
-                $crate::ScyllaDBTypeInfo::Text
-            }
-        }
-
-        impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for $typ {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                let argument = $crate::ScyllaDBArgument::Text(self.to_string());
-                buf.push(argument);
-
-                Ok(::sqlx_core::encode::IsNull::No)
-            }
-        }
-
-        impl $crate::ScyllaDBHasArrayType for $typ {
-            fn array_type_info() -> $crate::ScyllaDBTypeInfo {
-                $crate::ScyllaDBTypeInfo::TextArray
-            }
-        }
-
-        // slice
-        impl<const N: usize> ::sqlx_core::encode::Encode<'_, crate::ScyllaDB> for [$typ; N] {
-            #[inline(always)]
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                <_ as ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(
-                    self.as_slice(),
-                    buf,
-                )
-            }
-        }
-
-        impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for [$typ] {
-            #[inline(always)]
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                let mut strings = ::std::vec::Vec::with_capacity(self.len());
-                for value in self.iter() {
-                    strings.push(value.to_string());
-                }
-                let argument = $crate::ScyllaDBArgument::TextArray(strings);
-                buf.push(argument);
-
-                Ok(::sqlx_core::encode::IsNull::No)
-            }
-        }
-
-        impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for &[$typ] {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                <_ as ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(*self, buf)
-            }
-        }
-
-        impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for ::std::boxed::Box<[$typ]> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(
-                    self.deref(),
-                    buf,
-                )
-            }
-        }
-
-        impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for ::std::rc::Rc<[$typ]> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(
-                    self.deref(),
-                    buf,
-                )
-            }
-        }
-
-        impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for ::std::sync::Arc<[$typ]> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                use ::std::ops::Deref;
-
-                <_ as ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(
-                    self.deref(),
-                    buf,
-                )
-            }
-        }
-
-        // Vec
-        impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for ::std::vec::Vec<$typ> {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                <_ as ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB>>::encode_by_ref(
-                    self.as_slice(),
-                    buf,
-                )
-            }
-        }
-    };
+impl Type<ScyllaDB> for &str {
+    fn type_info() -> <ScyllaDB as sqlx_core::database::Database>::TypeInfo {
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
+    }
 }
 
-impl_string_type!(&str);
-impl_string_type!(String);
-impl_string_type!(std::borrow::Cow<'_, str>);
-impl_string_type!(Arc<str>);
+impl Encode<'_, ScyllaDB> for &str {
+    fn encode_by_ref(
+        &self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        let argument = ScyllaDBArgumentNativeText::Text(Cow::Owned(self.to_string())).into();
+        buf.push(argument);
+
+        Ok(sqlx_core::encode::IsNull::No)
+    }
+}
+
+impl Type<ScyllaDB> for Cow<'static, str> {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
+    }
+}
+
+impl Encode<'_, ScyllaDB> for Cow<'static, str> {
+    fn encode(
+        self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        let argument = ScyllaDBArgumentNativeText::Text(self).into();
+        buf.push(argument);
+        Ok(sqlx_core::encode::IsNull::No)
+    }
+
+    fn encode_by_ref(
+        &self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        self.clone().encode(buf)
+    }
+}
+
+impl Type<ScyllaDB> for String {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
+    }
+}
+
+impl Encode<'_, ScyllaDB> for String {
+    fn encode(
+        self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        let argument = ScyllaDBArgumentNativeText::Text(Cow::Owned(self)).into();
+        buf.push(argument);
+        Ok(sqlx_core::encode::IsNull::No)
+    }
+
+    fn encode_by_ref(
+        &self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        <String as Encode<'_, ScyllaDB>>::encode(self.clone(), buf)
+    }
+}
+
+impl Type<ScyllaDB> for Arc<str> {
+    fn type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
+    }
+}
+
+impl Encode<'_, ScyllaDB> for Arc<str> {
+    fn encode(
+        self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        let argument = ScyllaDBArgumentNativeText::ArcStr(self).into();
+        buf.push(argument);
+        Ok(sqlx_core::encode::IsNull::No)
+    }
+
+    fn encode_by_ref(
+        &self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        let argument = ScyllaDBArgumentNativeText::ArcStr(self.clone()).into();
+        buf.push(argument);
+        Ok(sqlx_core::encode::IsNull::No)
+    }
+}
+
+impl ScyllaDBHasArrayType for String {
+    fn array_type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text)
+    }
+}
+
+impl Encode<'_, ScyllaDB> for Vec<String> {
+    fn encode(
+        self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        let argument = ScyllaDBArgumentNativeArrayText::Text(self).into();
+        buf.push(argument);
+        Ok(sqlx_core::encode::IsNull::No)
+    }
+
+    fn encode_by_ref(
+        &self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        let strings = self.clone();
+        <Vec<String> as Encode<'_, ScyllaDB>>::encode(strings, buf)
+    }
+}
+
+impl ScyllaDBHasArrayType for &'static str {
+    fn array_type_info() -> ScyllaDBTypeInfo {
+        ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text)
+    }
+}
+
+impl Encode<'_, ScyllaDB> for [&'static str] {
+    fn encode_by_ref(
+        &self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        let strings = self.iter().map(|value| (*value).to_owned()).collect();
+        let argument = ScyllaDBArgumentNativeArrayText::Text(strings).into();
+        buf.push(argument);
+        Ok(sqlx_core::encode::IsNull::No)
+    }
+}
+
+impl Encode<'_, ScyllaDB> for &[&'static str] {
+    fn encode_by_ref(
+        &self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        <[&'static str] as Encode<'_, ScyllaDB>>::encode_by_ref(self, buf)
+    }
+}
+
+impl<const N: usize> Encode<'_, ScyllaDB> for [&'static str; N] {
+    fn encode_by_ref(
+        &self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
+        <[&'static str] as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
+    }
+}
 
 #[cfg(feature = "secrecy-08")]
 pub mod secrecy {
@@ -157,19 +185,22 @@ pub mod secrecy {
     };
 
     use crate::{
-        ScyllaDB, ScyllaDBHasArrayType, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer},
+        ScyllaDB, ScyllaDBHasArrayType, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef,
+        arguments::{
+            ScyllaDBArgumentBuffer, ScyllaDBArgumentNativeArrayText, ScyllaDBArgumentNativeText,
+        },
     };
 
     impl Type<ScyllaDB> for SecretString {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Text
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
         }
     }
 
     impl ScyllaDBHasArrayType for SecretString {
         fn array_type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::TextArray
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text)
         }
     }
 
@@ -188,8 +219,15 @@ pub mod secrecy {
     }
 
     impl Encode<'_, ScyllaDB> for SecretString {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let argument = ScyllaDBArgumentNativeText::Secrecy08(self).into();
+            buf.push(argument);
+
+            Ok(IsNull::No)
+        }
+
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            let argument = ScyllaDBArgument::SecretText(self.clone());
+            let argument = ScyllaDBArgumentNativeText::Secrecy08(self.clone()).into();
             buf.push(argument);
 
             Ok(IsNull::No)
@@ -212,7 +250,7 @@ pub mod secrecy {
                 let value = SecretString::new(value.to_string());
                 strings.push(value);
             }
-            let argument = ScyllaDBArgument::SecretTextArray(strings);
+            let argument = ScyllaDBArgumentNativeArrayText::Secrecy08(strings).into();
             buf.push(argument);
 
             Ok(IsNull::No)
@@ -226,6 +264,13 @@ pub mod secrecy {
     }
 
     impl Encode<'_, ScyllaDB> for Vec<secrecy_08::SecretString> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let argument = ScyllaDBArgumentNativeArrayText::Secrecy08(self).into();
+            buf.push(argument);
+
+            Ok(IsNull::No)
+        }
+
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
             <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
         }
@@ -234,107 +279,19 @@ pub mod secrecy {
 
 #[cfg(test)]
 mod tests {
-    use std::{borrow::Cow, rc::Rc, sync::Arc};
-
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_string() -> Result<(), BoxDynError> {
         let mut buf = ScyllaDBArgumentBuffer::default();
 
-        // &str
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode("Hello!", &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new("Hello!"), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new("Hello!"), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Cow::from("Hello!"), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Box::new("Hello!"), &mut buf)?;
-
-        // String
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(String::from("Hello!"), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(String::from("Hello!")), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(String::from("Hello!")), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Cow::from(String::from("Hello!")), &mut buf)?;
-
-        // [&str; N]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(["Hello!"], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(&["Hello!"], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Box::new(["Hello!"]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(["Hello!"]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(["Hello!"]), &mut buf)?;
-
-        // &[&str]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(["Hello!"].as_slice(), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Box::new(["Hello!"].as_slice()), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(["Hello!"].as_slice()), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(["Hello!"].as_slice()), &mut buf)?;
-
-        // Vec<&str>
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(vec!["Hello!"], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(vec!["Hello!"]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(vec!["Hello!"]), &mut buf)?;
-
-        // [String; N]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([String::from("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(&[String::from("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Box::new([String::from("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new([String::from("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new([String::from("Hello!")]), &mut buf)?;
-
-        // &[String]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([String::from("Hello!")].as_slice(), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Box::new([String::from("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Rc::new([String::from("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([String::from("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-
-        // Vec<String>
         let _ = <_ as Encode<'_, ScyllaDB>>::encode(vec![String::from("Hello!")], &mut buf)?;
-        let _ =
-            <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(vec![String::from("Hello!")]), &mut buf)?;
-        let _ =
-            <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(vec![String::from("Hello!")]), &mut buf)?;
-
-        // [Cow<'_, str>; N]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Cow::from("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(&[Cow::from("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Box::new([Cow::from("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new([Cow::from("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new([Cow::from("Hello!")]), &mut buf)?;
-
-        // &[Cow<'_, str>]
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode([Cow::from("Hello!")].as_slice(), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Box::new([Cow::from("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Rc::new([Cow::from("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(
-            Arc::new([Cow::from("Hello!")].as_slice()),
-            &mut buf,
-        )?;
-
-        // Vec<Cow<'_, str>>
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(vec![Cow::from("Hello!")], &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Rc::new(vec![Cow::from("Hello!")]), &mut buf)?;
-        let _ = <_ as Encode<'_, ScyllaDB>>::encode(Arc::new(vec![Cow::from("Hello!")]), &mut buf)?;
+        let _ = <_ as Encode<'_, ScyllaDB>>::encode(["Hello!"], &mut buf)?;
+        let _ = <_ as Encode<'_, ScyllaDB>>::encode(["Hello!"].as_slice(), &mut buf)?;
 
         Ok(())
     }
@@ -346,7 +303,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::Text,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -363,7 +320,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::Text,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -386,7 +343,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::TextArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -409,7 +366,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::TextArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -425,10 +382,7 @@ mod tests {
         use secrecy_08::{ExposeSecret, SecretString};
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-        use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-            types::serialize_value,
-        };
+        use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
         #[test]
         fn it_can_encode_secret_string() -> Result<(), BoxDynError> {
@@ -464,7 +418,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_text"),
-                ScyllaDBTypeInfo::Text,
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -490,7 +444,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_text"),
-                ScyllaDBTypeInfo::TextArray,
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );

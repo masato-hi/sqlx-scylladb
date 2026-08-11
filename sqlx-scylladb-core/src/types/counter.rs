@@ -1,11 +1,11 @@
 use scylla::value::Counter;
 use sqlx_core::{decode::Decode, error::BoxDynError, types::Type};
 
-use crate::{ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef};
+use crate::{ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBValueRef};
 
 impl Type<ScyllaDB> for Counter {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Counter
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Counter)
     }
 }
 
@@ -25,7 +25,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef, types::serialize_value};
+    use crate::{ScyllaDB, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_decode_counter() -> Result<(), BoxDynError> {
@@ -34,7 +34,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_counter"),
-            ScyllaDBTypeInfo::Counter,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );

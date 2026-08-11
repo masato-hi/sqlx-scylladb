@@ -1,5 +1,5 @@
-macro_rules! impl_type {
-    ($typ:ty, $typ_info:path, $arg_typ:path) => {
+macro_rules! impl_native_type {
+    ($typ:ty, $typ_info:expr, $arg_typ:path) => {
         impl ::sqlx_core::types::Type<$crate::ScyllaDB> for $typ {
             fn type_info() -> $crate::ScyllaDBTypeInfo {
                 $typ_info
@@ -7,11 +7,19 @@ macro_rules! impl_type {
         }
 
         impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for $typ {
+            fn encode(
+                self,
+                buf: &mut $crate::ScyllaDBArgumentBuffer,
+            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
+                buf.push($arg_typ(self).into());
+                Ok(::sqlx_core::encode::IsNull::No)
+            }
+
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                let argument = $arg_typ(self.clone());
+                let argument = $arg_typ(self.clone()).into();
                 buf.push(argument);
 
                 Ok(::sqlx_core::encode::IsNull::No)
@@ -29,8 +37,8 @@ macro_rules! impl_type {
     };
 }
 
-macro_rules! impl_array_type {
-    ($typ:ty, $typ_info:path, $arg_typ:path) => {
+macro_rules! impl_native_array_type {
+    ($typ:ty, $typ_info:expr, $arg_typ:path) => {
         impl $crate::ScyllaDBHasArrayType for $typ {
             fn array_type_info() -> $crate::ScyllaDBTypeInfo {
                 $typ_info
@@ -54,7 +62,7 @@ macro_rules! impl_array_type {
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                let argument = $arg_typ(self.to_vec());
+                let argument = $arg_typ(self.to_vec()).into();
                 buf.push(argument);
 
                 Ok(::sqlx_core::encode::IsNull::No)
@@ -71,6 +79,14 @@ macro_rules! impl_array_type {
         }
 
         impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for ::std::vec::Vec<$typ> {
+            fn encode(
+                self,
+                buf: &mut $crate::ScyllaDBArgumentBuffer,
+            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
+                buf.push($arg_typ(self).into());
+                Ok(::sqlx_core::encode::IsNull::No)
+            }
+
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
@@ -88,43 +104,6 @@ macro_rules! impl_array_type {
             ) -> Result<Self, ::sqlx_core::error::BoxDynError> {
                 let val: Self = value.deserialize()?;
                 Ok(val)
-            }
-        }
-    };
-}
-
-macro_rules! impl_map_type {
-    ($key_typ:ty, $value_typ:ty, $typ_info:path, $arg_typ:path) => {
-        impl ::sqlx_core::types::Type<$crate::ScyllaDB>
-            for ::std::collections::HashMap<$key_typ, $value_typ>
-        {
-            fn type_info() -> $crate::ScyllaDBTypeInfo {
-                $typ_info
-            }
-        }
-
-        impl ::sqlx_core::decode::Decode<'_, $crate::ScyllaDB>
-            for ::std::collections::HashMap<$key_typ, $value_typ>
-        {
-            fn decode(
-                value: $crate::ScyllaDBValueRef<'_>,
-            ) -> Result<Self, ::sqlx_core::error::BoxDynError> {
-                let val: Self = value.deserialize()?;
-                Ok(val)
-            }
-        }
-
-        impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB>
-            for ::std::collections::HashMap<$key_typ, $value_typ>
-        {
-            fn encode_by_ref(
-                &self,
-                buf: &mut $crate::ScyllaDBArgumentBuffer,
-            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                let argument = $arg_typ(self.clone());
-                buf.push(argument);
-
-                Ok(::sqlx_core::encode::IsNull::No)
             }
         }
     };

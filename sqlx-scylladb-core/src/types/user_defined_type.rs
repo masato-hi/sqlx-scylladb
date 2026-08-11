@@ -2,22 +2,14 @@ use scylla::{deserialize::value::DeserializeValue, serialize::value::SerializeVa
 use sqlx_core::{
     decode::Decode,
     encode::{Encode, IsNull},
-    ext::ustr::UStr,
 };
 
 use crate::{ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer};
 
+#[allow(missing_docs)]
 pub trait UserDefinedType<'r>:
     SerializeValue + DeserializeValue<'r, 'r> + Clone + Send + Sync
 {
-    #![allow(missing_docs)]
-    fn type_name() -> UStr;
-    fn box_cloned(&self) -> Box<dyn SerializeValue + Send + Sync>
-    where
-        Self: 'static,
-    {
-        Box::from(self.clone())
-    }
 }
 
 impl<'r, T> Decode<'r, ScyllaDB> for Vec<T>
@@ -34,17 +26,13 @@ where
 
 impl<'r, T> Encode<'_, ScyllaDB> for [T]
 where
-    T: UserDefinedType<'r> + Clone + 'static,
+    T: UserDefinedType<'r> + 'static,
 {
     fn encode_by_ref(
         &self,
         buf: &mut ScyllaDBArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
-        let mut values = Vec::with_capacity(self.len());
-        for value in self {
-            values.push(value.box_cloned());
-        }
-        let argument = ScyllaDBArgument::UserDefinedTypeArray(values);
+        let argument = ScyllaDBArgument::UserDefinedTypeArray(Box::new(self.to_vec()));
         buf.push(argument);
         Ok(IsNull::No)
     }
@@ -52,7 +40,8 @@ where
 
 impl<'r, T, const N: usize> Encode<'_, ScyllaDB> for [T; N]
 where
-    T: UserDefinedType<'r> + Clone + 'static,
+    Self: Clone,
+    T: UserDefinedType<'r> + 'static,
 {
     fn encode_by_ref(
         &self,
@@ -64,7 +53,8 @@ where
 
 impl<'r, T> Encode<'_, ScyllaDB> for &[T]
 where
-    T: UserDefinedType<'r> + Clone + 'static,
+    Self: Clone,
+    T: UserDefinedType<'r> + 'static,
 {
     fn encode_by_ref(
         &self,
@@ -78,6 +68,14 @@ impl<'r, T> Encode<'_, ScyllaDB> for Vec<T>
 where
     T: UserDefinedType<'r> + Clone + 'static,
 {
+    fn encode(
+        self,
+        buf: &mut ScyllaDBArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
+        buf.push(ScyllaDBArgument::UserDefinedTypeArray(Box::new(self)));
+        Ok(IsNull::No)
+    }
+
     fn encode_by_ref(
         &self,
         buf: &mut ScyllaDBArgumentBuffer,

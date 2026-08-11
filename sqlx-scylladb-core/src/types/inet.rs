@@ -1,13 +1,20 @@
 use std::net::IpAddr;
 
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::{ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray},
+};
 
-impl_type!(IpAddr, ScyllaDBTypeInfo::Inet, ScyllaDBArgument::IpAddr);
-
-impl_array_type!(
+impl_native_type!(
     IpAddr,
-    ScyllaDBTypeInfo::InetArray,
-    ScyllaDBArgument::IpAddrArray
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Inet),
+    ScyllaDBArgumentNative::Inet
+);
+
+impl_native_array_type!(
+    IpAddr,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Inet),
+    ScyllaDBArgumentNativeArray::Inet
 );
 
 #[cfg(test)]
@@ -18,10 +25,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_duration() -> Result<(), BoxDynError> {
@@ -74,7 +78,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_inet"),
-            ScyllaDBTypeInfo::Inet,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -100,7 +104,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_inet"),
-            ScyllaDBTypeInfo::InetArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );

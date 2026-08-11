@@ -21,7 +21,20 @@ mod type_info;
 mod types;
 mod value;
 
-pub use arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArguments};
+#[cfg(feature = "bigdecimal-04")]
+pub use arguments::ScyllaDBArgumentNativeArrayDecimal;
+#[cfg(feature = "bigdecimal-04")]
+pub use arguments::ScyllaDBArgumentNativeDecimal;
+pub use arguments::{
+    ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray,
+    ScyllaDBArgumentNativeBlob, ScyllaDBArgumentNativeDate, ScyllaDBArgumentNativeText,
+    ScyllaDBArgumentNativeTime, ScyllaDBArgumentNativeTimestamp, ScyllaDBArguments,
+};
+pub use arguments::{
+    ScyllaDBArgumentNativeArrayBlob, ScyllaDBArgumentNativeArrayDate,
+    ScyllaDBArgumentNativeArrayText, ScyllaDBArgumentNativeArrayTime,
+    ScyllaDBArgumentNativeArrayTimestamp,
+};
 pub use column::ScyllaDBColumn;
 pub use connection::ScyllaDBConnection;
 pub use database::ScyllaDB;
@@ -38,7 +51,7 @@ use sqlx_core::{
 };
 pub use statement::ScyllaDBStatement;
 pub use transaction::ScyllaDBTransactionManager;
-pub use type_info::{ScyllaDBTypeInfo, register_any_type};
+pub use type_info::{ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray};
 pub use types::array::ScyllaDBHasArrayType;
 pub use types::user_defined_type::UserDefinedType;
 pub use value::{ScyllaDBValue, ScyllaDBValueRef};

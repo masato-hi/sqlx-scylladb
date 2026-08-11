@@ -8,25 +8,28 @@ use sqlx_core::{
 };
 
 use crate::{
-    ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef,
-    arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer},
+    ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    ScyllaDBValueRef,
+    arguments::{
+        ScyllaDBArgumentBuffer, ScyllaDBArgumentNativeArrayBlob, ScyllaDBArgumentNativeBlob,
+    },
 };
 
 impl<const N: usize> Type<ScyllaDB> for [u8; N] {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
 impl Type<ScyllaDB> for [u8] {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
 impl Type<ScyllaDB> for Vec<u8> {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
@@ -45,7 +48,7 @@ impl<const N: usize> Encode<'_, ScyllaDB> for [u8; N] {
 
 impl Encode<'_, ScyllaDB> for [u8] {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Blob(self.to_vec());
+        let argument = ScyllaDBArgumentNativeBlob::Blob(self.to_vec()).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -71,6 +74,11 @@ impl Encode<'_, ScyllaDB> for Arc<[u8]> {
 }
 
 impl Encode<'_, ScyllaDB> for Vec<u8> {
+    fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        buf.push(ScyllaDBArgumentNativeBlob::Blob(self).into());
+        Ok(IsNull::No)
+    }
+
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
         <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
     }
@@ -78,19 +86,19 @@ impl Encode<'_, ScyllaDB> for Vec<u8> {
 
 impl<const N: usize, const M: usize> Type<ScyllaDB> for [[u8; N]; M] {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
 impl<const N: usize> Type<ScyllaDB> for [[u8; N]] {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
 impl Type<ScyllaDB> for Vec<Vec<u8>> {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::BlobArray
+        ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob)
     }
 }
 
@@ -113,7 +121,7 @@ impl<const N: usize> Encode<'_, ScyllaDB> for [[u8; N]] {
         for blob in self.iter() {
             blobs.push(blob.to_vec());
         }
-        let argument = ScyllaDBArgument::BlobArray(blobs);
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(blobs).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -144,7 +152,7 @@ impl<const N: usize> Encode<'_, ScyllaDB> for [&[u8]; N] {
         for blob in self.iter() {
             blobs.push(blob.to_vec());
         }
-        let argument = ScyllaDBArgument::BlobArray(blobs);
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(blobs).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -157,7 +165,7 @@ impl Encode<'_, ScyllaDB> for [&[u8]] {
         for blob in self.iter() {
             blobs.push(blob.to_vec());
         }
-        let argument = ScyllaDBArgument::BlobArray(blobs);
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(blobs).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -194,7 +202,7 @@ impl Encode<'_, ScyllaDB> for [Vec<u8>] {
         for blob in self.iter() {
             blobs.push(blob.to_vec());
         }
-        let argument = ScyllaDBArgument::BlobArray(blobs);
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(blobs).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -220,8 +228,13 @@ impl Encode<'_, ScyllaDB> for &[Vec<u8>] {
 }
 
 impl Encode<'_, ScyllaDB> for Vec<Vec<u8>> {
+    fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        buf.push(ScyllaDBArgumentNativeArrayBlob::Blob(self).into());
+        Ok(IsNull::No)
+    }
+
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::BlobArray(self.clone());
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(self.clone()).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -239,13 +252,16 @@ mod secrecy {
     };
 
     use crate::{
-        ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer},
+        ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+        ScyllaDBValueRef,
+        arguments::{
+            ScyllaDBArgumentBuffer, ScyllaDBArgumentNativeArrayBlob, ScyllaDBArgumentNativeBlob,
+        },
     };
 
     impl Type<ScyllaDB> for SecretVec<u8> {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Blob
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
         }
     }
 
@@ -257,12 +273,19 @@ mod secrecy {
     }
 
     impl Encode<'_, ScyllaDB> for SecretVec<u8> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let argument = ScyllaDBArgumentNativeBlob::Secrecy08(self).into();
+            buf.push(argument);
+
+            Ok(IsNull::No)
+        }
+
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
             use secrecy_08::ExposeSecret;
 
             let value = self.expose_secret().to_vec();
             let value = SecretVec::new(value);
-            let argument = ScyllaDBArgument::SecretBlob(value);
+            let argument = ScyllaDBArgumentNativeBlob::Secrecy08(value).into();
             buf.push(argument);
 
             Ok(IsNull::No)
@@ -271,19 +294,19 @@ mod secrecy {
 
     impl<const N: usize> Type<ScyllaDB> for [SecretVec<u8>; N] {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Blob
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
         }
     }
 
     impl Type<ScyllaDB> for [SecretVec<u8>] {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Blob
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
         }
     }
 
     impl Type<ScyllaDB> for Vec<SecretVec<u8>> {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::BlobArray
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob)
         }
     }
 
@@ -310,7 +333,7 @@ mod secrecy {
                 let item = SecretVec::new(value.to_vec());
                 items.push(item);
             }
-            let argument = ScyllaDBArgument::SecretBlobArray(items);
+            let argument = ScyllaDBArgumentNativeArrayBlob::Secrecy08(items).into();
             buf.push(argument);
 
             Ok(IsNull::No)
@@ -324,6 +347,13 @@ mod secrecy {
     }
 
     impl Encode<'_, ScyllaDB> for Vec<SecretVec<u8>> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let argument = ScyllaDBArgumentNativeArrayBlob::Secrecy08(self).into();
+            buf.push(argument);
+
+            Ok(IsNull::No)
+        }
+
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
             <_ as ::sqlx_core::encode::Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
         }
@@ -339,10 +369,7 @@ mod tests {
     use sqlx_core::ext::ustr::UStr;
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_blob() -> Result<(), BoxDynError> {
@@ -549,7 +576,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_blob"),
-            ScyllaDBTypeInfo::Blob,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -575,7 +602,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_blob"),
-            ScyllaDBTypeInfo::BlobArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -597,10 +624,7 @@ mod tests {
         use secrecy_08::{ExposeSecret, SecretVec};
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-        use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-            types::serialize_value,
-        };
+        use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
         #[test]
         fn it_can_encode_secret_blob() -> Result<(), BoxDynError> {
@@ -638,7 +662,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_blob"),
-                ScyllaDBTypeInfo::Blob,
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -664,7 +688,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_blob"),
-                ScyllaDBTypeInfo::BlobArray,
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );

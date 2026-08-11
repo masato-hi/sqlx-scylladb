@@ -19,9 +19,10 @@ use sqlx_core::{
 };
 
 use crate::{
-    ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArguments, ScyllaDBColumn,
+    ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArgumentNative,
+    ScyllaDBArgumentNativeBlob, ScyllaDBArgumentNativeText, ScyllaDBArguments, ScyllaDBColumn,
     ScyllaDBConnectOptions, ScyllaDBConnection, ScyllaDBQueryResult, ScyllaDBRow,
-    ScyllaDBTransactionManager, ScyllaDBTypeInfo,
+    ScyllaDBTransactionManager, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
 };
 
 sqlx_core::declare_driver_with_optional_migrate!(DRIVER = ScyllaDB);
@@ -194,14 +195,20 @@ impl<'a> TryFrom<&'a ScyllaDBTypeInfo> for AnyTypeInfo {
     fn try_from(type_info: &'a ScyllaDBTypeInfo) -> Result<Self, Self::Error> {
         Ok(AnyTypeInfo {
             kind: match &type_info {
-                ScyllaDBTypeInfo::Boolean => AnyTypeInfoKind::Bool,
-                ScyllaDBTypeInfo::SmallInt => AnyTypeInfoKind::SmallInt,
-                ScyllaDBTypeInfo::Int => AnyTypeInfoKind::Integer,
-                ScyllaDBTypeInfo::BigInt | ScyllaDBTypeInfo::Counter => AnyTypeInfoKind::BigInt,
-                ScyllaDBTypeInfo::Float => AnyTypeInfoKind::Real,
-                ScyllaDBTypeInfo::Double => AnyTypeInfoKind::Double,
-                ScyllaDBTypeInfo::Blob => AnyTypeInfoKind::Blob,
-                ScyllaDBTypeInfo::Text | ScyllaDBTypeInfo::Ascii => AnyTypeInfoKind::Text,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Boolean) => AnyTypeInfoKind::Bool,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::SmallInt) => {
+                    AnyTypeInfoKind::SmallInt
+                }
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Int) => AnyTypeInfoKind::Integer,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::BigInt)
+                | ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Counter) => {
+                    AnyTypeInfoKind::BigInt
+                }
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Float) => AnyTypeInfoKind::Real,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Double) => AnyTypeInfoKind::Double,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob) => AnyTypeInfoKind::Blob,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
+                | ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Ascii) => AnyTypeInfoKind::Text,
                 _ => {
                     return Err(sqlx_core::Error::AnyDriverError(
                         format!("Any driver does not support the ScyllaDB type {type_info:?}")
@@ -247,19 +254,42 @@ fn map_arguments(args: AnyArguments) -> ScyllaDBArguments {
     for val in args.values.0.into_iter() {
         let (r#type, argument) = match val {
             AnyValueKind::Null(_) => (ScyllaDBTypeInfo::Null, ScyllaDBArgument::Null),
-            AnyValueKind::Bool(b) => (ScyllaDBTypeInfo::Boolean, ScyllaDBArgument::Boolean(b)),
-            AnyValueKind::SmallInt(i) => {
-                (ScyllaDBTypeInfo::SmallInt, ScyllaDBArgument::SmallInt(i))
-            }
-            AnyValueKind::Integer(i) => (ScyllaDBTypeInfo::Int, ScyllaDBArgument::Int(i)),
-            AnyValueKind::BigInt(i) => (ScyllaDBTypeInfo::BigInt, ScyllaDBArgument::BigInt(i)),
-            AnyValueKind::Real(r) => (ScyllaDBTypeInfo::Float, ScyllaDBArgument::Float(r)),
-            AnyValueKind::Double(d) => (ScyllaDBTypeInfo::Double, ScyllaDBArgument::Double(d)),
-            AnyValueKind::Text(t) => (
-                ScyllaDBTypeInfo::Text,
-                ScyllaDBArgument::Text(t.to_string()),
+            AnyValueKind::Bool(b) => (
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Boolean),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Boolean(b)),
             ),
-            AnyValueKind::Blob(b) => (ScyllaDBTypeInfo::Blob, ScyllaDBArgument::Blob(b.to_vec())),
+            AnyValueKind::SmallInt(i) => (
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::SmallInt),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::SmallInt(i)),
+            ),
+            AnyValueKind::Integer(i) => (
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Int),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Int(i)),
+            ),
+            AnyValueKind::BigInt(i) => (
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::BigInt),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::BigInt(i)),
+            ),
+            AnyValueKind::Real(r) => (
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Float),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Float(r)),
+            ),
+            AnyValueKind::Double(d) => (
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Double),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Double(d)),
+            ),
+            AnyValueKind::Text(t) => (
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Text(
+                    ScyllaDBArgumentNativeText::Text(std::borrow::Cow::Owned(t.to_string())),
+                )),
+            ),
+            AnyValueKind::Blob(b) => (
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Blob(
+                    ScyllaDBArgumentNativeBlob::Blob(b.to_vec()),
+                )),
+            ),
             // AnyValueKind is `#[non_exhaustive]` but we should have covered everything
             _ => unreachable!("BUG: missing mapping for {val:?}"),
         };

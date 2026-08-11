@@ -20,24 +20,18 @@ pub fn expand_user_defined_type(item: DeriveInput) -> syn::Result<TokenStream> {
     } else {
         struct_ident.to_string().to_case(Case::Snake)
     };
+    let array_type_name = format!("{}[]", type_name);
 
     let tokens = quote! {
         #[automatically_derived]
-        impl<'r> ::sqlx_scylladb::UserDefinedType<'r> for #struct_ident {
-            fn type_name() -> ::sqlx_scylladb::ext::ustr::UStr {
-                ::sqlx_scylladb::ext::ustr::UStr::new(#type_name)
-            }
-        }
+        impl<'r> ::sqlx_scylladb::UserDefinedType<'r> for #struct_ident {}
 
         impl<'r> ::sqlx_scylladb::ScyllaDBHasArrayType for #struct_ident
         where
             Self: ::sqlx_scylladb::UserDefinedType<'r>,
         {
             fn array_type_info() -> ::sqlx_scylladb::ScyllaDBTypeInfo {
-                use ::sqlx_scylladb::UserDefinedType as _;
-
-                let ty = Self::type_name();
-                let ty = ::sqlx_scylladb::ext::ustr::UStr::new(&format!("{}[]", ty));
+                let ty = ::sqlx_scylladb::ext::ustr::UStr::new(#array_type_name);
                 ::sqlx_scylladb::ScyllaDBTypeInfo::UserDefinedTypeArray(ty)
             }
         }
@@ -45,20 +39,25 @@ pub fn expand_user_defined_type(item: DeriveInput) -> syn::Result<TokenStream> {
         #[automatically_derived]
         impl ::sqlx_scylladb::ext::sqlx::types::Type<::sqlx_scylladb::ScyllaDB> for #struct_ident {
             fn type_info() -> ::sqlx_scylladb::ScyllaDBTypeInfo {
-                use ::sqlx_scylladb::UserDefinedType as _;
-
-                let type_name = #struct_ident::type_name();
-                ::sqlx_scylladb::ScyllaDBTypeInfo::UserDefinedType(type_name)
+                let ty = ::sqlx_scylladb::ext::ustr::UStr::new(#type_name);
+                ::sqlx_scylladb::ScyllaDBTypeInfo::UserDefinedType(ty)
             }
         }
 
         #[automatically_derived]
         impl<'r> ::sqlx_scylladb::ext::sqlx::encode::Encode<'_, ::sqlx_scylladb::ScyllaDB> for #struct_ident
-        where Self: ::sqlx_scylladb::UserDefinedType<'r> {
+        where Self: ::sqlx_scylladb::UserDefinedType<'r> + ::std::clone::Clone {
+            fn encode(self, buf: &mut ::sqlx_scylladb::ScyllaDBArgumentBuffer) -> Result<::sqlx_scylladb::ext::sqlx::encode::IsNull, ::sqlx_scylladb::ext::sqlx::error::BoxDynError> {
+                let argument = ::sqlx_scylladb::ScyllaDBArgument::UserDefinedType(::std::boxed::Box::new(self));
+                buf.push(argument);
+
+                Ok(::sqlx_scylladb::ext::sqlx::encode::IsNull::No)
+            }
+
             fn encode_by_ref(&self, buf: &mut ::sqlx_scylladb::ScyllaDBArgumentBuffer) -> Result<::sqlx_scylladb::ext::sqlx::encode::IsNull, ::sqlx_scylladb::ext::sqlx::error::BoxDynError> {
                 use ::sqlx_scylladb::UserDefinedType as _;
 
-                let argument = ::sqlx_scylladb::ScyllaDBArgument::UserDefinedType(self.box_cloned());
+                let argument = ::sqlx_scylladb::ScyllaDBArgument::UserDefinedType(::std::boxed::Box::new(self.clone()));
                 buf.push(argument);
 
                 Ok(::sqlx_scylladb::ext::sqlx::encode::IsNull::No)

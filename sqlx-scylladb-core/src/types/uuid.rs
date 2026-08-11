@@ -1,26 +1,33 @@
 use scylla::value::CqlTimeuuid;
 use uuid::Uuid;
 
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::{ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray},
+};
 
-impl_type!(Uuid, ScyllaDBTypeInfo::Uuid, ScyllaDBArgument::Uuid);
-
-impl_array_type!(
+impl_native_type!(
     Uuid,
-    ScyllaDBTypeInfo::UuidArray,
-    ScyllaDBArgument::UuidArray
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Uuid),
+    ScyllaDBArgumentNative::Uuid
 );
 
-impl_type!(
-    CqlTimeuuid,
-    ScyllaDBTypeInfo::Timeuuid,
-    ScyllaDBArgument::Timeuuid
+impl_native_array_type!(
+    Uuid,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Uuid),
+    ScyllaDBArgumentNativeArray::Uuid
 );
 
-impl_array_type!(
+impl_native_type!(
     CqlTimeuuid,
-    ScyllaDBTypeInfo::TimeuuidArray,
-    ScyllaDBArgument::TimeuuidArray
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Timeuuid),
+    ScyllaDBArgumentNative::Timeuuid
+);
+
+impl_native_array_type!(
+    CqlTimeuuid,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Timeuuid),
+    ScyllaDBArgumentNativeArray::Timeuuid
 );
 
 #[cfg(test)]
@@ -32,10 +39,7 @@ mod tests {
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
     use uuid::Uuid;
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_uuid() -> Result<(), BoxDynError> {
@@ -68,7 +72,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_uuid"),
-            ScyllaDBTypeInfo::Uuid,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -94,7 +98,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_uuid"),
-            ScyllaDBTypeInfo::FloatArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );

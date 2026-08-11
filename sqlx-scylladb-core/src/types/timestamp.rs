@@ -1,46 +1,49 @@
 use scylla::value::CqlTimestamp;
 
-use crate::{ScyllaDBArgument, ScyllaDBTypeInfo};
+use crate::{
+    ScyllaDBArgumentNativeArrayTimestamp, ScyllaDBArgumentNativeTimestamp, ScyllaDBTypeInfo,
+    ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+};
 
-impl_type!(
+impl_native_type!(
     CqlTimestamp,
-    ScyllaDBTypeInfo::Timestamp,
-    ScyllaDBArgument::CqlTimestamp
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Timestamp),
+    ScyllaDBArgumentNativeTimestamp::Timestamp
 );
 
-impl_array_type!(
+impl_native_array_type!(
     CqlTimestamp,
-    ScyllaDBTypeInfo::TimestampArray,
-    ScyllaDBArgument::CqlTimestampArray
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Timestamp),
+    ScyllaDBArgumentNativeArrayTimestamp::Timestamp
 );
 
 #[cfg(feature = "chrono-04")]
 pub mod chrono {
-    impl_type!(
+    impl_native_type!(
         chrono_04::DateTime<chrono_04::Utc>,
-        crate::ScyllaDBTypeInfo::Timestamp,
-        crate::ScyllaDBArgument::ChronoDateTimeUTC
+        crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Timestamp),
+        crate::ScyllaDBArgumentNativeTimestamp::Chrono04
     );
 
-    impl_array_type!(
+    impl_native_array_type!(
         chrono_04::DateTime<chrono_04::Utc>,
-        crate::ScyllaDBTypeInfo::TimestampArray,
-        crate::ScyllaDBArgument::ChronoDateTimeUTCArray
+        crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Timestamp),
+        crate::ScyllaDBArgumentNativeArrayTimestamp::Chrono04
     );
 }
 
 #[cfg(feature = "time-03")]
 pub mod time {
-    impl_type!(
+    impl_native_type!(
         time_03::OffsetDateTime,
-        crate::ScyllaDBTypeInfo::Timestamp,
-        crate::ScyllaDBArgument::OffsetDateTime
+        crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Timestamp),
+        crate::ScyllaDBArgumentNativeTimestamp::Time03
     );
 
-    impl_array_type!(
+    impl_native_array_type!(
         time_03::OffsetDateTime,
-        crate::ScyllaDBTypeInfo::TimestampArray,
-        crate::ScyllaDBArgument::OffsetDateTimeArray
+        crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Timestamp),
+        crate::ScyllaDBArgumentNativeArrayTimestamp::Time03
     );
 }
 
@@ -55,10 +58,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_timestamp() -> Result<(), BoxDynError> {
@@ -102,7 +102,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_timestamp"),
-            ScyllaDBTypeInfo::Timestamp,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -125,7 +125,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_timestamp"),
-            ScyllaDBTypeInfo::TimestampArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -147,10 +147,7 @@ mod tests {
 
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-        use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-            types::serialize_value,
-        };
+        use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
         #[test]
         fn it_can_encode_chrono_datetime_utc() -> Result<(), BoxDynError> {
@@ -209,7 +206,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_timestamp"),
-                ScyllaDBTypeInfo::Timestamp,
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -235,7 +232,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_timestamp"),
-                ScyllaDBTypeInfo::TimestampArray,
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -261,10 +258,7 @@ mod tests {
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
         use time_03::OffsetDateTime;
 
-        use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-            types::serialize_value,
-        };
+        use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
         #[test]
         fn it_can_encode_time_offset_date_time() -> Result<(), BoxDynError> {
@@ -323,7 +317,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_timestamp"),
-                ScyllaDBTypeInfo::Timestamp,
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -349,7 +343,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_timestamp"),
-                ScyllaDBTypeInfo::TimestampArray,
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );

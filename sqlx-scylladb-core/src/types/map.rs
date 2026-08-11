@@ -1,79 +1,144 @@
-use std::net::IpAddr;
+use std::{
+    any::TypeId,
+    collections::HashMap,
+    hash::Hash,
+    sync::{LazyLock, RwLock},
+};
 
-use uuid::Uuid;
+use rustc_hash::FxHashMap;
+use scylla::cluster::metadata::ColumnType;
+use scylla::{deserialize::value::DeserializeValue, serialize::value::SerializeValue};
+use sqlx_core::{
+    decode::Decode, encode::Encode, ext::ustr::UStr, type_info::TypeInfo, types::Type,
+};
 
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{ScyllaDB, ScyllaDBError, ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
 
-// String
-impl_map_type!(
-    String,
-    String,
-    ScyllaDBTypeInfo::TextTextMap,
-    ScyllaDBArgument::TextTextMap
-);
+static MAP_TYPE_INFO_NAMES: LazyLock<RwLock<Vec<(TypeId, UStr)>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
+static MAP_TYPE_INFO_NAMES_FROM_COLUMN_TYPES: LazyLock<
+    RwLock<FxHashMap<(ScyllaDBTypeInfo, ScyllaDBTypeInfo), UStr>>,
+> = LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
-impl_map_type!(
-    String,
-    bool,
-    ScyllaDBTypeInfo::TextBooleanMap,
-    ScyllaDBArgument::TextBooleanMap
-);
+fn get_map_type_info_name(type_id: TypeId) -> Option<UStr> {
+    MAP_TYPE_INFO_NAMES
+        .read()
+        .expect("map type name cache lock poisoned")
+        .iter()
+        .find(|(cached_type_id, _)| *cached_type_id == type_id)
+        .map(|(_, type_name)| type_name.clone())
+}
 
-impl_map_type!(
-    String,
-    i8,
-    ScyllaDBTypeInfo::TextTinyIntMap,
-    ScyllaDBArgument::TextTinyIntMap
-);
+fn register_map_type_info_name(
+    type_id: TypeId,
+    key_type_info: ScyllaDBTypeInfo,
+    value_type_info: ScyllaDBTypeInfo,
+) -> UStr {
+    let type_info_name = build_map_type_info_name(key_type_info, value_type_info);
 
-impl_map_type!(
-    String,
-    i16,
-    ScyllaDBTypeInfo::TextSmallIntMap,
-    ScyllaDBArgument::TextSmallIntMap
-);
+    MAP_TYPE_INFO_NAMES
+        .write()
+        .expect("map type name cache lock poisoned")
+        .push((type_id, type_info_name.clone()));
 
-impl_map_type!(
-    String,
-    i32,
-    ScyllaDBTypeInfo::TextIntMap,
-    ScyllaDBArgument::TextIntMap
-);
+    type_info_name
+}
 
-impl_map_type!(
-    String,
-    i64,
-    ScyllaDBTypeInfo::TextBigIntMap,
-    ScyllaDBArgument::TextBigIntMap
-);
+fn build_map_type_info_name(
+    key_type_info: ScyllaDBTypeInfo,
+    value_type_info: ScyllaDBTypeInfo,
+) -> UStr {
+    let type_name = format!("MAP<{}, {}>", key_type_info.name(), value_type_info.name());
+    UStr::from(type_name)
+}
 
-impl_map_type!(
-    String,
-    f32,
-    ScyllaDBTypeInfo::TextFloatMap,
-    ScyllaDBArgument::TextFloatMap
-);
+impl ScyllaDBTypeInfo {
+    pub(crate) fn map_type_info_name_from_column_types(
+        key_type: &ColumnType<'_>,
+        value_type: &ColumnType<'_>,
+    ) -> Result<Self, ScyllaDBError> {
+        let key_type_info = Self::from_column_type(key_type)?;
+        let value_type_info = Self::from_column_type(value_type)?;
+        let key = (key_type_info.clone(), value_type_info.clone());
 
-impl_map_type!(
-    String,
-    f64,
-    ScyllaDBTypeInfo::TextDoubleMap,
-    ScyllaDBArgument::TextDoubleMap
-);
+        if let Some(type_info_name) = MAP_TYPE_INFO_NAMES_FROM_COLUMN_TYPES
+            .read()
+            .expect("map type name cache lock poisoned")
+            .get(&key)
+            .cloned()
+        {
+            return Ok(Self::Map(type_info_name));
+        }
 
-impl_map_type!(
-    String,
-    Uuid,
-    ScyllaDBTypeInfo::TextUuidMap,
-    ScyllaDBArgument::TextUuidMap
-);
+        let type_info_name = build_map_type_info_name(key_type_info, value_type_info);
 
-impl_map_type!(
-    String,
-    IpAddr,
-    ScyllaDBTypeInfo::TextInetMap,
-    ScyllaDBArgument::TextIpAddrMap
-);
+        MAP_TYPE_INFO_NAMES_FROM_COLUMN_TYPES
+            .write()
+            .expect("map type name cache lock poisoned")
+            .insert(key, type_info_name.clone());
+
+        Ok(Self::Map(type_info_name))
+    }
+}
+
+impl<K, V> Type<ScyllaDB> for HashMap<K, V>
+where
+    K: Type<ScyllaDB> + 'static,
+    V: Type<ScyllaDB> + 'static,
+{
+    fn type_info() -> <ScyllaDB as sqlx_core::database::Database>::TypeInfo {
+        let type_id = TypeId::of::<Self>();
+
+        if let Some(type_info_name) = get_map_type_info_name(type_id) {
+            return ScyllaDBTypeInfo::Map(type_info_name);
+        }
+
+        let key_type_info = K::type_info();
+        let value_type_info = V::type_info();
+
+        let type_info_name = register_map_type_info_name(type_id, key_type_info, value_type_info);
+
+        ScyllaDBTypeInfo::Map(type_info_name)
+    }
+}
+
+impl<K, V> Encode<'_, ScyllaDB> for HashMap<K, V>
+where
+    K: SerializeValue + Clone + Send + Sync + 'static,
+    V: SerializeValue + Clone + Send + Sync + 'static,
+{
+    fn encode(
+        self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
+        let argument = ScyllaDBArgument::Map(Box::new(self));
+        buf.push(argument);
+        Ok(::sqlx_core::encode::IsNull::No)
+    }
+
+    fn encode_by_ref(
+        &self,
+        buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
+        let argument = ScyllaDBArgument::Map(Box::new((*self).clone()));
+        buf.push(argument);
+
+        Ok(sqlx_core::encode::IsNull::No)
+    }
+}
+
+impl<K, V> Decode<'_, ScyllaDB> for HashMap<K, V>
+where
+    K: for<'a> DeserializeValue<'a, 'a> + Hash + Eq,
+    V: for<'a> DeserializeValue<'a, 'a>,
+{
+    fn decode(
+        value: <ScyllaDB as sqlx_core::database::Database>::ValueRef<'_>,
+    ) -> Result<Self, sqlx_core::error::BoxDynError> {
+        let val: Self = value.deserialize()?;
+        Ok(val)
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -84,10 +149,7 @@ mod tests {
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
     use uuid::Uuid;
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_text_hashmap() -> Result<(), BoxDynError> {
@@ -160,7 +222,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextTextMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -189,7 +251,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextTextMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -213,7 +275,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextTinyIntMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -239,7 +301,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextSmallIntMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -265,7 +327,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextIntMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -291,7 +353,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextBigIntMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -317,7 +379,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextFloatMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -343,7 +405,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextFloatMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -372,7 +434,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextUuidMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -404,7 +466,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_hashmap"),
-            ScyllaDBTypeInfo::TextInetMap,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );

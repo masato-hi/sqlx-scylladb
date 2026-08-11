@@ -1,31 +1,54 @@
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::{ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray},
+};
 
-impl_type!(i8, ScyllaDBTypeInfo::TinyInt, ScyllaDBArgument::TinyInt);
-
-impl_array_type!(
+impl_native_type!(
     i8,
-    ScyllaDBTypeInfo::TinyIntArray,
-    ScyllaDBArgument::TinyIntArray
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::TinyInt),
+    ScyllaDBArgumentNative::TinyInt
 );
 
-impl_type!(i16, ScyllaDBTypeInfo::SmallInt, ScyllaDBArgument::SmallInt);
+impl_native_array_type!(
+    i8,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::TinyInt),
+    ScyllaDBArgumentNativeArray::TinyInt
+);
 
-impl_array_type!(
+impl_native_type!(
     i16,
-    ScyllaDBTypeInfo::SmallIntArray,
-    ScyllaDBArgument::SmallIntArray
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::SmallInt),
+    ScyllaDBArgumentNative::SmallInt
 );
 
-impl_type!(i32, ScyllaDBTypeInfo::Int, ScyllaDBArgument::Int);
+impl_native_array_type!(
+    i16,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::SmallInt),
+    ScyllaDBArgumentNativeArray::SmallInt
+);
 
-impl_array_type!(i32, ScyllaDBTypeInfo::IntArray, ScyllaDBArgument::IntArray);
+impl_native_type!(
+    i32,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Int),
+    ScyllaDBArgumentNative::Int
+);
 
-impl_type!(i64, ScyllaDBTypeInfo::BigInt, ScyllaDBArgument::BigInt);
+impl_native_array_type!(
+    i32,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Int),
+    ScyllaDBArgumentNativeArray::Int
+);
 
-impl_array_type!(
+impl_native_type!(
     i64,
-    ScyllaDBTypeInfo::BigIntArray,
-    ScyllaDBArgument::BigIntArray
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::BigInt),
+    ScyllaDBArgumentNative::BigInt
+);
+
+impl_native_array_type!(
+    i64,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::BigInt),
+    ScyllaDBArgumentNativeArray::BigInt
 );
 
 #[cfg(test)]
@@ -36,10 +59,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_tinyint() -> Result<(), BoxDynError> {
@@ -62,7 +82,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_tinyint"),
-            ScyllaDBTypeInfo::TinyInt,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -82,7 +102,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_tinyint"),
-            ScyllaDBTypeInfo::TinyIntArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -113,7 +133,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_smallint"),
-            ScyllaDBTypeInfo::SmallInt,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -133,7 +153,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_smallint"),
-            ScyllaDBTypeInfo::SmallIntArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -164,7 +184,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_int"),
-            ScyllaDBTypeInfo::Int,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -184,7 +204,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_int"),
-            ScyllaDBTypeInfo::IntArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -215,7 +235,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_bigint"),
-            ScyllaDBTypeInfo::BigInt,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -235,7 +255,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_bigint"),
-            ScyllaDBTypeInfo::BigIntArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );

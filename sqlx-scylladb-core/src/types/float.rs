@@ -1,19 +1,30 @@
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::{ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray},
+};
 
-impl_type!(f32, ScyllaDBTypeInfo::Float, ScyllaDBArgument::Float);
-
-impl_array_type!(
+impl_native_type!(
     f32,
-    ScyllaDBTypeInfo::FloatArray,
-    ScyllaDBArgument::FloatArray
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Float),
+    ScyllaDBArgumentNative::Float
 );
 
-impl_type!(f64, ScyllaDBTypeInfo::Double, ScyllaDBArgument::Double);
+impl_native_array_type!(
+    f32,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Float),
+    ScyllaDBArgumentNativeArray::Float
+);
 
-impl_array_type!(
+impl_native_type!(
     f64,
-    ScyllaDBTypeInfo::DoubleArray,
-    ScyllaDBArgument::DoubleArray
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Double),
+    ScyllaDBArgumentNative::Double
+);
+
+impl_native_array_type!(
+    f64,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Double),
+    ScyllaDBArgumentNativeArray::Double
 );
 
 #[cfg(test)]
@@ -24,10 +35,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_float() -> Result<(), BoxDynError> {
@@ -50,7 +58,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_float"),
-            ScyllaDBTypeInfo::Float,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -70,7 +78,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_float"),
-            ScyllaDBTypeInfo::FloatArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -101,7 +109,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_float"),
-            ScyllaDBTypeInfo::Double,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -121,7 +129,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_float"),
-            ScyllaDBTypeInfo::DoubleArray,
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );

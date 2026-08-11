@@ -312,7 +312,7 @@ async fn describe_tuple(pool: ScyllaDBPool) -> anyhow::Result<()> {
 
     assert_eq!("UUID", describe.columns()[0].type_info().name());
     assert_eq!(
-        "TUPLE<BOOLEAN, TINYINT, SMALLINT, INT, BIGINT, FLOAT, DOUBLE, UUID, TIMESTAMP, DATE, TIME, ASCII, TEXT, INET, BLOB, my_user_defined_type>",
+        "(BOOLEAN, TINYINT, SMALLINT, INT, BIGINT, FLOAT, DOUBLE, UUID, TIMESTAMP, DATE, TIME, ASCII, TEXT, INET, BLOB, my_user_defined_type)",
         describe.columns()[1].type_info().name()
     );
 
