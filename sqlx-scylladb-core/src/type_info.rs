@@ -320,11 +320,7 @@ impl ScyllaDBTypeInfo {
                     _ => column_type_not_supported!(column_type),
                 },
                 CollectionType::Map(key_type, value_type) => {
-                    let key_type_info = Self::from_column_type(key_type)?;
-                    let value_type_info = Self::from_column_type(value_type)?;
-                    let type_info_name =
-                        format!("<{},{}>", key_type_info.name(), value_type_info.name());
-                    Self::Map(UStr::from(type_info_name))
+                    Self::map_type_info_name_from_column_types(key_type, value_type)?
                 }
                 _ => column_type_not_supported!(column_type),
             },

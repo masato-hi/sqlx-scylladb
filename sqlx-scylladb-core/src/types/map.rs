@@ -1,21 +1,81 @@
-use std::{collections::HashMap, hash::Hash};
+use std::{
+    collections::HashMap,
+    hash::Hash,
+    sync::{LazyLock, RwLock},
+};
 
+use scylla::cluster::metadata::ColumnType;
 use scylla::{deserialize::value::DeserializeValue, serialize::value::SerializeValue};
+use rustc_hash::FxHashMap;
 use sqlx_core::{
     decode::Decode, encode::Encode, ext::ustr::UStr, type_info::TypeInfo, types::Type,
 };
 
-use crate::{ScyllaDB, ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{ScyllaDB, ScyllaDBError, ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
 
-fn build_map_type_info_name(
+static MAP_TYPE_INFO_NAMES: LazyLock<
+    RwLock<FxHashMap<(ScyllaDBTypeInfo, ScyllaDBTypeInfo), UStr>>,
+> = LazyLock::new(|| RwLock::new(FxHashMap::default()));
+static MAP_TYPE_INFO_NAMES_FROM_COLUMN_TYPES: LazyLock<
+    RwLock<FxHashMap<(ScyllaDBTypeInfo, ScyllaDBTypeInfo), UStr>>,
+> = LazyLock::new(|| RwLock::new(FxHashMap::default()));
+
+pub(crate) fn map_type_info_name(
     key_type_info: ScyllaDBTypeInfo,
     value_type_info: ScyllaDBTypeInfo,
 ) -> UStr {
+    let key = (key_type_info.clone(), value_type_info.clone());
+
+    if let Some(type_info_name) = MAP_TYPE_INFO_NAMES
+        .read()
+        .expect("map type name cache lock poisoned")
+        .get(&key)
+        .cloned()
+    {
+        return type_info_name;
+    }
+
     let key_type_info_name = key_type_info.name();
     let value_type_info_name = value_type_info.name();
 
     let type_info_name = format!("<{},{}>", key_type_info_name, value_type_info_name);
-    UStr::from(type_info_name)
+    let type_info_name = UStr::from(type_info_name);
+
+    MAP_TYPE_INFO_NAMES
+        .write()
+        .expect("map type name cache lock poisoned")
+        .insert(key, type_info_name.clone());
+
+    type_info_name
+}
+
+impl ScyllaDBTypeInfo {
+    pub(crate) fn map_type_info_name_from_column_types(
+        key_type: &ColumnType<'_>,
+        value_type: &ColumnType<'_>,
+    ) -> Result<Self, ScyllaDBError> {
+        let key_type_info = Self::from_column_type(key_type)?;
+        let value_type_info = Self::from_column_type(value_type)?;
+        let key = (key_type_info.clone(), value_type_info.clone());
+
+        if let Some(type_info_name) = MAP_TYPE_INFO_NAMES_FROM_COLUMN_TYPES
+            .read()
+            .expect("map type name cache lock poisoned")
+            .get(&key)
+            .cloned()
+        {
+            return Ok(Self::Map(type_info_name));
+        }
+
+        let type_info_name = map_type_info_name(key_type_info, value_type_info);
+
+        MAP_TYPE_INFO_NAMES_FROM_COLUMN_TYPES
+            .write()
+            .expect("map type name cache lock poisoned")
+            .insert(key, type_info_name.clone());
+
+        Ok(Self::Map(type_info_name))
+    }
 }
 
 impl<K, V> Type<ScyllaDB> for HashMap<K, V>
@@ -27,7 +87,7 @@ where
         let key_type_info = K::type_info();
         let value_type_info = V::type_info();
 
-        let type_info_name = build_map_type_info_name(key_type_info, value_type_info);
+        let type_info_name = map_type_info_name(key_type_info, value_type_info);
 
         ScyllaDBTypeInfo::Map(type_info_name)
     }
