@@ -110,6 +110,9 @@ pub enum ScyllaDBArgumentNativeText {
     /// Secret text held by value.
     #[cfg(feature = "secrecy-08")]
     Secrecy08(secrecy_08::SecretString),
+    /// Secret text held by value using secrecy 0.10.
+    #[cfg(feature = "secrecy-10")]
+    Secrecy10(secrecy_10::SecretString),
 }
 
 /// Blob values supported by a native ScyllaDB argument.
@@ -119,6 +122,9 @@ pub enum ScyllaDBArgumentNativeBlob {
     /// Secret `blob` type.
     #[cfg(feature = "secrecy-08")]
     Secrecy08(secrecy_08::SecretVec<u8>),
+    /// Secret `blob` type using secrecy 0.10.
+    #[cfg(feature = "secrecy-10")]
+    Secrecy10(secrecy_10::SecretBox<Vec<u8>>),
 }
 
 /// Decimal values supported by a native ScyllaDB argument.
@@ -171,6 +177,9 @@ pub enum ScyllaDBArgumentNativeArrayText {
     /// secret array of `text` or `ascii` type.
     #[cfg(feature = "secrecy-08")]
     Secrecy08(Vec<secrecy_08::SecretString>),
+    /// Secret text array using secrecy 0.10.
+    #[cfg(feature = "secrecy-10")]
+    Secrecy10(Vec<secrecy_10::SecretString>),
 }
 
 /// Blob array values supported by a native ScyllaDB argument.
@@ -180,6 +189,9 @@ pub enum ScyllaDBArgumentNativeArrayBlob {
     /// secret array of `blob` type.
     #[cfg(feature = "secrecy-08")]
     Secrecy08(Vec<secrecy_08::SecretVec<u8>>),
+    /// Secret `blob` array using secrecy 0.10.
+    #[cfg(feature = "secrecy-10")]
+    Secrecy10(Vec<secrecy_10::SecretBox<Vec<u8>>>),
 }
 
 /// Decimal array values supported by a native ScyllaDB argument.
@@ -420,6 +432,8 @@ impl SerializeValue for ScyllaDBArgumentNativeText {
             Self::ArcStr(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
             Self::Secrecy08(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-10")]
+            Self::Secrecy10(value) => <_ as SerializeValue>::serialize(value, typ, writer),
         }
     }
 }
@@ -434,6 +448,8 @@ impl SerializeValue for ScyllaDBArgumentNativeBlob {
             Self::Blob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
             Self::Secrecy08(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-10")]
+            Self::Secrecy10(value) => <_ as SerializeValue>::serialize(value, typ, writer),
         }
     }
 }
@@ -553,6 +569,8 @@ impl SerializeValue for ScyllaDBArgumentNativeArrayText {
             Self::Text(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
             Self::Secrecy08(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-10")]
+            Self::Secrecy10(value) => <_ as SerializeValue>::serialize(value, typ, writer),
         }
     }
 }
@@ -567,6 +585,8 @@ impl SerializeValue for ScyllaDBArgumentNativeArrayBlob {
             Self::Blob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
             Self::Secrecy08(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-10")]
+            Self::Secrecy10(value) => <_ as SerializeValue>::serialize(value, typ, writer),
         }
     }
 }
