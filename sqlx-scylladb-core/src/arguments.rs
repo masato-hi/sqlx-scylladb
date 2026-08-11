@@ -119,6 +119,9 @@ pub enum ScyllaDBArgumentNativeText {
 pub enum ScyllaDBArgumentNativeBlob {
     /// `blob` type.
     Blob(Vec<u8>),
+    /// `blob` type held by reference-counted bytes.
+    #[cfg(feature = "bytes-1")]
+    Bytes(bytes::Bytes),
     /// Secret `blob` type.
     #[cfg(feature = "secrecy-08")]
     Secrecy08(secrecy_08::SecretVec<u8>),
@@ -186,6 +189,9 @@ pub enum ScyllaDBArgumentNativeArrayText {
 pub enum ScyllaDBArgumentNativeArrayBlob {
     /// array of `blob` type.
     Blob(Vec<Vec<u8>>),
+    /// array of `blob` values held by reference-counted bytes.
+    #[cfg(feature = "bytes-1")]
+    Bytes(Vec<bytes::Bytes>),
     /// secret array of `blob` type.
     #[cfg(feature = "secrecy-08")]
     Secrecy08(Vec<secrecy_08::SecretVec<u8>>),
@@ -446,6 +452,8 @@ impl SerializeValue for ScyllaDBArgumentNativeBlob {
     ) -> Result<WrittenCellProof<'b>, SerializationError> {
         match self {
             Self::Blob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "bytes-1")]
+            Self::Bytes(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
             Self::Secrecy08(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-10")]
@@ -583,6 +591,8 @@ impl SerializeValue for ScyllaDBArgumentNativeArrayBlob {
     ) -> Result<WrittenCellProof<'b>, SerializationError> {
         match self {
             Self::Blob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "bytes-1")]
+            Self::Bytes(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
             Self::Secrecy08(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-10")]

@@ -84,6 +84,86 @@ impl Encode<'_, ScyllaDB> for Vec<u8> {
     }
 }
 
+#[cfg(feature = "bytes-1")]
+mod bytes_1 {
+    use bytes::Bytes;
+    use sqlx_core::{
+        decode::Decode,
+        encode::{Encode, IsNull},
+        error::BoxDynError,
+        types::Type,
+    };
+
+    use crate::{
+        ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+        ScyllaDBValueRef,
+        arguments::{
+            ScyllaDBArgumentBuffer, ScyllaDBArgumentNativeArrayBlob, ScyllaDBArgumentNativeBlob,
+        },
+    };
+
+    impl Type<ScyllaDB> for Bytes {
+        fn type_info() -> ScyllaDBTypeInfo {
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
+        }
+    }
+
+    impl Decode<'_, ScyllaDB> for Bytes {
+        fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
+            let value: Vec<u8> = value.deserialize()?;
+            Ok(Self::from(value))
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for Bytes {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            buf.push(ScyllaDBArgumentNativeBlob::Bytes(self).into());
+            Ok(IsNull::No)
+        }
+
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            <[u8] as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_ref(), buf)
+        }
+    }
+
+    impl Type<ScyllaDB> for Vec<Bytes> {
+        fn type_info() -> ScyllaDBTypeInfo {
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob)
+        }
+    }
+
+    impl Decode<'_, ScyllaDB> for Vec<Bytes> {
+        fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
+            let value: Vec<Vec<u8>> = value.deserialize()?;
+            Ok(value.into_iter().map(Bytes::from).collect())
+        }
+    }
+
+    impl<const N: usize> Encode<'_, ScyllaDB> for [Bytes; N] {
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            <[Bytes] as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for [Bytes] {
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            buf.push(ScyllaDBArgumentNativeArrayBlob::Bytes(self.to_vec()).into());
+            Ok(IsNull::No)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for Vec<Bytes> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            buf.push(ScyllaDBArgumentNativeArrayBlob::Bytes(self).into());
+            Ok(IsNull::No)
+        }
+
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            <[Bytes] as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
+        }
+    }
+}
+
 impl<const N: usize, const M: usize> Type<ScyllaDB> for [[u8; N]; M] {
     fn type_info() -> ScyllaDBTypeInfo {
         ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
@@ -466,6 +546,8 @@ mod secrecy_10 {
 mod tests {
     use std::{rc::Rc, sync::Arc};
 
+    #[cfg(feature = "bytes-1")]
+    use bytes::Bytes;
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
     use sqlx_core::ext::ustr::UStr;
@@ -684,6 +766,28 @@ mod tests {
         );
         let decoded: Vec<u8> = <_ as Decode<'_, ScyllaDB>>::decode(value)?;
         assert_eq!(decoded, vec![0x00u8, 0x61, 0x73, 0x6d]);
+
+        Ok(())
+    }
+
+    #[cfg(feature = "bytes-1")]
+    #[test]
+    fn it_can_encode_and_decode_blob_as_bytes() -> Result<(), BoxDynError> {
+        let mut buf = ScyllaDBArgumentBuffer::default();
+        let bytes = Bytes::from_static(b"\x00asm");
+        let _ = <_ as Encode<'_, ScyllaDB>>::encode(bytes.clone(), &mut buf)?;
+        let _ = <_ as Encode<'_, ScyllaDB>>::encode_by_ref(&bytes, &mut buf)?;
+
+        let column_type: ColumnType<'_> = ColumnType::Native(NativeType::Blob);
+        let raw_value = serialize_value(&[0x00u8, 0x61, 0x73, 0x6d], &column_type)?;
+        let value = ScyllaDBValueRef::new(
+            UStr::new("my_blob"),
+            (&column_type).try_into()?,
+            &raw_value,
+            &column_type,
+        );
+        let decoded: Bytes = <_ as Decode<'_, ScyllaDB>>::decode(value)?;
+        assert_eq!(decoded, bytes);
 
         Ok(())
     }

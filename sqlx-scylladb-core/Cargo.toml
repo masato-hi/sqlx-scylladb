@@ -8,6 +8,7 @@ authors.workspace = true
 description = "Core of sqlx-scylladb. Not intended to be used directly."
 
 [features]
+bytes-1 = []
 migrate = ["dep:crc", "sqlx-core/migrate"]
 any = ["sqlx-core/any"]
 time-03 = [
