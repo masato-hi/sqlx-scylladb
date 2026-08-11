@@ -23,7 +23,7 @@ mod tests {
         value::Counter,
     };
 
-    use sqlx_core::{decode::Decode, error::BoxDynError, ext::ustr::UStr};
+    use sqlx_core::{decode::Decode, error::BoxDynError};
 
     use crate::{ScyllaDB, ScyllaDBValueRef, types::serialize_value};
 
@@ -33,7 +33,7 @@ mod tests {
         let raw_value = serialize_value(&Counter(7), &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_counter"),
+            "my_counter",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,

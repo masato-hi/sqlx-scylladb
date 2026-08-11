@@ -366,7 +366,7 @@ pub mod secrecy_10 {
 mod tests {
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -387,7 +387,7 @@ mod tests {
         let raw_value = serialize_value(&String::from("Hello!"), &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_text"),
+            "my_text",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -404,7 +404,7 @@ mod tests {
         let raw_value = serialize_value(&String::from("Hello!"), &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_text"),
+            "my_text",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -427,7 +427,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_text"),
+            "my_text",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -450,7 +450,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_text"),
+            "my_text",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -465,7 +465,7 @@ mod tests {
     mod secrecy {
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
         use secrecy_08::{ExposeSecret, SecretString};
-        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
         use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -502,7 +502,7 @@ mod tests {
                 serialize_value(&SecretString::from(String::from("Hello!")), &column_type)?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_text"),
+                "my_text",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
@@ -528,7 +528,7 @@ mod tests {
             )?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_text"),
+                "my_text",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,

@@ -56,7 +56,7 @@ mod tests {
         value::CqlTime,
     };
 
-    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -87,7 +87,7 @@ mod tests {
         let raw_value = serialize_value(&CqlTime(27874), &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_time"),
+            "my_time",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -107,7 +107,7 @@ mod tests {
         let raw_value = serialize_value(&vec![CqlTime(27874), CqlTime(21845)], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_time"),
+            "my_time",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -125,7 +125,7 @@ mod tests {
         use chrono_04::NaiveTime;
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
         use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -183,7 +183,7 @@ mod tests {
                 serialize_value(&NaiveTime::from_hms_opt(16, 44, 34).unwrap(), &column_type)?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_time"),
+                "my_time",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
@@ -209,7 +209,7 @@ mod tests {
             )?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_time"),
+                "my_time",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
@@ -233,7 +233,7 @@ mod tests {
 
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
         use time_03::Time;
 
         use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
@@ -279,7 +279,7 @@ mod tests {
             let raw_value = serialize_value(&Time::from_hms(16, 44, 34)?, &column_type)?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_time"),
+                "my_time",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
@@ -302,7 +302,7 @@ mod tests {
             )?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_time"),
+                "my_time",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,

@@ -33,7 +33,7 @@ mod tests {
 
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -57,7 +57,7 @@ mod tests {
         let raw_value = serialize_value(&117.5f32, &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_float"),
+            "my_float",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -77,7 +77,7 @@ mod tests {
         let raw_value = serialize_value(&vec![11.5f32, 4.25], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_float"),
+            "my_float",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -108,7 +108,7 @@ mod tests {
         let raw_value = serialize_value(&117.5f64, &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_float"),
+            "my_float",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -128,7 +128,7 @@ mod tests {
         let raw_value = serialize_value(&vec![11.5f64, 4.25], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_float"),
+            "my_float",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,

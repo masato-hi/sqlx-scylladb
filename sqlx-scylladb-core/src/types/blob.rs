@@ -550,7 +550,6 @@ mod tests {
     use bytes::Bytes;
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-    use sqlx_core::ext::ustr::UStr;
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
@@ -759,7 +758,7 @@ mod tests {
         let raw_value = serialize_value(&[0x00u8, 0x61, 0x73, 0x6d], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_blob"),
+            "my_blob",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -781,7 +780,7 @@ mod tests {
         let column_type: ColumnType<'_> = ColumnType::Native(NativeType::Blob);
         let raw_value = serialize_value(&[0x00u8, 0x61, 0x73, 0x6d], &column_type)?;
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_blob"),
+            "my_blob",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -807,7 +806,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_blob"),
+            "my_blob",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -828,7 +827,7 @@ mod tests {
     mod secrecy {
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
         use secrecy_08::{ExposeSecret, SecretVec};
-        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
         use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -867,7 +866,7 @@ mod tests {
             )?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_blob"),
+                "my_blob",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
@@ -893,7 +892,7 @@ mod tests {
             )?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_blob"),
+                "my_blob",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,

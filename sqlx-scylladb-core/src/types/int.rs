@@ -57,7 +57,7 @@ mod tests {
 
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -81,7 +81,7 @@ mod tests {
         let raw_value = serialize_value(&11i8, &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_tinyint"),
+            "my_tinyint",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -101,7 +101,7 @@ mod tests {
         let raw_value = serialize_value(&vec![11i8, 4], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_tinyint"),
+            "my_tinyint",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -132,7 +132,7 @@ mod tests {
         let raw_value = serialize_value(&11i16, &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_smallint"),
+            "my_smallint",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -152,7 +152,7 @@ mod tests {
         let raw_value = serialize_value(&vec![11i16, 4], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_smallint"),
+            "my_smallint",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -183,7 +183,7 @@ mod tests {
         let raw_value = serialize_value(&11i32, &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_int"),
+            "my_int",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -203,7 +203,7 @@ mod tests {
         let raw_value = serialize_value(&vec![11i32, 4], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_int"),
+            "my_int",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -234,7 +234,7 @@ mod tests {
         let raw_value = serialize_value(&11i64, &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_bigint"),
+            "my_bigint",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -254,7 +254,7 @@ mod tests {
         let raw_value = serialize_value(&vec![11i64, 4], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_bigint"),
+            "my_bigint",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
