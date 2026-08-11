@@ -64,18 +64,18 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 ### Options
 
-| Name                 | Example                         | Explanation                                                                                                                                                  |
-|----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| nodes                | example.test,example2.test:9043 | Additional nodes to contact, separated by commas.                                                                                                           |
-| tcp_nodelay          |                                 | Enables TCP_NODELAY. This is a key-only option and does not require a value.                                                                                |
-| tcp_keepalive        | 40                              | TCP keepalive interval, in seconds.                                                                                                                          |
-| compression          | lz4                             | Compression for protocol traffic. Supported values are `lz4` and `snappy`.                                                                                 |
+| Name                 | Example                         | Explanation                                                                                                                                                                  |
+|----------------------|---------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| nodes                | example.test,example2.test:9043 | Additional nodes to contact, separated by commas.                                                                                                                            |
+| tcp_nodelay          |                                 | Enables TCP_NODELAY. This is a key-only option and does not require a value.                                                                                                 |
+| tcp_keepalive        | 40                              | TCP keepalive interval, in seconds.                                                                                                                                          |
+| compression          | lz4                             | Compression for protocol traffic. Supported values are `lz4` and `snappy`.                                                                                                   |
 | replication_strategy | SimpleStrategy                  | Replication strategy used when the migration support creates a keyspace. Supported values are `simple`, `network_topology`, `SimpleStrategy`, and `NetworkTopologyStrategy`. |
-| replication_factor   | 2                               | Replication factor used when the migration support creates a keyspace.                                                                                       |
-| page_size            | 10                              | Maximum number of rows requested in each page of a paged query.                                                                                              |
-| tls_rootcert         | /etc/certs/ca.crt               | Path to the root CA certificate used for TLS server verification.                                                                                            |
-| tls_cert             | /etc/certs/client.crt           | Path to the client certificate used for TLS client authentication.                                                                                          |
-| tls_key              | /etc/certs/client.key           | Path to the private key corresponding to `tls_cert`.                                                                                                         |
+| replication_factor   | 2                               | Replication factor used when the migration support creates a keyspace.                                                                                                       |
+| page_size            | 10                              | Maximum number of rows requested in each page of a paged query.                                                                                                              |
+| tls_rootcert         | /etc/certs/ca.crt               | Path to the root CA certificate used for TLS server verification.                                                                                                            |
+| tls_cert             | /etc/certs/client.crt           | Path to the client certificate used for TLS client authentication.                                                                                                           |
+| tls_key              | /etc/certs/client.key           | Path to the private key corresponding to `tls_cert`.                                                                                                                         |
 
 ## Features
 
@@ -199,25 +199,31 @@ Because of this implementation, read the ScyllaDB documentation on batch operati
 
 ## Performance
 
-In the benchmark included in this repository, performance is approximately 10% lower than when using the scylla-rust-driver directly.
+In the benchmark included in this repository, performance is approximately 5–10% lower than when using the scylla-rust-driver directly, depending on the data type and operation.
 
-For the benchmark shown below, that difference is approximately 50 milliseconds over 10,000 operations. Actual results depend on the workload and environment.
+Each benchmark performs 10,000 operations. In the results below, the difference between the two implementations is approximately 17–33 milliseconds. Actual results depend on the workload and environment.
+
+Each benchmark executes 10,000 sequential operations per Criterion iteration. Table setup, connection or pool creation, and data preparation for SELECT benchmarks are excluded from the measured time. Value generation for INSERT benchmarks is included. The comparison uses ScyllaDB's `CachingSession` and SQLx's `ScyllaDBPool` with up to 8 connections.
 
 <!-- markdownlint-disable MD033 -->
 
 <details>
 <summary>Benchmark results.</summary>
 
-| Name                           | Crate              | Lower bound | Estimate  | Upper bound |
-|--------------------------------|--------------------|-------------|-----------|-------------|
-| insert_text_with_scylla        | scylla-rust-driver | 460.84 ms   | 461.76 ms | 462.75 ms   |
-| insert_text_with_sqlx_scylladb | sqlx-scylladb      | 502.23 ms   | 503.31 ms | 504.54 ms   |
-| select_text_with_scylla        | scylla-rust-driver | 456.53 ms   | 457.33 ms | 458.17 ms   |
-| select_text_with_sqlx_scylladb | sqlx-scylladb      | 501.69 ms   | 502.67 ms | 503.65 ms   |
-| insert_uuid_with_scylla        | scylla-rust-driver | 462.09 ms   | 462.68 ms | 463.29 ms   |
-| insert_uuid_with_sqlx_scylladb | sqlx-scylladb      | 506.77 ms   | 507.97 ms | 509.39 ms   |
-| select_uuid_with_scylla        | scylla-rust-driver | 457.12 ms   | 458.14 ms | 459.40 ms   |
-| select_uuid_with_sqlx_scylladb | sqlx-scylladb      | 502.01 ms   | 502.88 ms | 503.76 ms   |
+| Type | Operation | Crate              | Lower bound | Estimate  | Upper bound | Benchmark Name                 |
+|------|-----------|--------------------|-------------|-----------|-------------|--------------------------------|
+| Text | INSERT    | scylla-rust-driver | 302.86 ms   | 304.94 ms | 307.55 ms   | insert_text_with_scylla        |
+| Text | INSERT    | sqlx-scylladb      | 321.82 ms   | 323.95 ms | 326.36 ms   | insert_text_with_sqlx_scylladb |
+| Text | SELECT    | scylla-rust-driver | 301.21 ms   | 302.00 ms | 302.83 ms   | select_text_with_scylla        |
+| Text | SELECT    | sqlx-scylladb      | 320.15 ms   | 321.17 ms | 322.22 ms   | select_text_with_sqlx_scylladb |
+| UUID | INSERT    | scylla-rust-driver | 302.72 ms   | 304.33 ms | 306.27 ms   | insert_uuid_with_scylla        |
+| UUID | INSERT    | sqlx-scylladb      | 319.46 ms   | 320.84 ms | 322.52 ms   | insert_uuid_with_sqlx_scylladb |
+| UUID | SELECT    | scylla-rust-driver | 301.19 ms   | 301.92 ms | 302.65 ms   | select_uuid_with_scylla        |
+| UUID | SELECT    | sqlx-scylladb      | 320.79 ms   | 321.65 ms | 322.53 ms   | select_uuid_with_sqlx_scylladb |
+| Blob | INSERT    | scylla-rust-driver | 332.32 ms   | 334.30 ms | 336.77 ms   | insert_blob_with_scylla        |
+| Blob | INSERT    | sqlx-scylladb      | 365.69 ms   | 367.39 ms | 369.51 ms   | insert_blob_with_sqlx_scylladb |
+| Blob | SELECT    | scylla-rust-driver | 310.20 ms   | 311.22 ms | 312.37 ms   | select_blob_with_scylla        |
+| Blob | SELECT    | sqlx-scylladb      | 329.80 ms   | 330.87 ms | 332.13 ms   | select_blob_with_sqlx_scylladb |
 
 </details>
 
