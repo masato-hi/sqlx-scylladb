@@ -14,7 +14,7 @@ static TYPE_INFO_NAMES: LazyLock<RwLock<Vec<(TypeId, UStr)>>> =
 static TYPE_INFO_NAMES_FROM_COLUMN_TYPES: LazyLock<RwLock<FxHashMap<Vec<ScyllaDBTypeInfo>, UStr>>> =
     LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
-pub fn get_tuple_type_info_name(type_id: TypeId) -> Option<UStr> {
+fn get_tuple_type_info_name(type_id: TypeId) -> Option<UStr> {
     TYPE_INFO_NAMES
         .read()
         .expect("tuple type name cache lock poisoned")
@@ -23,7 +23,7 @@ pub fn get_tuple_type_info_name(type_id: TypeId) -> Option<UStr> {
         .map(|(_, type_name)| type_name.clone())
 }
 
-pub fn register_tuple_type_info_name(type_id: TypeId, type_infos: &[ScyllaDBTypeInfo]) -> UStr {
+fn register_tuple_type_info_name(type_id: TypeId, type_infos: &[ScyllaDBTypeInfo]) -> UStr {
     let type_info_name = build_tuple_type_info_name(type_infos);
 
     TYPE_INFO_NAMES
@@ -34,7 +34,7 @@ pub fn register_tuple_type_info_name(type_id: TypeId, type_infos: &[ScyllaDBType
     type_info_name
 }
 
-pub(crate) fn build_tuple_type_info_name(type_infos: &[ScyllaDBTypeInfo]) -> UStr {
+fn build_tuple_type_info_name(type_infos: &[ScyllaDBTypeInfo]) -> UStr {
     let mut type_name = String::from("(");
     for (i, type_info) in type_infos.iter().enumerate() {
         if i > 0 {

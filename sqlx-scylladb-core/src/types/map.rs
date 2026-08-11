@@ -1,4 +1,5 @@
 use std::{
+    any::TypeId,
     collections::HashMap,
     hash::Hash,
     sync::{LazyLock, RwLock},
@@ -13,40 +14,42 @@ use sqlx_core::{
 
 use crate::{ScyllaDB, ScyllaDBError, ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
 
-static MAP_TYPE_INFO_NAMES: LazyLock<
-    RwLock<FxHashMap<(ScyllaDBTypeInfo, ScyllaDBTypeInfo), UStr>>,
-> = LazyLock::new(|| RwLock::new(FxHashMap::default()));
+static MAP_TYPE_INFO_NAMES: LazyLock<RwLock<Vec<(TypeId, UStr)>>> =
+    LazyLock::new(|| RwLock::new(Vec::new()));
 static MAP_TYPE_INFO_NAMES_FROM_COLUMN_TYPES: LazyLock<
     RwLock<FxHashMap<(ScyllaDBTypeInfo, ScyllaDBTypeInfo), UStr>>,
 > = LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
-pub(crate) fn map_type_info_name(
+fn get_map_type_info_name(type_id: TypeId) -> Option<UStr> {
+    MAP_TYPE_INFO_NAMES
+        .read()
+        .expect("map type name cache lock poisoned")
+        .iter()
+        .find(|(cached_type_id, _)| *cached_type_id == type_id)
+        .map(|(_, type_name)| type_name.clone())
+}
+
+fn register_map_type_info_name(
+    type_id: TypeId,
     key_type_info: ScyllaDBTypeInfo,
     value_type_info: ScyllaDBTypeInfo,
 ) -> UStr {
-    let key = (key_type_info.clone(), value_type_info.clone());
-
-    if let Some(type_info_name) = MAP_TYPE_INFO_NAMES
-        .read()
-        .expect("map type name cache lock poisoned")
-        .get(&key)
-        .cloned()
-    {
-        return type_info_name;
-    }
-
-    let key_type_info_name = key_type_info.name();
-    let value_type_info_name = value_type_info.name();
-
-    let type_info_name = format!("<{},{}>", key_type_info_name, value_type_info_name);
-    let type_info_name = UStr::from(type_info_name);
+    let type_info_name = build_map_type_info_name(key_type_info, value_type_info);
 
     MAP_TYPE_INFO_NAMES
         .write()
         .expect("map type name cache lock poisoned")
-        .insert(key, type_info_name.clone());
+        .push((type_id, type_info_name.clone()));
 
     type_info_name
+}
+
+fn build_map_type_info_name(
+    key_type_info: ScyllaDBTypeInfo,
+    value_type_info: ScyllaDBTypeInfo,
+) -> UStr {
+    let type_name = format!("MAP<{}, {}>", key_type_info.name(), value_type_info.name());
+    UStr::from(type_name)
 }
 
 impl ScyllaDBTypeInfo {
@@ -67,7 +70,7 @@ impl ScyllaDBTypeInfo {
             return Ok(Self::Map(type_info_name));
         }
 
-        let type_info_name = map_type_info_name(key_type_info, value_type_info);
+        let type_info_name = build_map_type_info_name(key_type_info, value_type_info);
 
         MAP_TYPE_INFO_NAMES_FROM_COLUMN_TYPES
             .write()
@@ -80,14 +83,20 @@ impl ScyllaDBTypeInfo {
 
 impl<K, V> Type<ScyllaDB> for HashMap<K, V>
 where
-    K: Type<ScyllaDB>,
-    V: Type<ScyllaDB>,
+    K: Type<ScyllaDB> + 'static,
+    V: Type<ScyllaDB> + 'static,
 {
     fn type_info() -> <ScyllaDB as sqlx_core::database::Database>::TypeInfo {
+        let type_id = TypeId::of::<Self>();
+
+        if let Some(type_info_name) = get_map_type_info_name(type_id) {
+            return ScyllaDBTypeInfo::Map(type_info_name);
+        }
+
         let key_type_info = K::type_info();
         let value_type_info = V::type_info();
 
-        let type_info_name = map_type_info_name(key_type_info, value_type_info);
+        let type_info_name = register_map_type_info_name(type_id, key_type_info, value_type_info);
 
         ScyllaDBTypeInfo::Map(type_info_name)
     }
