@@ -360,6 +360,108 @@ mod secrecy {
     }
 }
 
+#[cfg(feature = "secrecy-10")]
+mod secrecy_10 {
+    use secrecy_10::{ExposeSecret, SecretBox};
+    use sqlx_core::{
+        decode::Decode,
+        encode::{Encode, IsNull},
+        error::BoxDynError,
+        types::Type,
+    };
+
+    use crate::{
+        ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+        ScyllaDBValueRef,
+        arguments::{
+            ScyllaDBArgumentBuffer, ScyllaDBArgumentNativeArrayBlob, ScyllaDBArgumentNativeBlob,
+        },
+    };
+
+    impl Type<ScyllaDB> for SecretBox<Vec<u8>> {
+        fn type_info() -> ScyllaDBTypeInfo {
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
+        }
+    }
+
+    impl Decode<'_, ScyllaDB> for SecretBox<Vec<u8>> {
+        fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
+            Ok(value.deserialize()?)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for SecretBox<Vec<u8>> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            buf.push(ScyllaDBArgumentNativeBlob::Secrecy10(self).into());
+            Ok(IsNull::No)
+        }
+
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let value = SecretBox::new(Box::new(self.expose_secret().clone()));
+            buf.push(ScyllaDBArgumentNativeBlob::Secrecy10(value).into());
+            Ok(IsNull::No)
+        }
+    }
+
+    impl<const N: usize> Type<ScyllaDB> for [SecretBox<Vec<u8>>; N] {
+        fn type_info() -> ScyllaDBTypeInfo {
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
+        }
+    }
+
+    impl Type<ScyllaDB> for [SecretBox<Vec<u8>>] {
+        fn type_info() -> ScyllaDBTypeInfo {
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
+        }
+    }
+
+    impl Type<ScyllaDB> for Vec<SecretBox<Vec<u8>>> {
+        fn type_info() -> ScyllaDBTypeInfo {
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob)
+        }
+    }
+
+    impl Decode<'_, ScyllaDB> for Vec<SecretBox<Vec<u8>>> {
+        fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
+            Ok(value.deserialize()?)
+        }
+    }
+
+    impl<const N: usize> Encode<'_, ScyllaDB> for [SecretBox<Vec<u8>>; N] {
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            self.as_slice().encode_by_ref(buf)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for [SecretBox<Vec<u8>>] {
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let values = self
+                .iter()
+                .map(|value| SecretBox::new(Box::new(value.expose_secret().clone())))
+                .collect();
+            buf.push(ScyllaDBArgumentNativeArrayBlob::Secrecy10(values).into());
+            Ok(IsNull::No)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for &[SecretBox<Vec<u8>>] {
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            (*self).encode_by_ref(buf)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for Vec<SecretBox<Vec<u8>>> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            buf.push(ScyllaDBArgumentNativeArrayBlob::Secrecy10(self).into());
+            Ok(IsNull::No)
+        }
+
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            self.as_slice().encode_by_ref(buf)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::{rc::Rc, sync::Arc};

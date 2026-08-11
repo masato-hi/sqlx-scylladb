@@ -20,6 +20,7 @@ time-03 = ["sqlx-scylladb-core/time-03"]
 chrono-04 = ["sqlx-scylladb-core/chrono-04"]
 bigdecimal-04 = ["sqlx-scylladb-core/bigdecimal-04"]
 secrecy-08 = ["sqlx-scylladb-core/secrecy-08"]
+secrecy-10 = ["sqlx-scylladb-core/secrecy-10"]
 
 openssl-010 = ["sqlx-scylladb-core/openssl-010"]
 rustls-023 = ["sqlx-scylladb-core/rustls-023"]
@@ -45,6 +46,7 @@ chrono-04 = { workspace = true }
 time-03 = { workspace = true }
 bigdecimal-04 = { workspace = true }
 secrecy-08 = { workspace = true }
+secrecy-10 = { workspace = true }
 criterion = { version = "0.8.2", features = ["async_tokio"] }
 pprof = { version = "0.15.0", features = ["protobuf", "protobuf-codec"] }
 rand = { version = "0.9" }

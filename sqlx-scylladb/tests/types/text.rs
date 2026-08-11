@@ -166,6 +166,31 @@ async fn it_can_select_secret_text(pool: ScyllaDBPool) -> anyhow::Result<()> {
     Ok(())
 }
 
+#[cfg(feature = "secrecy-10")]
+#[sqlx::test(migrations = "tests/types/migrations")]
+async fn it_can_select_secret_text_10(pool: ScyllaDBPool) -> anyhow::Result<()> {
+    use secrecy_10::ExposeSecret;
+
+    let id = Uuid::new_v4();
+
+    sqlx::query("INSERT INTO text_tests(my_id, my_text) VALUES(?, ?)")
+        .bind(id)
+        .bind(secrecy_10::SecretString::from("こんにちは".to_owned()))
+        .execute(&pool)
+        .await?;
+
+    let (my_id, my_text): (Uuid, secrecy_10::SecretString) =
+        sqlx::query_as("SELECT my_id, my_text FROM text_tests WHERE my_id = ?")
+            .bind(id)
+            .fetch_one(&pool)
+            .await?;
+
+    assert_eq!(id, my_id);
+    assert_eq!("こんにちは", my_text.expose_secret());
+
+    Ok(())
+}
+
 #[sqlx::test(migrations = "tests/types/migrations")]
 async fn describe_text(pool: ScyllaDBPool) -> anyhow::Result<()> {
     let mut conn = pool.acquire().await?;

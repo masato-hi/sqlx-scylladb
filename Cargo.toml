@@ -41,6 +41,7 @@ chrono-04 = { version = "0.4", package = "chrono" }
 time-03 = { version = "0.3", package = "time" }
 bigdecimal-04 = { version = "0.4", package = "bigdecimal" }
 secrecy-08 = { version = "0.8.0", package = "secrecy" }
+secrecy-10 = { version = "0.10.0", package = "secrecy" }
 
 url = "2"
 

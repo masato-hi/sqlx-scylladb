@@ -277,6 +277,91 @@ pub mod secrecy {
     }
 }
 
+#[cfg(feature = "secrecy-10")]
+pub mod secrecy_10 {
+    use secrecy_10::SecretString;
+    use sqlx_core::{
+        decode::Decode,
+        encode::{Encode, IsNull},
+        error::BoxDynError,
+        types::Type,
+    };
+
+    use crate::{
+        ScyllaDB, ScyllaDBHasArrayType, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef,
+        arguments::{
+            ScyllaDBArgumentBuffer, ScyllaDBArgumentNativeArrayText, ScyllaDBArgumentNativeText,
+        },
+    };
+
+    impl Type<ScyllaDB> for SecretString {
+        fn type_info() -> ScyllaDBTypeInfo {
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
+        }
+    }
+
+    impl ScyllaDBHasArrayType for SecretString {
+        fn array_type_info() -> ScyllaDBTypeInfo {
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text)
+        }
+    }
+
+    impl Decode<'_, ScyllaDB> for SecretString {
+        fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
+            Ok(value.deserialize()?)
+        }
+    }
+
+    impl Decode<'_, ScyllaDB> for Vec<SecretString> {
+        fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
+            Ok(value.deserialize()?)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for SecretString {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            buf.push(ScyllaDBArgumentNativeText::Secrecy10(self).into());
+            Ok(IsNull::No)
+        }
+
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            buf.push(ScyllaDBArgumentNativeText::Secrecy10(self.clone()).into());
+            Ok(IsNull::No)
+        }
+    }
+
+    impl<const N: usize> Encode<'_, ScyllaDB> for [SecretString; N] {
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            self.as_slice().encode_by_ref(buf)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for [SecretString] {
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            buf.push(ScyllaDBArgumentNativeArrayText::Secrecy10(self.to_vec()).into());
+            Ok(IsNull::No)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for &[SecretString] {
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            (*self).encode_by_ref(buf)
+        }
+    }
+
+    impl Encode<'_, ScyllaDB> for Vec<SecretString> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            buf.push(ScyllaDBArgumentNativeArrayText::Secrecy10(self).into());
+            Ok(IsNull::No)
+        }
+
+        fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            self.as_slice().encode_by_ref(buf)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};

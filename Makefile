@@ -14,7 +14,7 @@ CERT := $(CERTDIR)/client-cert.pem
 
 CREATE_KEYSPACE := CREATE KEYSPACE IF NOT EXISTS test WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}
 
-TEST_FEATURES := time-03,chrono-04,bigdecimal-04,secrecy-08
+TEST_FEATURES := time-03,chrono-04,bigdecimal-04,secrecy-08,secrecy-10
 OPENSSL_TEST_FEATURES := migrate,openssl-010
 RUSTLS_TEST_FEATURES := migrate,rustls-023
 
