@@ -156,10 +156,6 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 - Definition using the derive macro. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/sqlx-scylladb/examples/user_defined_type.rs) for usage.)
 
-### Any type not supported by default
-
-- You can add any type supported by scylla-rust-driver. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/sqlx-scylladb/examples/any.rs) for usage.)
-
 ### Testing
 
 - You can use #[sqlx::test] macro.

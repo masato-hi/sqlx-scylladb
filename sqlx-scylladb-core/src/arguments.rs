@@ -108,8 +108,6 @@ pub enum ScyllaDBArgument {
     Null,
     /// Internally used Unset.
     Unset,
-    /// Any type can be used.
-    Any(Arc<dyn SerializeValue + Send + Sync>),
     /// `boolean` type.
     Boolean(bool),
     /// `tinyint` type.
@@ -274,7 +272,6 @@ impl SerializeValue for ScyllaDBArgument {
         writer: CellWriter<'b>,
     ) -> Result<WrittenCellProof<'b>, SerializationError> {
         match self {
-            Self::Any(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Null => Ok(writer.set_null()),
             Self::Unset => Ok(writer.set_unset()),
             Self::Boolean(value) => <_ as SerializeValue>::serialize(value, typ, writer),

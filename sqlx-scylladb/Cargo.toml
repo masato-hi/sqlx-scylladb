@@ -58,16 +58,6 @@ name = "user_defined_type"
 path = "examples/user_defined_type.rs"
 required-features = ["migrate", "derive"]
 
-[[example]]
-name = "any"
-path = "examples/any.rs"
-required-features = ["migrate"]
-
-[[test]]
-name = "test-types-any"
-path = "tests/types/any.rs"
-required-features = ["migrate"]
-
 [[test]]
 name = "test-macros-from-row"
 path = "tests/macros/from_row.rs"
