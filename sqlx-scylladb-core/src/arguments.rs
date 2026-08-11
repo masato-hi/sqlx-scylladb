@@ -320,7 +320,7 @@ pub enum ScyllaDBArgument {
     /// user-defined type.
     UserDefinedType(Box<dyn SerializeValue + Send + Sync>),
     /// array of user-defined type.
-    UserDefinedTypeArray(Vec<Box<dyn SerializeValue + Send + Sync>>),
+    UserDefinedTypeArray(Box<dyn SerializeValue + Send + Sync>),
 }
 
 impl From<ScyllaDBArgumentNative> for ScyllaDBArgument {

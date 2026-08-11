@@ -6,16 +6,10 @@ use sqlx_core::{
 
 use crate::{ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer};
 
+#[allow(missing_docs)]
 pub trait UserDefinedType<'r>:
     SerializeValue + DeserializeValue<'r, 'r> + Clone + Send + Sync
 {
-    #![allow(missing_docs)]
-    fn box_cloned(&self) -> Box<dyn SerializeValue + Send + Sync>
-    where
-        Self: 'static,
-    {
-        Box::from(self.clone())
-    }
 }
 
 impl<'r, T> Decode<'r, ScyllaDB> for Vec<T>
@@ -32,17 +26,13 @@ where
 
 impl<'r, T> Encode<'_, ScyllaDB> for [T]
 where
-    T: UserDefinedType<'r> + Clone + 'static,
+    T: UserDefinedType<'r> + 'static,
 {
     fn encode_by_ref(
         &self,
         buf: &mut ScyllaDBArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
-        let mut values = Vec::with_capacity(self.len());
-        for value in self {
-            values.push(value.box_cloned());
-        }
-        let argument = ScyllaDBArgument::UserDefinedTypeArray(values);
+        let argument = ScyllaDBArgument::UserDefinedTypeArray(Box::new(self.to_vec()));
         buf.push(argument);
         Ok(IsNull::No)
     }
@@ -50,7 +40,8 @@ where
 
 impl<'r, T, const N: usize> Encode<'_, ScyllaDB> for [T; N]
 where
-    T: UserDefinedType<'r> + Clone + 'static,
+    Self: Clone,
+    T: UserDefinedType<'r> + 'static,
 {
     fn encode_by_ref(
         &self,
@@ -62,7 +53,8 @@ where
 
 impl<'r, T> Encode<'_, ScyllaDB> for &[T]
 where
-    T: UserDefinedType<'r> + Clone + 'static,
+    Self: Clone,
+    T: UserDefinedType<'r> + 'static,
 {
     fn encode_by_ref(
         &self,
@@ -80,11 +72,7 @@ where
         self,
         buf: &mut ScyllaDBArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
-        let values = self
-            .into_iter()
-            .map(|value| Box::new(value) as Box<dyn SerializeValue + Send + Sync>)
-            .collect();
-        buf.push(ScyllaDBArgument::UserDefinedTypeArray(values));
+        buf.push(ScyllaDBArgument::UserDefinedTypeArray(Box::new(self)));
         Ok(IsNull::No)
     }
 

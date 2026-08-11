@@ -46,7 +46,7 @@ pub fn expand_user_defined_type(item: DeriveInput) -> syn::Result<TokenStream> {
 
         #[automatically_derived]
         impl<'r> ::sqlx_scylladb::ext::sqlx::encode::Encode<'_, ::sqlx_scylladb::ScyllaDB> for #struct_ident
-        where Self: ::sqlx_scylladb::UserDefinedType<'r> {
+        where Self: ::sqlx_scylladb::UserDefinedType<'r> + ::std::clone::Clone {
             fn encode(self, buf: &mut ::sqlx_scylladb::ScyllaDBArgumentBuffer) -> Result<::sqlx_scylladb::ext::sqlx::encode::IsNull, ::sqlx_scylladb::ext::sqlx::error::BoxDynError> {
                 let argument = ::sqlx_scylladb::ScyllaDBArgument::UserDefinedType(::std::boxed::Box::new(self));
                 buf.push(argument);
@@ -57,7 +57,7 @@ pub fn expand_user_defined_type(item: DeriveInput) -> syn::Result<TokenStream> {
             fn encode_by_ref(&self, buf: &mut ::sqlx_scylladb::ScyllaDBArgumentBuffer) -> Result<::sqlx_scylladb::ext::sqlx::encode::IsNull, ::sqlx_scylladb::ext::sqlx::error::BoxDynError> {
                 use ::sqlx_scylladb::UserDefinedType as _;
 
-                let argument = ::sqlx_scylladb::ScyllaDBArgument::UserDefinedType(self.box_cloned());
+                let argument = ::sqlx_scylladb::ScyllaDBArgument::UserDefinedType(::std::boxed::Box::new(self.clone()));
                 buf.push(argument);
 
                 Ok(::sqlx_scylladb::ext::sqlx::encode::IsNull::No)
