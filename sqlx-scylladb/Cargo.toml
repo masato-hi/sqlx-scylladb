@@ -47,6 +47,7 @@ bigdecimal-04 = { workspace = true }
 secrecy-08 = { workspace = true }
 criterion = { version = "0.8.2", features = ["async_tokio"] }
 pprof = { version = "0.15.0", features = ["protobuf", "protobuf-codec"] }
+rand = { version = "0.9" }
 
 [[example]]
 name = "basic"

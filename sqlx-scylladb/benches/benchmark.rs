@@ -5,5 +5,6 @@ mod benchmarks;
 criterion_main! {
     benchmarks::text::benches,
     benchmarks::uuid::benches,
+    benchmarks::blob::benches,
     benchmarks::pprof::benches,
 }

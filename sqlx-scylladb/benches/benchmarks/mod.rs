@@ -1,3 +1,4 @@
+pub(crate) mod blob;
 pub(crate) mod pprof;
 pub(crate) mod text;
 pub(crate) mod uuid;
