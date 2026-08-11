@@ -15,23 +15,23 @@ const DEFAULT_STATEMENT_CACHE_CAPACITY: usize = 128;
 /// Options and flags which can be used to configure a ScyllaDB connection.
 #[derive(Debug, Clone)]
 pub struct ScyllaDBConnectOptions {
-    pub(crate) host: String,
-    pub(crate) port: u16,
-    pub(crate) nodes: Vec<String>,
-    pub(crate) keyspace: Option<String>,
-    pub(crate) statement_cache_capacity: usize,
-    pub(crate) log_settings: LogSettings,
-    pub(crate) tcp_nodelay: bool,
-    pub(crate) username: Option<String>,
-    pub(crate) password: Option<String>,
-    pub(crate) replication_strategy: Option<ScyllaDBReplicationStrategy>,
-    pub(crate) replication_factor: usize,
-    pub(crate) compression: Option<ScyllaDBCompression>,
-    pub(crate) tls_rootcert: Option<String>,
-    pub(crate) tls_cert: Option<String>,
-    pub(crate) tls_key: Option<String>,
-    pub(crate) tcp_keepalive: Option<Duration>,
-    pub(crate) page_size: i32,
+    host: String,
+    port: u16,
+    nodes: Vec<String>,
+    keyspace: Option<String>,
+    statement_cache_capacity: usize,
+    log_settings: LogSettings,
+    tcp_nodelay: bool,
+    username: Option<String>,
+    password: Option<String>,
+    replication_strategy: Option<ScyllaDBReplicationStrategy>,
+    replication_factor: usize,
+    compression: Option<ScyllaDBCompression>,
+    tls_rootcert: Option<String>,
+    tls_cert: Option<String>,
+    tls_key: Option<String>,
+    tcp_keepalive: Option<Duration>,
+    page_size: i32,
 }
 
 impl ScyllaDBConnectOptions {
@@ -39,23 +39,23 @@ impl ScyllaDBConnectOptions {
         let mut options = Self::new();
 
         if let Some(host) = url.host_str() {
-            options = options.host(host);
+            options = options.set_host(host);
         }
 
         if let Some(port) = url.port() {
-            options = options.port(port)
+            options = options.set_port(port)
         }
 
         let path = url.path().trim_start_matches('/');
         if !path.is_empty() {
-            options = options.keyspace(path);
+            options = options.set_keyspace(path);
         }
 
         let username = url.username();
         if !username.is_empty() {
-            options = options.username(username);
+            options = options.set_username(username);
             if let Some(password) = url.password() {
-                options = options.password(password);
+                options = options.set_password(password);
             }
         }
 
@@ -70,44 +70,44 @@ impl ScyllaDBConnectOptions {
                 }
                 "replication_strategy" => {
                     let strategy = ScyllaDBReplicationStrategy::from_str(&value)?;
-                    options = options.replication_strategy(strategy);
+                    options = options.set_replication_strategy(strategy);
                 }
                 "replication_factor" => {
                     let replication_factor = value.parse().map_err(|err: ParseIntError| {
                         let message = format!("Invalid replication_factor. {err}");
                         Error::Configuration(message.into())
                     })?;
-                    options = options.replication_factor(replication_factor);
+                    options = options.set_replication_factor(replication_factor);
                 }
                 "compression" => {
                     let compressor = ScyllaDBCompression::from_str(&value)?;
-                    options = options.compresson(compressor);
+                    options = options.set_compression(compressor);
                 }
                 "tcp_nodelay" => {
-                    options = options.tcp_nodelay();
+                    options = options.set_tcp_nodelay(true);
                 }
                 "tcp_keepalive" => {
                     let secs = value.parse().map_err(|err: ParseIntError| {
                         let message = format!("Invalid tcp_keepalive. {err}");
                         Error::Configuration(message.into())
                     })?;
-                    options = options.tcp_keepalive(secs);
+                    options = options.set_tcp_keepalive(secs);
                 }
                 "page_size" => {
                     let page_size = value.parse().map_err(|err: ParseIntError| {
                         let message = format!("Invalid page_size. {err}");
                         Error::Configuration(message.into())
                     })?;
-                    options = options.page_size(page_size);
+                    options = options.set_page_size(page_size);
                 }
                 "tls_rootcert" => {
-                    options = options.tls_rootcert(&value);
+                    options = options.set_tls_rootcert(&value);
                 }
                 "tls_cert" => {
-                    options = options.tls_cert(&value);
+                    options = options.set_tls_cert(&value);
                 }
                 "tls_key" => {
-                    options = options.tls_key(&value);
+                    options = options.set_tls_key(&value);
                 }
                 _ => eprintln!("Not supported options. {key}"),
             }
@@ -149,98 +149,12 @@ impl ScyllaDBConnectOptions {
         nodes
     }
 
-    /// Set the host of primary node to connect to.
-    pub fn host(mut self, host: &str) -> Self {
-        host.clone_into(&mut self.host);
-        self
-    }
-
-    /// Set the port of primary node to connect to.
-    pub fn port(mut self, port: u16) -> Self {
-        self.port = port;
-        self
-    }
-
     /// Add the node to connect to.
     pub fn add_node(mut self, node: impl Into<String>) -> Self {
         self.nodes.push(node.into());
         self
     }
 
-    /// Set the keyspace to use.
-    pub fn keyspace(mut self, keyspace: impl Into<String>) -> Self {
-        self.keyspace = Some(keyspace.into());
-        self
-    }
-
-    /// Set the username for authentication.
-    pub fn username(mut self, username: &str) -> Self {
-        self.username = Some(username.to_string());
-        self
-    }
-
-    /// Set the password for authentication.
-    pub fn password(mut self, password: &str) -> Self {
-        self.password = Some(password.to_string());
-        self
-    }
-
-    /// Set the replication strategy. This value is only used during keyspace creation and is not normally required to be set.
-    pub fn replication_strategy(mut self, strategy: ScyllaDBReplicationStrategy) -> Self {
-        self.replication_strategy = Some(strategy);
-        self
-    }
-
-    /// Set the replication factor. This value is only used during keytable creation and is not normally required to be set.
-    pub fn replication_factor(mut self, factor: usize) -> Self {
-        self.replication_factor = factor;
-        self
-    }
-
-    /// Set the compression method used during communication.
-    pub fn compresson(mut self, compression: ScyllaDBCompression) -> Self {
-        self.compression = Some(compression);
-        self
-    }
-
-    /// Set the path to the RootCA certificate when using TLS.
-    pub fn tls_rootcert(mut self, root_cert: &str) -> Self {
-        self.tls_rootcert = Some(root_cert.to_string());
-        self
-    }
-
-    /// Set the path to the client certificate when using TLS.
-    pub fn tls_cert(mut self, cert: &str) -> Self {
-        self.tls_cert = Some(cert.to_string());
-        self
-    }
-
-    /// Set the path to the client private key when using TLS.
-    pub fn tls_key(mut self, key: &str) -> Self {
-        self.tls_key = Some(key.to_string());
-        self
-    }
-
-    /// Enable tcp_nodelay.
-    pub fn tcp_nodelay(mut self) -> Self {
-        self.tcp_nodelay = true;
-        self
-    }
-
-    /// Set the interval for TCP keepalive.
-    pub fn tcp_keepalive(mut self, secs: u64) -> Self {
-        self.tcp_keepalive = Some(Duration::from_secs(secs));
-        self
-    }
-
-    /// Sets the size per page for data retrieval pagination.
-    pub fn page_size(mut self, page_size: i32) -> Self {
-        self.page_size = page_size;
-        self
-    }
-}
-
-impl ScyllaDBConnectOptions {
     /// Get the nodes.
     pub fn get_nodes(&self) -> &[String] {
         &self.nodes
@@ -249,6 +163,189 @@ impl ScyllaDBConnectOptions {
     /// Get the current keyspace.
     pub fn get_keyspace(&self) -> Option<&str> {
         self.keyspace.as_deref()
+    }
+
+    /// Get the host of the primary node.
+    pub fn get_host(&self) -> &str {
+        &self.host
+    }
+
+    /// Get the port of the primary node.
+    pub fn get_port(&self) -> u16 {
+        self.port
+    }
+
+    /// Get the statement cache capacity.
+    pub fn get_statement_cache_capacity(&self) -> usize {
+        self.statement_cache_capacity
+    }
+
+    /// Get the connection log settings.
+    pub fn get_log_settings(&self) -> &LogSettings {
+        &self.log_settings
+    }
+
+    /// Get whether TCP_NODELAY is enabled.
+    pub fn get_tcp_nodelay(&self) -> bool {
+        self.tcp_nodelay
+    }
+
+    /// Get the username used for authentication.
+    pub fn get_username(&self) -> Option<&str> {
+        self.username.as_deref()
+    }
+
+    /// Get the password used for authentication.
+    pub fn get_password(&self) -> Option<&str> {
+        self.password.as_deref()
+    }
+
+    /// Get the replication strategy.
+    pub fn get_replication_strategy(&self) -> Option<ScyllaDBReplicationStrategy> {
+        self.replication_strategy
+    }
+
+    /// Get the replication factor.
+    pub fn get_replication_factor(&self) -> usize {
+        self.replication_factor
+    }
+
+    /// Get the compression method.
+    pub fn get_compression(&self) -> Option<ScyllaDBCompression> {
+        self.compression
+    }
+
+    /// Get the path to the RootCA certificate.
+    pub fn get_tls_rootcert(&self) -> Option<&str> {
+        self.tls_rootcert.as_deref()
+    }
+
+    /// Get the path to the client certificate.
+    pub fn get_tls_cert(&self) -> Option<&str> {
+        self.tls_cert.as_deref()
+    }
+
+    /// Get the path to the client private key.
+    pub fn get_tls_key(&self) -> Option<&str> {
+        self.tls_key.as_deref()
+    }
+
+    /// Get the TCP keepalive interval.
+    pub fn get_tcp_keepalive(&self) -> Option<Duration> {
+        self.tcp_keepalive
+    }
+
+    /// Get the page size used for pagination.
+    pub fn get_page_size(&self) -> i32 {
+        self.page_size
+    }
+
+    /// Set the host of the primary node to connect to.
+    pub fn set_host(mut self, host: &str) -> Self {
+        host.clone_into(&mut self.host);
+        self
+    }
+
+    /// Set the port of the primary node to connect to.
+    pub fn set_port(mut self, port: u16) -> Self {
+        self.port = port;
+        self
+    }
+
+    /// Set the nodes to connect to.
+    pub fn set_nodes(mut self, nodes: Vec<String>) -> Self {
+        self.nodes = nodes;
+        self
+    }
+
+    /// Set the keyspace to use.
+    pub fn set_keyspace(mut self, keyspace: impl Into<String>) -> Self {
+        self.keyspace = Some(keyspace.into());
+        self
+    }
+
+    /// Set or clear the keyspace to use.
+    pub fn set_keyspace_option(mut self, keyspace: Option<String>) -> Self {
+        self.keyspace = keyspace;
+        self
+    }
+
+    /// Set the statement cache capacity.
+    pub fn set_statement_cache_capacity(mut self, capacity: usize) -> Self {
+        self.statement_cache_capacity = capacity;
+        self
+    }
+
+    /// Set the connection log settings.
+    pub fn set_log_settings(mut self, settings: LogSettings) -> Self {
+        self.log_settings = settings;
+        self
+    }
+
+    /// Set whether TCP_NODELAY is enabled.
+    pub fn set_tcp_nodelay(mut self, enabled: bool) -> Self {
+        self.tcp_nodelay = enabled;
+        self
+    }
+
+    /// Set the username for authentication.
+    pub fn set_username(mut self, username: &str) -> Self {
+        self.username = Some(username.to_string());
+        self
+    }
+
+    /// Set the password for authentication.
+    pub fn set_password(mut self, password: &str) -> Self {
+        self.password = Some(password.to_string());
+        self
+    }
+
+    /// Set the replication strategy.
+    pub fn set_replication_strategy(mut self, strategy: ScyllaDBReplicationStrategy) -> Self {
+        self.replication_strategy = Some(strategy);
+        self
+    }
+
+    /// Set the replication factor.
+    pub fn set_replication_factor(mut self, factor: usize) -> Self {
+        self.replication_factor = factor;
+        self
+    }
+
+    /// Set the compression method.
+    pub fn set_compression(mut self, compression: ScyllaDBCompression) -> Self {
+        self.compression = Some(compression);
+        self
+    }
+
+    /// Set the path to the RootCA certificate.
+    pub fn set_tls_rootcert(mut self, root_cert: &str) -> Self {
+        self.tls_rootcert = Some(root_cert.to_string());
+        self
+    }
+
+    /// Set the path to the client certificate.
+    pub fn set_tls_cert(mut self, cert: &str) -> Self {
+        self.tls_cert = Some(cert.to_string());
+        self
+    }
+
+    /// Set the path to the client private key.
+    pub fn set_tls_key(mut self, key: &str) -> Self {
+        self.tls_key = Some(key.to_string());
+        self
+    }
+
+    /// Set the TCP keepalive interval in seconds.
+    pub fn set_tcp_keepalive(mut self, secs: u64) -> Self {
+        self.tcp_keepalive = Some(Duration::from_secs(secs));
+        self
+    }
+
+    /// Set the size per page for data retrieval pagination.
+    pub fn set_page_size(mut self, page_size: i32) -> Self {
+        self.page_size = page_size;
+        self
     }
 }
 
@@ -666,7 +763,7 @@ mod tests {
 
         assert_none!(&options.keyspace);
 
-        let options = options.keyspace("test");
+        let options = options.set_keyspace("test");
 
         assert_some_eq!(options.keyspace, "test");
 
@@ -679,7 +776,7 @@ mod tests {
 
         assert_none!(&options.username);
 
-        let options = options.username("my_name");
+        let options = options.set_username("my_name");
 
         assert_some_eq!(options.username, "my_name");
 
@@ -692,7 +789,7 @@ mod tests {
 
         assert_none!(&options.password);
 
-        let options = options.password("my_password");
+        let options = options.set_password("my_password");
 
         assert_some_eq!(options.password, "my_password");
 
@@ -706,7 +803,7 @@ mod tests {
         assert_none!(options.replication_strategy);
 
         let options =
-            options.replication_strategy(ScyllaDBReplicationStrategy::NetworkTopologyStrategy);
+            options.set_replication_strategy(ScyllaDBReplicationStrategy::NetworkTopologyStrategy);
 
         assert_some_eq!(
             options.replication_strategy,
@@ -748,7 +845,7 @@ mod tests {
 
         assert_eq!(options.replication_factor, 1);
 
-        let options = options.replication_factor(2);
+        let options = options.set_replication_factor(2);
 
         assert_eq!(options.replication_factor, 2);
 
@@ -761,7 +858,7 @@ mod tests {
 
         assert_none!(options.compression);
 
-        let options = options.compresson(ScyllaDBCompression::SnappyCompressor);
+        let options = options.set_compression(ScyllaDBCompression::SnappyCompressor);
 
         assert_some_eq!(options.compression, ScyllaDBCompression::SnappyCompressor);
 
@@ -774,7 +871,7 @@ mod tests {
 
         assert!(!options.tcp_nodelay);
 
-        let options = options.tcp_nodelay();
+        let options = options.set_tcp_nodelay(true);
 
         assert!(options.tcp_nodelay);
 
@@ -787,7 +884,7 @@ mod tests {
 
         assert!(options.tcp_keepalive.is_none());
 
-        let options = options.tcp_keepalive(20);
+        let options = options.set_tcp_keepalive(20);
 
         assert_some_eq!(options.tcp_keepalive, Duration::from_secs(20));
 
@@ -800,7 +897,7 @@ mod tests {
 
         assert_eq!(5000, options.page_size);
 
-        let options = options.page_size(200);
+        let options = options.set_page_size(200);
 
         assert_eq!(200, options.page_size);
 

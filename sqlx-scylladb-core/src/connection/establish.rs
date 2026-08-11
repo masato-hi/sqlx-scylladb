@@ -9,22 +9,22 @@ impl ScyllaDBConnection {
     pub(crate) async fn establish(options: &ScyllaDBConnectOptions) -> Result<Self, Error> {
         let mut builder = SessionBuilder::new().known_nodes(&options.get_connect_nodes());
 
-        if let Some(username) = &options.username {
-            let password = options.password.clone().unwrap_or_default();
+        if let Some(username) = options.get_username() {
+            let password = options.get_password().unwrap_or_default();
             builder = builder.user(username, password);
         }
-        if options.tls_rootcert.is_some() || options.tls_cert.is_some() {
+        if options.get_tls_rootcert().is_some() || options.get_tls_cert().is_some() {
             let tls_context: TlsContext = options.try_into()?;
             builder = builder.tls_context(Some(tls_context));
         }
-        if let Some(compression) = options.compression {
+        if let Some(compression) = options.get_compression() {
             let compression = compression.into();
             builder = builder.compression(Some(compression));
         }
-        if let Some(tcp_keepalive) = options.tcp_keepalive {
+        if let Some(tcp_keepalive) = options.get_tcp_keepalive() {
             builder = builder.tcp_keepalive_interval(tcp_keepalive);
         }
-        if options.tcp_nodelay {
+        if options.get_tcp_nodelay() {
             builder = builder.tcp_nodelay(true);
         }
 
@@ -33,7 +33,7 @@ impl ScyllaDBConnection {
             .await
             .map_err(ScyllaDBError::NewSessionError)?;
 
-        if let Some(keyspace) = &options.keyspace {
+        if let Some(keyspace) = options.get_keyspace() {
             session
                 .use_keyspace(keyspace, true)
                 .await
@@ -41,12 +41,12 @@ impl ScyllaDBConnection {
         }
 
         let mut builder = CachingSessionBuilder::new(session);
-        builder = builder.max_capacity(options.statement_cache_capacity);
+        builder = builder.max_capacity(options.get_statement_cache_capacity());
         let session = builder.build();
 
         let conn = ScyllaDBConnection {
             caching_session: session,
-            page_size: options.page_size,
+            page_size: options.get_page_size(),
             transaction: None,
         };
 

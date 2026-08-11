@@ -81,7 +81,7 @@ async fn it_can_get_total_rows(
     pool_options: ScyllaDBPoolOptions,
     connect_options: ScyllaDBConnectOptions,
 ) -> anyhow::Result<()> {
-    let connect_options = connect_options.page_size(2);
+    let connect_options = connect_options.set_page_size(2);
     let pool = pool_options.connect_with(connect_options).await?;
 
     for i in 1..11i64 {
