@@ -62,7 +62,6 @@ macro_rules! impl_tuple {
                         let type_infos = &[$($typs::type_info()),*];
                         let type_name = $crate::types::tuple::register_tuple_type_name(type_id, type_infos);
                         $crate::ScyllaDBTypeInfo::Tuple(type_name)
-
                     }
                 }
             }

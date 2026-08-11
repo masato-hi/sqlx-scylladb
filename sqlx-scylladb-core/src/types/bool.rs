@@ -25,8 +25,8 @@ mod tests {
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
+        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
     };
 
     #[test]

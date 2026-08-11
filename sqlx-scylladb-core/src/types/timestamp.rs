@@ -58,8 +58,8 @@ mod tests {
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
     use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
+        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
     };
 
     #[test]
@@ -150,8 +150,8 @@ mod tests {
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
         use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-            types::serialize_value,
+            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+            ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
         };
 
         #[test]
@@ -264,8 +264,8 @@ mod tests {
         use time_03::OffsetDateTime;
 
         use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-            types::serialize_value,
+            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+            ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
         };
 
         #[test]

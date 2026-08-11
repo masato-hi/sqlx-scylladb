@@ -250,7 +250,8 @@ mod secrecy {
     };
 
     use crate::{
-        ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef,
+        ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+        ScyllaDBValueRef,
         arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer},
     };
 
@@ -351,8 +352,8 @@ mod tests {
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
+        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
     };
 
     #[test]
@@ -609,8 +610,8 @@ mod tests {
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
         use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-            types::serialize_value,
+            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+            ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
         };
 
         #[test]

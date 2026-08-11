@@ -40,8 +40,8 @@ mod tests {
     use uuid::Uuid;
 
     use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBValueRef,
-        types::serialize_value,
+        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
     };
 
     #[test]
@@ -101,7 +101,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_uuid"),
-            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Float),
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Uuid),
             &raw_value,
             &column_type,
         );
