@@ -146,7 +146,7 @@ impl ScyllaDBTypeInfoNativeArray {
 }
 
 /// The enum for the supported type.
-#[derive(Debug, Clone, PartialEq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ScyllaDBTypeInfo {
     /// A native type.
     Native(ScyllaDBTypeInfoNative),
@@ -335,15 +335,7 @@ impl ScyllaDBTypeInfo {
                 let type_name = UStr::new(&definition.name);
                 Self::UserDefinedType(type_name)
             }
-            ColumnType::Tuple(items) => {
-                let mut type_infos = Vec::with_capacity(items.capacity());
-                for item in items {
-                    let type_info = Self::from_column_type(item)?;
-                    type_infos.push(type_info);
-                }
-                let type_name = tuple_type_name(&type_infos);
-                Self::Tuple(type_name)
-            }
+            ColumnType::Tuple(items) => Self::tuple_type_info_name_from_column_types(items)?,
             _ => column_type_not_supported!(column_type),
         };
 
@@ -355,17 +347,4 @@ impl Display for ScyllaDBTypeInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(self.name())
     }
-}
-
-pub(crate) fn tuple_type_name(type_infos: &[ScyllaDBTypeInfo]) -> UStr {
-    let mut type_name = String::from("TUPLE<");
-    for (i, type_info) in type_infos.iter().enumerate() {
-        if i > 0 {
-            type_name.push_str(", ");
-        }
-        let name = type_info.name();
-        type_name.push_str(name);
-    }
-    type_name.push_str(">");
-    UStr::new(&type_name)
 }

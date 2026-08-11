@@ -80,10 +80,7 @@ mod tests {
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
     use uuid::Uuid;
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef,
-        types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_text_hashmap() -> Result<(), BoxDynError> {

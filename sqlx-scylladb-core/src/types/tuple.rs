@@ -3,15 +3,19 @@ use std::{
     sync::{LazyLock, RwLock},
 };
 
+use scylla::cluster::metadata::ColumnType;
+use rustc_hash::FxHashMap;
 use sqlx_core::{ext::ustr::UStr, type_info::TypeInfo};
 
-use crate::ScyllaDBTypeInfo;
+use crate::{ScyllaDBError, ScyllaDBTypeInfo};
 
-static TYPE_NAMES: LazyLock<RwLock<Vec<(TypeId, UStr)>>> =
+static TYPE_INFO_NAMES: LazyLock<RwLock<Vec<(TypeId, UStr)>>> =
     LazyLock::new(|| RwLock::new(Vec::new()));
+static TYPE_INFO_NAMES_FROM_COLUMN_TYPES: LazyLock<RwLock<FxHashMap<Vec<ScyllaDBTypeInfo>, UStr>>> =
+    LazyLock::new(|| RwLock::new(FxHashMap::default()));
 
-pub fn get_tuple_type_name(type_id: TypeId) -> Option<UStr> {
-    TYPE_NAMES
+pub fn get_tuple_type_info_name(type_id: TypeId) -> Option<UStr> {
+    TYPE_INFO_NAMES
         .read()
         .expect("tuple type name cache lock poisoned")
         .iter()
@@ -19,18 +23,18 @@ pub fn get_tuple_type_name(type_id: TypeId) -> Option<UStr> {
         .map(|(_, type_name)| type_name.clone())
 }
 
-pub fn register_tuple_type_name(type_id: TypeId, type_infos: &[ScyllaDBTypeInfo]) -> UStr {
-    let type_name = build_tuple_type_name(type_infos);
+pub fn register_tuple_type_info_name(type_id: TypeId, type_infos: &[ScyllaDBTypeInfo]) -> UStr {
+    let type_info_name = build_tuple_type_info_name(type_infos);
 
-    TYPE_NAMES
+    TYPE_INFO_NAMES
         .write()
         .expect("tuple type name cache lock poisoned")
-        .push((type_id, type_name.clone()));
+        .push((type_id, type_info_name.clone()));
 
-    type_name
+    type_info_name
 }
 
-pub(crate) fn build_tuple_type_name(type_infos: &[ScyllaDBTypeInfo]) -> UStr {
+pub(crate) fn build_tuple_type_info_name(type_infos: &[ScyllaDBTypeInfo]) -> UStr {
     let mut type_name = String::from("(");
     for (i, type_info) in type_infos.iter().enumerate() {
         if i > 0 {
@@ -43,6 +47,36 @@ pub(crate) fn build_tuple_type_name(type_infos: &[ScyllaDBTypeInfo]) -> UStr {
     UStr::new(&type_name)
 }
 
+impl ScyllaDBTypeInfo {
+    pub(crate) fn tuple_type_info_name_from_column_types(
+        items: &Vec<ColumnType<'_>>,
+    ) -> Result<Self, ScyllaDBError> {
+        let mut type_infos = Vec::with_capacity(items.capacity());
+        for item in items {
+            let type_info = Self::from_column_type(item)?;
+            type_infos.push(type_info);
+        }
+
+        if let Some(type_name) = TYPE_INFO_NAMES_FROM_COLUMN_TYPES
+            .read()
+            .expect("tuple type name cache lock poisoned")
+            .get(&type_infos)
+            .cloned()
+        {
+            return Ok(Self::Tuple(type_name));
+        }
+
+        let type_name = build_tuple_type_info_name(&type_infos);
+
+        TYPE_INFO_NAMES_FROM_COLUMN_TYPES
+            .write()
+            .expect("tuple type name cache lock poisoned")
+            .insert(type_infos, type_name.clone());
+
+        Ok(Self::Tuple(type_name))
+    }
+}
+
 macro_rules! impl_tuple {
     (
         $($typs:ident),*;
@@ -52,7 +86,7 @@ macro_rules! impl_tuple {
         where $($typs: ::sqlx_core::types::Type<$crate::ScyllaDB> + 'static),* {
             fn type_info() -> $crate::ScyllaDBTypeInfo {
                 let type_id = ::std::any::TypeId::of::<Self>();
-                let type_name = $crate::types::tuple::get_tuple_type_name(type_id);
+                let type_name = $crate::types::tuple::get_tuple_type_info_name(type_id);
 
                 match type_name {
                     Some(type_name) => {
@@ -60,7 +94,7 @@ macro_rules! impl_tuple {
                     }
                     None => {
                         let type_infos = &[$($typs::type_info()),*];
-                        let type_name = $crate::types::tuple::register_tuple_type_name(type_id, type_infos);
+                        let type_name = $crate::types::tuple::register_tuple_type_info_name(type_id, type_infos);
                         $crate::ScyllaDBTypeInfo::Tuple(type_name)
                     }
                 }
