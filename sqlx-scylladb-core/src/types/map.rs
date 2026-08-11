@@ -146,7 +146,7 @@ mod tests {
 
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
     use uuid::Uuid;
 
     use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
@@ -221,7 +221,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -250,7 +250,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -274,7 +274,7 @@ mod tests {
             serialize_value(&HashMap::from([(String::from("Hello"), 7i8)]), &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -300,7 +300,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -326,7 +326,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -352,7 +352,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -378,7 +378,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -404,7 +404,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -433,7 +433,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -465,7 +465,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_hashmap"),
+            "my_hashmap",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,

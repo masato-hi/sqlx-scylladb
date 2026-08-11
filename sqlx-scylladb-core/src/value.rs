@@ -54,13 +54,13 @@ pub struct ScyllaDBValueRef<'r> {
 impl<'r> ScyllaDBValueRef<'r> {
     #[inline(always)]
     pub(crate) fn new(
-        column_name: UStr,
+        column_name: impl Into<UStr>,
         type_info: ScyllaDBTypeInfo,
         raw_value: &'r Bytes,
         column_type: &'r ColumnType<'r>,
     ) -> ScyllaDBValueRef<'r> {
         Self {
-            column_name,
+            column_name: column_name.into(),
             raw_value,
             column_type,
             type_info,
@@ -68,10 +68,10 @@ impl<'r> ScyllaDBValueRef<'r> {
     }
 
     #[inline(always)]
-    pub(crate) fn null(column_name: UStr, column_type: &'r ColumnType<'r>) -> Self {
+    pub(crate) fn null(column_name: impl Into<UStr>, column_type: &'r ColumnType<'r>) -> Self {
         static EMPTY: LazyLock<Bytes> = LazyLock::new(|| Bytes::new());
         Self {
-            column_name,
+            column_name: column_name.into(),
             raw_value: &EMPTY,
             column_type,
             type_info: ScyllaDBTypeInfo::Null,

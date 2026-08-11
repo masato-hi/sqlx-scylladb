@@ -26,7 +26,7 @@ mod tests {
         value::CqlDuration,
     };
 
-    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -134,7 +134,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_duration"),
+            "my_duration",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -175,7 +175,7 @@ mod tests {
         )?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_duration"),
+            "my_duration",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,

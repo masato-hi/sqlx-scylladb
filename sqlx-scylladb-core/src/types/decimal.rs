@@ -22,7 +22,7 @@ mod tests {
         use bigdecimal_04::BigDecimal;
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
         use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -76,7 +76,7 @@ mod tests {
             let raw_value = serialize_value(&BigDecimal::from_str("5e9")?, &column_type)?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_decimal"),
+                "my_decimal",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
@@ -102,7 +102,7 @@ mod tests {
             )?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_decimal"),
+                "my_decimal",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,

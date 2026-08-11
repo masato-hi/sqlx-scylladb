@@ -21,7 +21,6 @@ mod tests {
 
     use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-    use sqlx_core::ext::ustr::UStr;
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
@@ -46,7 +45,7 @@ mod tests {
         let raw_value = serialize_value(&true, &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_boolean"),
+            "my_boolean",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -66,7 +65,7 @@ mod tests {
         let raw_value = serialize_value(&vec![true, false], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_boolean"),
+            "my_boolean",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,

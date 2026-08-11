@@ -56,7 +56,7 @@ mod tests {
         value::CqlDate,
     };
 
-    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+    use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -87,7 +87,7 @@ mod tests {
         let raw_value = serialize_value(&CqlDate(20330), &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_date"),
+            "my_date",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -107,7 +107,7 @@ mod tests {
         let raw_value = serialize_value(&vec![CqlDate(20330), CqlDate(13149)], &column_type)?;
 
         let value = ScyllaDBValueRef::new(
-            UStr::new("my_date"),
+            "my_date",
             (&column_type).try_into()?,
             &raw_value,
             &column_type,
@@ -125,7 +125,7 @@ mod tests {
         use chrono_04::NaiveDate;
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
         use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
@@ -183,7 +183,7 @@ mod tests {
                 serialize_value(&NaiveDate::from_ymd_opt(2025, 8, 31).unwrap(), &column_type)?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_date"),
+                "my_date",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
@@ -209,7 +209,7 @@ mod tests {
             )?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_date"),
+                "my_date",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
@@ -233,7 +233,7 @@ mod tests {
 
         use scylla::cluster::metadata::{CollectionType, ColumnType, NativeType};
 
-        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
+        use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
         use time_03::{Date, Month::August, Month::January};
 
         use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
@@ -292,7 +292,7 @@ mod tests {
                 serialize_value(&Date::from_calendar_date(2025, August, 31)?, &column_type)?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_date"),
+                "my_date",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
@@ -318,7 +318,7 @@ mod tests {
             )?;
 
             let value = ScyllaDBValueRef::new(
-                UStr::new("my_date"),
+                "my_date",
                 (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
