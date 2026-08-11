@@ -211,10 +211,28 @@ impl TypeInfo for ScyllaDBTypeInfo {
                 *other == Self::NativeArray(ScyllaDBTypeInfoNativeArray::Uuid)
                     || *other == Self::NativeArray(ScyllaDBTypeInfoNativeArray::Timeuuid)
             }
-            Self::Map(name) => matches!(other, Self::Map(other_name) if name == other_name),
+            Self::Map(name) => {
+                if let Self::Map(other_name) = other {
+                    if name == other_name {
+                        true
+                    } else if !name.contains("ASCII") && !other_name.contains("ASCII") {
+                        false
+                    } else {
+                        name.replace("ASCII", "TEXT") == other_name.replace("ASCII", "TEXT")
+                    }
+                } else {
+                    self == other
+                }
+            }
             Self::Tuple(typ) => {
                 if let Self::Tuple(other_typ) = other {
-                    typ.replace("ASCII", "TEXT") == other_typ.replace("ASCII", "TEXT")
+                    if typ == other_typ {
+                        true
+                    } else if !typ.contains("ASCII") && !other_typ.contains("ASCII") {
+                        false
+                    } else {
+                        typ.replace("ASCII", "TEXT") == other_typ.replace("ASCII", "TEXT")
+                    }
                 } else {
                     self == other
                 }
