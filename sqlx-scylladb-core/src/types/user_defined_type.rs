@@ -78,6 +78,18 @@ impl<'r, T> Encode<'_, ScyllaDB> for Vec<T>
 where
     T: UserDefinedType<'r> + Clone + 'static,
 {
+    fn encode(
+        self,
+        buf: &mut ScyllaDBArgumentBuffer,
+    ) -> Result<sqlx_core::encode::IsNull, sqlx_core::error::BoxDynError> {
+        let values = self
+            .into_iter()
+            .map(|value| Box::new(value) as Box<dyn SerializeValue + Send + Sync>)
+            .collect();
+        buf.push(ScyllaDBArgument::UserDefinedTypeArray(values));
+        Ok(IsNull::No)
+    }
+
     fn encode_by_ref(
         &self,
         buf: &mut ScyllaDBArgumentBuffer,

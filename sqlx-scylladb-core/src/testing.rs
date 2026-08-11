@@ -197,14 +197,15 @@ async fn cleanup_test_dbs() -> Result<Option<usize>, Error> {
         return Ok(None);
     }
 
+    let deleted_db_count = delete_db_names.len();
     sqlx_core::query::query("DELETE FROM sqlx_test_databases WHERE db_name IN(?)")
-        .bind(delete_db_names.as_slice())
+        .bind(delete_db_names)
         .execute(&mut conn)
         .await?;
 
     let _ = conn.close().await;
 
-    Ok(Some(delete_db_names.len()))
+    Ok(Some(deleted_db_count))
 }
 
 fn get_database_url() -> String {

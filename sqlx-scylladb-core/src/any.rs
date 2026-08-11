@@ -257,7 +257,7 @@ fn map_arguments(args: AnyArguments) -> ScyllaDBArguments {
             AnyValueKind::Double(d) => (ScyllaDBTypeInfo::Double, ScyllaDBArgument::Double(d)),
             AnyValueKind::Text(t) => (
                 ScyllaDBTypeInfo::Text,
-                ScyllaDBArgument::Text(t.to_string()),
+                ScyllaDBArgument::Text(std::borrow::Cow::Owned(t.to_string())),
             ),
             AnyValueKind::Blob(b) => (ScyllaDBTypeInfo::Blob, ScyllaDBArgument::Blob(b.to_vec())),
             // AnyValueKind is `#[non_exhaustive]` but we should have covered everything

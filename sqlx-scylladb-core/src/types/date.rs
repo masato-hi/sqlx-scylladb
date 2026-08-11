@@ -2,41 +2,41 @@ use scylla::value::CqlDate;
 
 use crate::{ScyllaDBArgument, ScyllaDBTypeInfo};
 
-impl_type!(CqlDate, ScyllaDBTypeInfo::Date, ScyllaDBArgument::CqlDate);
+impl_native_type!(CqlDate, ScyllaDBTypeInfo::Date, |value| {
+    ScyllaDBArgument::Date(value)
+});
 
-impl_array_type!(
+impl_native_array_type!(
     CqlDate,
     ScyllaDBTypeInfo::DateArray,
-    ScyllaDBArgument::CqlDateArray
+    ScyllaDBArgument::DateArray
 );
 
 #[cfg(feature = "chrono-04")]
 pub mod chrono {
-    impl_type!(
+    impl_native_type!(
         chrono_04::NaiveDate,
         crate::ScyllaDBTypeInfo::Date,
-        crate::ScyllaDBArgument::ChronoNaiveDate
+        |value| crate::ScyllaDBArgument::Date_Chrono04(value)
     );
 
-    impl_array_type!(
+    impl_native_array_type!(
         chrono_04::NaiveDate,
         crate::ScyllaDBTypeInfo::DateArray,
-        crate::ScyllaDBArgument::ChronoNaiveDateArray
+        crate::ScyllaDBArgument::DateArray_Chrono04
     );
 }
 
 #[cfg(feature = "time-03")]
 pub mod time {
-    impl_type!(
-        time_03::Date,
-        crate::ScyllaDBTypeInfo::Date,
-        crate::ScyllaDBArgument::Date
-    );
+    impl_native_type!(time_03::Date, crate::ScyllaDBTypeInfo::Date, |value| {
+        crate::ScyllaDBArgument::Date_Time03(value)
+    });
 
-    impl_array_type!(
+    impl_native_array_type!(
         time_03::Date,
         crate::ScyllaDBTypeInfo::DateArray,
-        crate::ScyllaDBArgument::DateArray
+        crate::ScyllaDBArgument::DateArray_Time03
     );
 }
 

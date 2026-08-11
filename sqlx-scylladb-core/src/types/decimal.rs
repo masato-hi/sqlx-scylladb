@@ -1,15 +1,15 @@
 #[cfg(feature = "bigdecimal-04")]
 pub mod bigdecimal {
-    impl_type!(
+    impl_native_type!(
         bigdecimal_04::BigDecimal,
         crate::ScyllaDBTypeInfo::Decimal,
-        crate::ScyllaDBArgument::BigDecimal
+        crate::ScyllaDBArgument::Decimal
     );
 
-    impl_array_type!(
+    impl_native_array_type!(
         bigdecimal_04::BigDecimal,
         crate::ScyllaDBTypeInfo::DecimalArray,
-        crate::ScyllaDBArgument::BigDecimalArray
+        crate::ScyllaDBArgument::DecimalArray
     );
 }
 

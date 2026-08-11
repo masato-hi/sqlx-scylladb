@@ -1,4 +1,5 @@
 use std::{
+    borrow::Cow,
     collections::HashMap,
     net::IpAddr,
     ops::{Deref, DerefMut},
@@ -101,6 +102,7 @@ impl<'q> DerefMut for ScyllaDBArgumentBuffer {
 }
 
 /// The enum of data types that can be handled by scylla-rust-driver.
+#[allow(non_camel_case_types)]
 pub enum ScyllaDBArgument {
     /// Internally used NULL.
     Null,
@@ -110,122 +112,133 @@ pub enum ScyllaDBArgument {
     Any(Arc<dyn SerializeValue + Send + Sync>),
     /// `boolean` type.
     Boolean(bool),
-    /// array of `boolean` type.
-    BooleanArray(Vec<bool>),
     /// `tinyint` type.
     TinyInt(i8),
-    /// array of `tinyint` type.
-    TinyIntArray(Vec<i8>),
     /// `smallint` type.
     SmallInt(i16),
-    /// array of `smallint` type
-    SmallIntArray(Vec<i16>),
     /// `int` type.
     Int(i32),
-    /// array of `int` type.
-    IntArray(Vec<i32>),
     /// `bigint` type.
     BigInt(i64),
-    /// array of `bigint` type.
-    BigIntArray(Vec<i64>),
     /// `float` type.
     Float(f32),
-    /// array of `float` type.
-    FloatArray(Vec<f32>),
     /// `double` type.
     Double(f64),
-    /// array of `double` type.
-    DoubleArray(Vec<f64>),
-    /// `text` or `ascii` type.
-    Text(String),
-    /// array of `text` or `ascii` type.
-    TextArray(Vec<String>),
-    /// `text` or `ascii` type implemented with [secrecy_08] crate.
+    /// Text held either as a static borrow or as an owned string.
+    Text(Cow<'static, str>),
+    /// Text held by an atomically reference-counted string slice.
+    #[allow(non_camel_case_types)]
+    Text_ArcStr(Arc<str>),
+    /// Secret text held by value.
     #[cfg(feature = "secrecy-08")]
-    SecretText(secrecy_08::SecretString),
-    /// array of `text` or `ascii` type implemented with [secrecy_08] crate.
-    #[cfg(feature = "secrecy-08")]
-    SecretTextArray(Vec<secrecy_08::SecretString>),
+    #[allow(non_camel_case_types)]
+    Text_Secrecy08(secrecy_08::SecretString),
     /// `blob` type.
     Blob(Vec<u8>),
-    /// array of `blob` type.
-    BlobArray(Vec<Vec<u8>>),
     /// `blob` type implemented with [secrecy_08] crate.
     #[cfg(feature = "secrecy-08")]
-    SecretBlob(secrecy_08::SecretVec<u8>),
-    /// array of `blob` type implemented with [secrecy_08] crate.
-    #[cfg(feature = "secrecy-08")]
-    SecretBlobArray(Vec<secrecy_08::SecretVec<u8>>),
+    #[allow(non_camel_case_types)]
+    Blob_Secrecy08(secrecy_08::SecretVec<u8>),
     /// `uuid` type.
     Uuid(Uuid),
-    /// array of `uuid` type.
-    UuidArray(Vec<Uuid>),
     /// `timeuuid` type.
     Timeuuid(CqlTimeuuid),
-    /// array of `timeuuid` type.
-    TimeuuidArray(Vec<CqlTimeuuid>),
     /// `inet` type.
-    IpAddr(IpAddr),
-    /// array of `inet` type.
-    IpAddrArray(Vec<IpAddr>),
+    Inet(IpAddr),
     /// `duration` type.
     Duration(CqlDuration),
-    /// array of `duration` type.
-    DurationArray(Vec<CqlDuration>),
     /// `decimal` type.
     #[cfg(feature = "bigdecimal-04")]
-    BigDecimal(bigdecimal_04::BigDecimal),
+    Decimal(bigdecimal_04::BigDecimal),
+    /// ScyllaDB timestamp.
+    Timestamp(CqlTimestamp),
+    /// `time` crate timestamp.
+    #[cfg(feature = "time-03")]
+    #[allow(non_camel_case_types)]
+    Timestamp_Time03(time_03::OffsetDateTime),
+    /// `chrono` crate timestamp.
+    #[cfg(feature = "chrono-04")]
+    #[allow(non_camel_case_types)]
+    Timestamp_Chrono04(chrono_04::DateTime<chrono_04::Utc>),
+    /// ScyllaDB date.
+    Date(CqlDate),
+    /// `time` crate date.
+    #[cfg(feature = "time-03")]
+    #[allow(non_camel_case_types)]
+    Date_Time03(time_03::Date),
+    /// `chrono` crate date.
+    #[cfg(feature = "chrono-04")]
+    #[allow(non_camel_case_types)]
+    Date_Chrono04(chrono_04::NaiveDate),
+    /// ScyllaDB time.
+    Time(CqlTime),
+    /// `time` crate time.
+    #[cfg(feature = "time-03")]
+    #[allow(non_camel_case_types)]
+    Time_Time03(time_03::Time),
+    /// `chrono` crate time.
+    #[cfg(feature = "chrono-04")]
+    #[allow(non_camel_case_types)]
+    Time_Chrono04(chrono_04::NaiveTime),
+    /// array of `boolean` type.
+    BooleanArray(Vec<bool>),
+    /// array of `tinyint` type.
+    TinyIntArray(Vec<i8>),
+    /// array of `smallint` type.
+    SmallIntArray(Vec<i16>),
+    /// array of `int` type.
+    IntArray(Vec<i32>),
+    /// array of `bigint` type.
+    BigIntArray(Vec<i64>),
+    /// array of `float` type.
+    FloatArray(Vec<f32>),
+    /// array of `double` type.
+    DoubleArray(Vec<f64>),
+    /// array of `text` or `ascii` type.
+    TextArray(Vec<String>),
+    /// array of `text` or `ascii` type implemented with [secrecy_08] crate.
+    #[cfg(feature = "secrecy-08")]
+    TextArray_Secrecy08(Vec<secrecy_08::SecretString>),
+    /// array of `blob` type.
+    BlobArray(Vec<Vec<u8>>),
+    /// array of `blob` type implemented with [secrecy_08] crate.
+    #[cfg(feature = "secrecy-08")]
+    BlobArray_Secrecy08(Vec<secrecy_08::SecretVec<u8>>),
+    /// array of `uuid` type.
+    UuidArray(Vec<Uuid>),
+    /// array of `timeuuid` type.
+    TimeuuidArray(Vec<CqlTimeuuid>),
+    /// array of `inet` type.
+    InetArray(Vec<IpAddr>),
+    /// array of `duration` type.
+    DurationArray(Vec<CqlDuration>),
     /// array of `decimal` type.
     #[cfg(feature = "bigdecimal-04")]
-    BigDecimalArray(Vec<bigdecimal_04::BigDecimal>),
-    /// `timestamp` type.
-    CqlTimestamp(CqlTimestamp),
+    DecimalArray(Vec<bigdecimal_04::BigDecimal>),
     /// array of `timestamp` type.
-    CqlTimestampArray(Vec<CqlTimestamp>),
-    /// `timestamp` type implemented with [time_03] crate.
-    #[cfg(feature = "time-03")]
-    OffsetDateTime(time_03::OffsetDateTime),
+    TimestampArray(Vec<CqlTimestamp>),
     /// array of `timestamp` type implemented with [time_03] crate.
     #[cfg(feature = "time-03")]
-    OffsetDateTimeArray(Vec<time_03::OffsetDateTime>),
-    /// `timestamp` type implemented with [chrono_04] crate.
-    #[cfg(feature = "chrono-04")]
-    ChronoDateTimeUTC(chrono_04::DateTime<chrono_04::Utc>),
+    TimestampArray_Time03(Vec<time_03::OffsetDateTime>),
     /// array of `timestamp` type implemented with [chrono_04] crate.
     #[cfg(feature = "chrono-04")]
-    ChronoDateTimeUTCArray(Vec<chrono_04::DateTime<chrono_04::Utc>>),
-    /// `date` type.
-    CqlDate(CqlDate),
+    TimestampArray_Chrono04(Vec<chrono_04::DateTime<chrono_04::Utc>>),
     /// array of `date` type.
-    CqlDateArray(Vec<CqlDate>),
-    /// `date` type implemented with [time_03] crate.
-    #[cfg(feature = "time-03")]
-    Date(time_03::Date),
+    DateArray(Vec<CqlDate>),
     /// array of `date` type implemented with [time_03] crate.
     #[cfg(feature = "time-03")]
-    DateArray(Vec<time_03::Date>),
-    /// `date` type implemented with [chrono_04] crate.
-    #[cfg(feature = "chrono-04")]
-    ChronoNaiveDate(chrono_04::NaiveDate),
+    DateArray_Time03(Vec<time_03::Date>),
     /// array of `date` type implemented with [chrono_04] crate.
     #[cfg(feature = "chrono-04")]
-    ChronoNaiveDateArray(Vec<chrono_04::NaiveDate>),
-    /// `time` type.
-    CqlTime(CqlTime),
+    DateArray_Chrono04(Vec<chrono_04::NaiveDate>),
     /// array of `time` type.
-    CqlTimeArray(Vec<CqlTime>),
-    /// `time` type implemented with [time_03] crate.
-    #[cfg(feature = "time-03")]
-    Time(time_03::Time),
+    TimeArray(Vec<CqlTime>),
     /// array of `time` type implemented with [time_03] crate.
     #[cfg(feature = "time-03")]
-    TimeArray(Vec<time_03::Time>),
-    /// `time` type implemented with [chrono_04] crate.
-    #[cfg(feature = "chrono-04")]
-    ChronoNaiveTime(chrono_04::NaiveTime),
+    TimeArray_Time03(Vec<time_03::Time>),
     /// array of `time` type implemented with [chrono_04] crate.
     #[cfg(feature = "chrono-04")]
-    ChronoNaiveTimeArray(Vec<chrono_04::NaiveTime>),
+    TimeArray_Chrono04(Vec<chrono_04::NaiveTime>),
     /// any tuple type.
     Tuple(Box<dyn SerializeValue + Send + Sync>),
     /// user-defined type.
@@ -265,7 +278,6 @@ impl SerializeValue for ScyllaDBArgument {
             Self::Null => Ok(writer.set_null()),
             Self::Unset => Ok(writer.set_unset()),
             Self::Boolean(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::BooleanArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::TinyInt(value) => {
                 if ColumnType::Native(NativeType::Counter) == *typ {
                     <_ as SerializeValue>::serialize(&Counter(*value as i64), typ, writer)
@@ -273,7 +285,6 @@ impl SerializeValue for ScyllaDBArgument {
                     <_ as SerializeValue>::serialize(value, typ, writer)
                 }
             }
-            Self::TinyIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::SmallInt(value) => {
                 if ColumnType::Native(NativeType::Counter) == *typ {
                     <_ as SerializeValue>::serialize(&Counter(*value as i64), typ, writer)
@@ -281,7 +292,6 @@ impl SerializeValue for ScyllaDBArgument {
                     <_ as SerializeValue>::serialize(value, typ, writer)
                 }
             }
-            Self::SmallIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Int(value) => {
                 if ColumnType::Native(NativeType::Counter) == *typ {
                     <_ as SerializeValue>::serialize(&Counter(*value as i64), typ, writer)
@@ -289,7 +299,6 @@ impl SerializeValue for ScyllaDBArgument {
                     <_ as SerializeValue>::serialize(value, typ, writer)
                 }
             }
-            Self::IntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::BigInt(value) => {
                 if ColumnType::Native(NativeType::Counter) == *typ {
                     <_ as SerializeValue>::serialize(&Counter(*value as i64), typ, writer)
@@ -297,73 +306,78 @@ impl SerializeValue for ScyllaDBArgument {
                     <_ as SerializeValue>::serialize(value, typ, writer)
                 }
             }
-            Self::BigIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Float(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::FloatArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Double(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::DoubleArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Text(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Text_ArcStr(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
-            Self::SecretText(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "secrecy-08")]
-            Self::SecretTextArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Text_Secrecy08(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Blob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::BlobArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "secrecy-08")]
-            Self::SecretBlob(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "secrecy-08")]
-            Self::SecretBlobArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Blob_Secrecy08(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Uuid(uuid) => <_ as SerializeValue>::serialize(uuid, typ, writer),
-            Self::UuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Timeuuid(timeuuid) => <_ as SerializeValue>::serialize(timeuuid, typ, writer),
-            Self::TimeuuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::IpAddr(ip_addr) => <_ as SerializeValue>::serialize(ip_addr, typ, writer),
-            Self::IpAddrArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Inet(ip_addr) => <_ as SerializeValue>::serialize(ip_addr, typ, writer),
             Self::Duration(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::DurationArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "bigdecimal-04")]
-            Self::BigDecimal(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "bigdecimal-04")]
-            Self::BigDecimalArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::CqlTimestamp(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::CqlTimestampArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Decimal(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Timestamp(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "time-03")]
-            Self::OffsetDateTime(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "time-03")]
-            Self::OffsetDateTimeArray(value) => {
-                <_ as SerializeValue>::serialize(value, typ, writer)
-            }
+            Self::Timestamp_Time03(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "chrono-04")]
-            Self::ChronoDateTimeUTC(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "chrono-04")]
-            Self::ChronoDateTimeUTCArray(value) => {
-                <_ as SerializeValue>::serialize(value, typ, writer)
-            }
-            Self::CqlTime(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::CqlTimeArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "time-03")]
-            Self::Time(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "time-03")]
-            Self::TimeArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "chrono-04")]
-            Self::ChronoNaiveTime(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "chrono-04")]
-            Self::ChronoNaiveTimeArray(value) => {
-                <_ as SerializeValue>::serialize(value, typ, writer)
-            }
-            Self::CqlDate(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::CqlDateArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            #[cfg(feature = "time-03")]
+            Self::Timestamp_Chrono04(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Date(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "time-03")]
-            Self::DateArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Date_Time03(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "chrono-04")]
-            Self::ChronoNaiveDate(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Date_Chrono04(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Time(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "time-03")]
+            Self::Time_Time03(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "chrono-04")]
-            Self::ChronoNaiveDateArray(value) => {
+            Self::Time_Chrono04(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::BooleanArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TinyIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::SmallIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::IntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::BigIntArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::FloatArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::DoubleArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TextArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-08")]
+            Self::TextArray_Secrecy08(value) => {
                 <_ as SerializeValue>::serialize(value, typ, writer)
             }
+            Self::BlobArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "secrecy-08")]
+            Self::BlobArray_Secrecy08(value) => {
+                <_ as SerializeValue>::serialize(value, typ, writer)
+            }
+            Self::UuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TimeuuidArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::InetArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::DurationArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "bigdecimal-04")]
+            Self::DecimalArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TimestampArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "time-03")]
+            Self::TimestampArray_Time03(value) => {
+                <_ as SerializeValue>::serialize(value, typ, writer)
+            }
+            #[cfg(feature = "chrono-04")]
+            Self::TimestampArray_Chrono04(value) => {
+                <_ as SerializeValue>::serialize(value, typ, writer)
+            }
+            Self::DateArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "time-03")]
+            Self::DateArray_Time03(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "chrono-04")]
+            Self::DateArray_Chrono04(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::TimeArray(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "time-03")]
+            Self::TimeArray_Time03(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            #[cfg(feature = "chrono-04")]
+            Self::TimeArray_Chrono04(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Tuple(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::UserDefinedType(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::UserDefinedTypeArray(value) => {

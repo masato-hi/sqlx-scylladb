@@ -2,12 +2,12 @@ use std::net::IpAddr;
 
 use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
 
-impl_type!(IpAddr, ScyllaDBTypeInfo::Inet, ScyllaDBArgument::IpAddr);
+impl_native_type!(IpAddr, ScyllaDBTypeInfo::Inet, ScyllaDBArgument::Inet);
 
-impl_array_type!(
+impl_native_array_type!(
     IpAddr,
     ScyllaDBTypeInfo::InetArray,
-    ScyllaDBArgument::IpAddrArray
+    ScyllaDBArgument::InetArray
 );
 
 #[cfg(test)]

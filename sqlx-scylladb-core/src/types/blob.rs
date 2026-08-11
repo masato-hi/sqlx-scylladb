@@ -71,6 +71,11 @@ impl Encode<'_, ScyllaDB> for Arc<[u8]> {
 }
 
 impl Encode<'_, ScyllaDB> for Vec<u8> {
+    fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        buf.push(ScyllaDBArgument::Blob(self));
+        Ok(IsNull::No)
+    }
+
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
         <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
     }
@@ -220,6 +225,11 @@ impl Encode<'_, ScyllaDB> for &[Vec<u8>] {
 }
 
 impl Encode<'_, ScyllaDB> for Vec<Vec<u8>> {
+    fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+        buf.push(ScyllaDBArgument::BlobArray(self));
+        Ok(IsNull::No)
+    }
+
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
         let argument = ScyllaDBArgument::BlobArray(self.clone());
         buf.push(argument);
@@ -262,7 +272,7 @@ mod secrecy {
 
             let value = self.expose_secret().to_vec();
             let value = SecretVec::new(value);
-            let argument = ScyllaDBArgument::SecretBlob(value);
+            let argument = ScyllaDBArgument::Blob_Secrecy08(value);
             buf.push(argument);
 
             Ok(IsNull::No)
@@ -310,7 +320,7 @@ mod secrecy {
                 let item = SecretVec::new(value.to_vec());
                 items.push(item);
             }
-            let argument = ScyllaDBArgument::SecretBlobArray(items);
+            let argument = ScyllaDBArgument::BlobArray_Secrecy08(items);
             buf.push(argument);
 
             Ok(IsNull::No)

@@ -9,7 +9,7 @@ use sqlx_core::{ext::ustr::UStr, type_info::TypeInfo};
 use crate::ScyllaDBError;
 
 /// The enum for the supported type.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Hash)]
 pub enum ScyllaDBTypeInfo {
     /// Any type. Please set a unique name.
     Any(UStr),

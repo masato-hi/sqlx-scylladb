@@ -1,5 +1,33 @@
-macro_rules! impl_type {
-    ($typ:ty, $typ_info:path, $arg_typ:path) => {
+pub(crate) trait IntoScyllaText {
+    fn into_scylla_text(self) -> String;
+}
+
+impl IntoScyllaText for String {
+    fn into_scylla_text(self) -> String {
+        self
+    }
+}
+
+impl<'a> IntoScyllaText for &'a str {
+    fn into_scylla_text(self) -> String {
+        self.to_owned()
+    }
+}
+
+impl<'a> IntoScyllaText for std::borrow::Cow<'a, str> {
+    fn into_scylla_text(self) -> String {
+        self.into_owned()
+    }
+}
+
+impl IntoScyllaText for std::sync::Arc<str> {
+    fn into_scylla_text(self) -> String {
+        self.to_string()
+    }
+}
+
+macro_rules! impl_native_type {
+    ($typ:ty, $typ_info:path, $arg_typ:expr) => {
         impl ::sqlx_core::types::Type<$crate::ScyllaDB> for $typ {
             fn type_info() -> $crate::ScyllaDBTypeInfo {
                 $typ_info
@@ -7,11 +35,19 @@ macro_rules! impl_type {
         }
 
         impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for $typ {
+            fn encode(
+                self,
+                buf: &mut $crate::ScyllaDBArgumentBuffer,
+            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
+                buf.push(($arg_typ)(self));
+                Ok(::sqlx_core::encode::IsNull::No)
+            }
+
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                let argument = $arg_typ(self.clone());
+                let argument = ($arg_typ)(self.clone());
                 buf.push(argument);
 
                 Ok(::sqlx_core::encode::IsNull::No)
@@ -29,7 +65,7 @@ macro_rules! impl_type {
     };
 }
 
-macro_rules! impl_array_type {
+macro_rules! impl_native_array_type {
     ($typ:ty, $typ_info:path, $arg_typ:path) => {
         impl $crate::ScyllaDBHasArrayType for $typ {
             fn array_type_info() -> $crate::ScyllaDBTypeInfo {
@@ -71,6 +107,14 @@ macro_rules! impl_array_type {
         }
 
         impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB> for ::std::vec::Vec<$typ> {
+            fn encode(
+                self,
+                buf: &mut $crate::ScyllaDBArgumentBuffer,
+            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
+                buf.push($arg_typ(self));
+                Ok(::sqlx_core::encode::IsNull::No)
+            }
+
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
@@ -117,6 +161,14 @@ macro_rules! impl_map_type {
         impl ::sqlx_core::encode::Encode<'_, $crate::ScyllaDB>
             for ::std::collections::HashMap<$key_typ, $value_typ>
         {
+            fn encode(
+                self,
+                buf: &mut $crate::ScyllaDBArgumentBuffer,
+            ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
+                buf.push($arg_typ(self));
+                Ok(::sqlx_core::encode::IsNull::No)
+            }
+
             fn encode_by_ref(
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
