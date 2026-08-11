@@ -20,7 +20,7 @@ use uuid::Uuid;
 
 use crate::{ScyllaDB, ScyllaDBTypeInfo};
 
-/// Implementation of [sqlx::Arguments] for ScyllaDB.
+/// An sqlx argument list that can be serialized for a ScyllaDB statement.
 #[derive(Default)]
 pub struct ScyllaDBArguments {
     pub(crate) types: Vec<ScyllaDBTypeInfo>,
@@ -80,7 +80,7 @@ impl SerializeRow for ScyllaDBArguments {
     }
 }
 
-/// An array of [ScyllaDBArguments] used during encoding.
+/// Storage for the arguments collected while a query is being encoded.
 #[derive(Default)]
 pub struct ScyllaDBArgumentBuffer {
     pub(crate) buffer: Vec<ScyllaDBArgument>,
@@ -100,26 +100,26 @@ impl<'q> DerefMut for ScyllaDBArgumentBuffer {
     }
 }
 
-/// Text values supported by a native ScyllaDB argument.
+/// Text representations supported by a native ScyllaDB argument.
 #[derive(Debug)]
 pub enum ScyllaDBArgumentNativeText {
-    /// Text held either as a static borrow or as an owned string.
+    /// Text stored as either a static borrow or an owned string.
     Text(Cow<'static, str>),
-    /// Text held by an atomically reference-counted string slice.
+    /// Text stored in an atomically reference-counted string slice.
     ArcStr(Arc<str>),
-    /// Secret text held by value.
+    /// Secret text stored by value using `secrecy` 0.8.
     #[cfg(feature = "secrecy-08")]
     Secrecy08(secrecy_08::SecretString),
-    /// Secret text held by value using secrecy 0.10.
+    /// Secret text stored by value using `secrecy` 0.10.
     #[cfg(feature = "secrecy-10")]
     Secrecy10(secrecy_10::SecretString),
 }
 
-/// Blob values supported by a native ScyllaDB argument.
+/// Binary values supported by a native ScyllaDB argument.
 pub enum ScyllaDBArgumentNativeBlob {
     /// `blob` type.
     Blob(Vec<u8>),
-    /// `blob` type held by reference-counted bytes.
+    /// A `blob` value stored in reference-counted bytes.
     #[cfg(feature = "bytes-1")]
     Bytes(bytes::Bytes),
     /// Secret `blob` type.
@@ -130,7 +130,8 @@ pub enum ScyllaDBArgumentNativeBlob {
     Secrecy10(secrecy_10::SecretBox<Vec<u8>>),
 }
 
-/// Decimal values supported by a native ScyllaDB argument.
+/// Decimal values supported by a native ScyllaDB argument when the
+/// `bigdecimal-04` feature is enabled.
 #[cfg(feature = "bigdecimal-04")]
 pub enum ScyllaDBArgumentNativeDecimal {
     /// `decimal` type.
@@ -141,10 +142,10 @@ pub enum ScyllaDBArgumentNativeDecimal {
 pub enum ScyllaDBArgumentNativeTimestamp {
     /// ScyllaDB timestamp.
     Timestamp(CqlTimestamp),
-    /// `time` crate timestamp.
+    /// A timestamp represented by the `time` crate.
     #[cfg(feature = "time-03")]
     Time03(time_03::OffsetDateTime),
-    /// `chrono` crate timestamp.
+    /// A timestamp represented by the `chrono` crate.
     #[cfg(feature = "chrono-04")]
     Chrono04(chrono_04::DateTime<chrono_04::Utc>),
 }
@@ -153,10 +154,10 @@ pub enum ScyllaDBArgumentNativeTimestamp {
 pub enum ScyllaDBArgumentNativeDate {
     /// ScyllaDB date.
     Date(CqlDate),
-    /// `time` crate date.
+    /// A date represented by the `time` crate.
     #[cfg(feature = "time-03")]
     Time03(time_03::Date),
-    /// `chrono` crate date.
+    /// A date represented by the `chrono` crate.
     #[cfg(feature = "chrono-04")]
     Chrono04(chrono_04::NaiveDate),
 }
@@ -165,19 +166,19 @@ pub enum ScyllaDBArgumentNativeDate {
 pub enum ScyllaDBArgumentNativeTime {
     /// ScyllaDB time.
     Time(CqlTime),
-    /// `time` crate time.
+    /// A time represented by the `time` crate.
     #[cfg(feature = "time-03")]
     Time03(time_03::Time),
-    /// `chrono` crate time.
+    /// A time represented by the `chrono` crate.
     #[cfg(feature = "chrono-04")]
     Chrono04(chrono_04::NaiveTime),
 }
 
-/// Text array values supported by a native ScyllaDB argument.
+/// Arrays of text or ASCII values supported by a native ScyllaDB argument.
 pub enum ScyllaDBArgumentNativeArrayText {
-    /// array of `text` or `ascii` type.
+    /// An array of `text` or `ascii` values.
     Text(Vec<String>),
-    /// secret array of `text` or `ascii` type.
+    /// A secret array of `text` or `ascii` values using `secrecy` 0.8.
     #[cfg(feature = "secrecy-08")]
     Secrecy08(Vec<secrecy_08::SecretString>),
     /// Secret text array using secrecy 0.10.
@@ -185,14 +186,14 @@ pub enum ScyllaDBArgumentNativeArrayText {
     Secrecy10(Vec<secrecy_10::SecretString>),
 }
 
-/// Blob array values supported by a native ScyllaDB argument.
+/// Arrays of binary values supported by a native ScyllaDB argument.
 pub enum ScyllaDBArgumentNativeArrayBlob {
-    /// array of `blob` type.
+    /// An array of `blob` values.
     Blob(Vec<Vec<u8>>),
-    /// array of `blob` values held by reference-counted bytes.
+    /// An array of `blob` values stored in reference-counted bytes.
     #[cfg(feature = "bytes-1")]
     Bytes(Vec<bytes::Bytes>),
-    /// secret array of `blob` type.
+    /// A secret array of `blob` values using `secrecy` 0.8.
     #[cfg(feature = "secrecy-08")]
     Secrecy08(Vec<secrecy_08::SecretVec<u8>>),
     /// Secret `blob` array using secrecy 0.10.
@@ -200,50 +201,50 @@ pub enum ScyllaDBArgumentNativeArrayBlob {
     Secrecy10(Vec<secrecy_10::SecretBox<Vec<u8>>>),
 }
 
-/// Decimal array values supported by a native ScyllaDB argument.
+/// Arrays of decimal values supported by a native ScyllaDB argument.
 #[cfg(feature = "bigdecimal-04")]
 pub enum ScyllaDBArgumentNativeArrayDecimal {
-    /// array of `decimal` type.
+    /// An array of `decimal` values.
     Decimal(Vec<bigdecimal_04::BigDecimal>),
 }
 
-/// Timestamp array values supported by a native ScyllaDB argument.
+/// Arrays of timestamp values supported by a native ScyllaDB argument.
 pub enum ScyllaDBArgumentNativeArrayTimestamp {
-    /// array of `timestamp` type.
+    /// An array of `timestamp` values.
     Timestamp(Vec<CqlTimestamp>),
-    /// array of `timestamp` type implemented with [time_03] crate.
+    /// An array of timestamps represented by the [`time_03`] crate.
     #[cfg(feature = "time-03")]
     Time03(Vec<time_03::OffsetDateTime>),
-    /// array of `timestamp` type implemented with [chrono_04] crate.
+    /// An array of timestamps represented by the [`chrono_04`] crate.
     #[cfg(feature = "chrono-04")]
     Chrono04(Vec<chrono_04::DateTime<chrono_04::Utc>>),
 }
 
-/// Date array values supported by a native ScyllaDB argument.
+/// Arrays of date values supported by a native ScyllaDB argument.
 pub enum ScyllaDBArgumentNativeArrayDate {
-    /// array of `date` type.
+    /// An array of `date` values.
     Date(Vec<CqlDate>),
-    /// array of `date` type implemented with [time_03] crate.
+    /// An array of dates represented by the [`time_03`] crate.
     #[cfg(feature = "time-03")]
     Time03(Vec<time_03::Date>),
-    /// array of `date` type implemented with [chrono_04] crate.
+    /// An array of dates represented by the [`chrono_04`] crate.
     #[cfg(feature = "chrono-04")]
     Chrono04(Vec<chrono_04::NaiveDate>),
 }
 
-/// Time array values supported by a native ScyllaDB argument.
+/// Arrays of time values supported by a native ScyllaDB argument.
 pub enum ScyllaDBArgumentNativeArrayTime {
-    /// array of `time` type.
+    /// An array of `time` values.
     Time(Vec<CqlTime>),
-    /// array of `time` type implemented with [time_03] crate.
+    /// An array of times represented by the [`time_03`] crate.
     #[cfg(feature = "time-03")]
     Time03(Vec<time_03::Time>),
-    /// array of `time` type implemented with [chrono_04] crate.
+    /// An array of times represented by the [`chrono_04`] crate.
     #[cfg(feature = "chrono-04")]
     Chrono04(Vec<chrono_04::NaiveTime>),
 }
 
-/// A native ScyllaDB value that can be handled by scylla-rust-driver.
+/// A native ScyllaDB value that can be serialized by the scylla-rust-driver.
 pub enum ScyllaDBArgumentNative {
     /// `boolean` type.
     Boolean(bool),
@@ -282,62 +283,62 @@ pub enum ScyllaDBArgumentNative {
     Time(ScyllaDBArgumentNativeTime),
 }
 
-/// An array of native ScyllaDB values.
+/// An array of values with the same native ScyllaDB element type.
 pub enum ScyllaDBArgumentNativeArray {
-    /// array of `boolean` type.
+    /// An array of `boolean` values.
     Boolean(Vec<bool>),
-    /// array of `tinyint` type.
+    /// An array of `tinyint` values.
     TinyInt(Vec<i8>),
-    /// array of `smallint` type.
+    /// An array of `smallint` values.
     SmallInt(Vec<i16>),
-    /// array of `int` type.
+    /// An array of `int` values.
     Int(Vec<i32>),
-    /// array of `bigint` type.
+    /// An array of `bigint` values.
     BigInt(Vec<i64>),
-    /// array of `float` type.
+    /// An array of `float` values.
     Float(Vec<f32>),
-    /// array of `double` type.
+    /// An array of `double` values.
     Double(Vec<f64>),
-    /// array of `text` or `ascii` type.
+    /// An array of `text` or `ascii` values.
     Text(ScyllaDBArgumentNativeArrayText),
-    /// array of `blob` type.
+    /// An array of `blob` values.
     Blob(ScyllaDBArgumentNativeArrayBlob),
-    /// array of `uuid` type.
+    /// An array of `uuid` values.
     Uuid(Vec<Uuid>),
-    /// array of `timeuuid` type.
+    /// An array of `timeuuid` values.
     Timeuuid(Vec<CqlTimeuuid>),
-    /// array of `inet` type.
+    /// An array of `inet` values.
     Inet(Vec<IpAddr>),
-    /// array of `duration` type.
+    /// An array of `duration` values.
     Duration(Vec<CqlDuration>),
-    /// array of `decimal` type.
+    /// An array of `decimal` values.
     #[cfg(feature = "bigdecimal-04")]
     Decimal(ScyllaDBArgumentNativeArrayDecimal),
-    /// array of `timestamp` type.
+    /// An array of `timestamp` values.
     Timestamp(ScyllaDBArgumentNativeArrayTimestamp),
-    /// array of `date` type.
+    /// An array of `date` values.
     Date(ScyllaDBArgumentNativeArrayDate),
-    /// array of `time` type.
+    /// An array of `time` values.
     Time(ScyllaDBArgumentNativeArrayTime),
 }
 
-/// The enum of data types that can be handled by scylla-rust-driver.
+/// A value that can be serialized for a ScyllaDB statement.
 pub enum ScyllaDBArgument {
-    /// Internally used NULL.
+    /// An internal representation of a SQL `NULL` value.
     Null,
-    /// Internally used Unset.
+    /// An internal representation of an unset value.
     Unset,
     /// A native ScyllaDB value.
     Native(ScyllaDBArgumentNative),
     /// An array of native ScyllaDB values.
     NativeArray(ScyllaDBArgumentNativeArray),
-    /// any map type.
+    /// A map value of any supported key and value types.
     Map(Box<dyn SerializeValue + Send + Sync>),
-    /// any tuple type.
+    /// A tuple value of any supported element types.
     Tuple(Box<dyn SerializeValue + Send + Sync>),
-    /// user-defined type.
+    /// A ScyllaDB user-defined type value.
     UserDefinedType(Box<dyn SerializeValue + Send + Sync>),
-    /// array of user-defined type.
+    /// An array of ScyllaDB user-defined type values.
     UserDefinedTypeArray(Box<dyn SerializeValue + Send + Sync>),
 }
 

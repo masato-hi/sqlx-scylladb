@@ -2,7 +2,8 @@ use sqlx_core::{type_info::TypeInfo, types::Type};
 
 use crate::{ScyllaDB, ScyllaDBTypeInfo};
 
-/// Provides information necessary to encode and decode ScyllaDB arrays as compatible Rust types.
+/// Provides the type information required to encode and decode ScyllaDB arrays
+/// as compatible Rust types.
 pub trait ScyllaDBHasArrayType {
     #![allow(missing_docs)]
     fn array_type_info() -> ScyllaDBTypeInfo;

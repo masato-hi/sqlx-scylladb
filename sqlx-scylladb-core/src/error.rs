@@ -12,62 +12,62 @@ use sqlx_core::error::{DatabaseError, ErrorKind};
 use sqlx_core::ext::ustr::UStr;
 use thiserror::Error;
 
-/// Represents all the ways a method can fail within ScyllaDB.
+/// Errors that can occur while using the ScyllaDB driver.
 #[derive(Debug, Error)]
 #[error(transparent)]
 pub enum ScyllaDBError {
-    /// There is an error in the options.
+    /// The connection or migration options are invalid.
     #[error("Configuration error. {0}")]
     ConfigurationError(String),
-    /// Error occurred while creating the session.
+    /// An error occurred while creating the ScyllaDB session.
     NewSessionError(#[from] NewSessionError),
-    /// There is an error in the specified keyspace.
+    /// An error occurred while selecting the specified keyspace.
     UseKeyspaceError(#[from] UseKeyspaceError),
-    /// Error occurred while preparing the statement.
+    /// An error occurred while preparing a statement.
     PrepareError(#[from] PrepareError),
-    /// Error occurred while converting to rows result.
+    /// An error occurred while converting a response into rows.
     IntoRowsResultError(#[from] IntoRowsResultError),
-    /// Error occurred while retrieving the row.
+    /// An error occurred while retrieving rows.
     RowsError(#[from] RowsError),
-    /// Error occurred while type checking.
+    /// An error occurred during type checking.
     TypeCheckError(#[from] TypeCheckError),
-    /// Error occurred while serialization.
+    /// An error occurred while serializing a value.
     SerializationError(#[from] SerializationError),
-    /// Error occurred while deserialization.
+    /// An error occurred while deserializing a value.
     DeserializationError(#[from] DeserializationError),
-    /// Error occurred while execution.
+    /// An error occurred while executing a statement.
     ExecutionError(#[from] ExecutionError),
-    /// Error occurred while pagination.
+    /// An error occurred while fetching a subsequent page.
     PagerExecutionError(#[from] PagerExecutionError),
-    /// Transaction is not started.
+    /// An operation requiring an active transaction was requested without one.
     #[error("Transaction is not started.")]
     TransactionNotStarted,
-    /// Attempted to retrieve data exceeding the number of columns.
+    /// A column index was outside the bounds of the row.
     #[error("Column index out of bounds. the len is {len}, but the index is {index}")]
     ColumnIndexOutOfBounds {
-        /// index.
+        /// The requested column index.
         index: usize,
-        /// total size.
+        /// The number of columns in the row.
         len: usize,
     },
-    /// Column types do not match.
+    /// The expected and actual column types do not match.
     #[error("Column type is mismatched. expect: {expect:?}, actual: {actual:?}")]
     ColumnTypeError {
-        /// expected column type.
+        /// The expected column type.
         expect: ColumnType<'static>,
-        /// actual column type.
+        /// The actual column type.
         actual: ColumnType<'static>,
     },
     /// Failed to acquire migration lock.
     #[error("Failed to acquire migration lock.")]
     MigrationLockError,
-    /// Column types do not match.
+    /// A column type does not match the type required by the operation.
     #[error("Mismatched column type {0}: {1:?}..")]
     MismatchedColumnTypeError(UStr, ColumnType<'static>),
     /// This column type is not supported.
     #[error("Column type '{0:?}' is not supported.")]
     ColumnTypeNotSupportedError(ColumnType<'static>),
-    /// The value is null.
+    /// A non-null value was required, but the column contained `NULL`.
     #[error("{0:?} is null.")]
     NullValueError(UStr),
     /// Failed to acquire exclusive lock.

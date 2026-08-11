@@ -1,3 +1,3 @@
 # sqlx-scylladb-macros-core
 
-Implementation of sqlx-scylladb macros.
+Procedural macros used by `sqlx-scylladb`.

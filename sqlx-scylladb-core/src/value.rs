@@ -12,7 +12,7 @@ use sqlx_core::{
 
 use crate::{ScyllaDB, ScyllaDBError, ScyllaDBTypeInfo};
 
-/// Implementation of [sqlx::Value] for ScyllaDB.
+/// An owned ScyllaDB value returned from a row.
 #[derive(Debug, Clone)]
 pub struct ScyllaDBValue {
     column_name: UStr,
@@ -42,7 +42,7 @@ impl Value for ScyllaDBValue {
     }
 }
 
-/// Implementation of [sqlx::ValueRef] for ScyllaDB.
+/// A borrowed view of a ScyllaDB value returned from a row.
 #[derive(Debug, Clone)]
 pub struct ScyllaDBValueRef<'r> {
     column_name: UStr,
@@ -82,19 +82,19 @@ impl<'r> ScyllaDBValueRef<'r> {
         self.type_info == ScyllaDBTypeInfo::Null
     }
 
-    /// Return the column name.
+    /// Returns the name of the column containing this value.
     #[inline(always)]
     pub fn column_name(&self) -> UStr {
         self.column_name.clone()
     }
 
-    /// Return the scylladb column type.
+    /// Returns the ScyllaDB type of the column containing this value.
     #[inline(always)]
     pub fn column_type(&self) -> ColumnType<'static> {
         self.column_type.clone().into_owned()
     }
 
-    /// Deserialize the response data from scylladb.
+    /// Deserializes the value into the requested Rust type.
     #[inline(always)]
     pub fn deserialize<T>(&self) -> Result<T, ScyllaDBError>
     where

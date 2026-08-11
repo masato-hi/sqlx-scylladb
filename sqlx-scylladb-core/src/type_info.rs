@@ -5,7 +5,7 @@ use sqlx_core::{ext::ustr::UStr, type_info::TypeInfo};
 
 use crate::ScyllaDBError;
 
-/// A native ScyllaDB type.
+/// A native ScyllaDB column type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ScyllaDBTypeInfoNative {
     /// `ascii` type.
@@ -46,12 +46,12 @@ pub enum ScyllaDBTypeInfoNative {
     Timeuuid,
     /// `uuid` type.
     Uuid,
-    /// `variant` type.
+    /// The `variant` type.
     Variant,
 }
 
 impl ScyllaDBTypeInfoNative {
-    /// Returns the ScyllaDB type name.
+    /// Returns the canonical ScyllaDB name for this type.
     pub fn name(self) -> &'static str {
         match self {
             Self::Ascii => "ASCII",
@@ -78,49 +78,49 @@ impl ScyllaDBTypeInfoNative {
     }
 }
 
-/// An array of a native ScyllaDB type.
+/// A collection type representing an array of a native ScyllaDB type.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ScyllaDBTypeInfoNativeArray {
-    /// array of `ascii` type.
+    /// An array of `ascii` values.
     Ascii,
-    /// array of `boolean` type.
+    /// An array of `boolean` values.
     Boolean,
-    /// array of `blob` type.
+    /// An array of `blob` values.
     Blob,
-    /// array of `decimal` type.
+    /// An array of `decimal` values.
     Decimal,
-    /// array of `date` type.
+    /// An array of `date` values.
     Date,
-    /// array of `double` type.
+    /// An array of `double` values.
     Double,
-    /// array of `duration` type.
+    /// An array of `duration` values.
     Duration,
-    /// array of `float` type.
+    /// An array of `float` values.
     Float,
-    /// array of `int` type.
+    /// An array of `int` values.
     Int,
-    /// array of `bigint` type.
+    /// An array of `bigint` values.
     BigInt,
-    /// array of `text` type.
+    /// An array of `text` values.
     Text,
-    /// array of `timestamp` type.
+    /// An array of `timestamp` values.
     Timestamp,
-    /// array of `inet` type.
+    /// An array of `inet` values.
     Inet,
-    /// array of `smallint` type.
+    /// An array of `smallint` values.
     SmallInt,
-    /// array of `tinyint` type.
+    /// An array of `tinyint` values.
     TinyInt,
-    /// array of `time` type.
+    /// An array of `time` values.
     Time,
-    /// array of `timeuuid` type.
+    /// An array of `timeuuid` values.
     Timeuuid,
-    /// array of `uuid` type.
+    /// An array of `uuid` values.
     Uuid,
 }
 
 impl ScyllaDBTypeInfoNativeArray {
-    /// Returns the ScyllaDB array type name.
+    /// Returns the canonical ScyllaDB name for this array type.
     pub fn name(self) -> &'static str {
         match self {
             Self::Ascii => "ASCII[]",
@@ -145,24 +145,24 @@ impl ScyllaDBTypeInfoNativeArray {
     }
 }
 
-/// The enum for the supported type.
+/// Type information for values supported by this driver.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum ScyllaDBTypeInfo {
     /// A native type.
     Native(ScyllaDBTypeInfoNative),
     /// An array of a native type.
     NativeArray(ScyllaDBTypeInfoNativeArray),
-    /// NULL type.
+    /// The SQL `NULL` type used internally for null values.
     Null,
-    /// Unset type.
+    /// The unset type used internally for unset values.
     Unset,
-    /// Any tuple type.
+    /// A map type identified by its ScyllaDB type name.
     Map(UStr),
-    /// Any tuple type.
+    /// A tuple type identified by its ScyllaDB type name.
     Tuple(UStr),
-    /// user-defined type.
+    /// A user-defined type identified by its ScyllaDB type name.
     UserDefinedType(UStr),
-    /// array of user-defined type.
+    /// An array of user-defined types identified by its ScyllaDB type name.
     UserDefinedTypeArray(UStr),
 }
 

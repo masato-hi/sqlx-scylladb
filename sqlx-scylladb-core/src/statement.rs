@@ -8,7 +8,7 @@ use sqlx_core::{
 
 use crate::{ScyllaDB, ScyllaDBArguments, ScyllaDBColumn, ScyllaDBError, ScyllaDBTypeInfo};
 
-/// Implementation of [sqlx::Statement] for ScyllaDB.
+/// A prepared ScyllaDB statement exposed through the sqlx interface.
 #[derive(Clone)]
 pub struct ScyllaDBStatement {
     pub(crate) sql: SqlStr,

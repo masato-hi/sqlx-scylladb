@@ -2,7 +2,7 @@ use sqlx_core::{error::Error, sql_str::SqlStr, transaction::TransactionManager};
 
 use crate::{ScyllaDB, ScyllaDBConnection};
 
-/// Implementation of [sqlx::TransactionManager] for ScyllaDB.
+/// The sqlx transaction manager implementation for ScyllaDB.
 pub struct ScyllaDBTransactionManager {}
 
 impl TransactionManager for ScyllaDBTransactionManager {

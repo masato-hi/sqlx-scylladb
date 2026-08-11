@@ -56,20 +56,20 @@ pub use types::array::ScyllaDBHasArrayType;
 pub use types::user_defined_type::UserDefinedType;
 pub use value::{ScyllaDBValue, ScyllaDBValueRef};
 
-/// An alias for [sqlx::Pool], specialized for ScyllaDB.
+/// A type alias for `sqlx::Pool` specialized for ScyllaDB.
 pub type ScyllaDBPool = Pool<ScyllaDB>;
 
-/// An alias for [sqlx::pool::PoolOptions], specialized for ScyllaDB.
+/// A type alias for `sqlx::pool::PoolOptions` specialized for ScyllaDB.
 pub type ScyllaDBPoolOptions = PoolOptions<ScyllaDB>;
 
-/// An alias for [`sqlx::Executor<'_, Database = ScyllaDB>`][sqlx::Executor].
+/// A convenience trait for `sqlx::Executor` implementations that use ScyllaDB.
 pub trait ScyllaDBExecutor<'c>: Executor<'c, Database = ScyllaDB> {}
 impl<'c, T: Executor<'c, Database = ScyllaDB>> ScyllaDBExecutor<'c> for T {}
 
-/// An alias for [`sqlx::Transaction<'_, ScyllaDB>`][sqlx::Transaction].
+/// A type alias for `sqlx::Transaction` specialized for ScyllaDB.
 pub type ScyllaDBTransaction<'c> = Transaction<'c, ScyllaDB>;
 
-/// An alias for [`sqlx::Type<ScyllaDB>`][sqlx::Type].
+/// A convenience trait for types that implement `sqlx::Type` for ScyllaDB.
 pub trait ScyllaDBType: sqlx_core::types::Type<ScyllaDB> {}
 
 impl_into_arguments_for_arguments!(ScyllaDBArguments);
