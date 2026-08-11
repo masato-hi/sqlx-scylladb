@@ -1,0 +1,9 @@
+# sqlx-scylladb-macros-core
+
+Copyright 2025 masato-hi
+
+This project is based on sqlx-cli
+(<https://github.com/transact-rs/sqlx/tree/main/sqlx-macros-core>).
+Copyright 2020 LaunchBadge, LLC.
+
+* The FromRow derive macro supports the standard sqlx macro attributes and adds support for the `default_when_null` field attribute.

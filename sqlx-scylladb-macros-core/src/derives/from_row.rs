@@ -1,3 +1,13 @@
+//! Implementation of the `FromRow` derive macro.
+//!
+//! This derive supports the field and container attributes provided by the
+//! standard SQLx `FromRow` derive macro, including `rename`, `rename_all`,
+//! `default`, `flatten`, `try_from`, `json`, and `skip`.
+//!
+//! In addition, fields can use `#[sqlx(default_when_null)]`. When the value
+//! of such a field is `NULL`, it is replaced with `Default::default()` for
+//! the field's type. The field type must therefore implement `Default`.
+
 use proc_macro2::{Span, TokenStream};
 use quote::quote;
 use syn::{

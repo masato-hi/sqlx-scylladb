@@ -1,3 +1,13 @@
+//! Implementation of the `UserDefinedType` derive macro.
+//!
+//! This derive enables a Rust struct to be bound to and fetched from a
+//! ScyllaDB user-defined type. It implements the type metadata, encoding, and
+//! decoding required by SQLx, including support for collections of the type.
+//!
+//! By default, the ScyllaDB type name is derived from the Rust struct name by
+//! converting it to snake case. Use `#[user_defined_type(name = "...")]` to
+//! specify a different type name.
+
 use convert_case::{Case, Casing};
 use darling::FromDeriveInput;
 use proc_macro2::TokenStream;

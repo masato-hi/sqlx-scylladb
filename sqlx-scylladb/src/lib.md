@@ -1,6 +1,6 @@
 # sqlx-scylladb
 
-A ScyllaDB database driver for the Rust [sqlx](https://github.com/launchbadge/sqlx) framework.
+A ScyllaDB database driver for the Rust [sqlx](https://github.com/transact-rs/sqlx) framework.
 
 This crate adapts the [scylla-rust-driver](https://github.com/scylladb/scylla-rust-driver) to the sqlx interface.
 
