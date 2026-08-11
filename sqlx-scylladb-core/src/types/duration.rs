@@ -2,19 +2,19 @@ use scylla::value::CqlDuration;
 
 use crate::{
     ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
-    arguments::ScyllaDBArgument,
+    arguments::{ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray},
 };
 
 impl_native_type!(
     CqlDuration,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Duration),
-    ScyllaDBArgument::Duration
+    ScyllaDBArgumentNative::Duration
 );
 
 impl_native_array_type!(
     CqlDuration,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Duration),
-    ScyllaDBArgument::DurationArray
+    ScyllaDBArgumentNativeArray::Duration
 );
 
 #[cfg(test)]
@@ -28,9 +28,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_duration() -> Result<(), BoxDynError> {

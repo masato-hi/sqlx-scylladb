@@ -1,30 +1,30 @@
 use crate::{
     ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
-    arguments::ScyllaDBArgument,
+    arguments::{ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray},
 };
 
 impl_native_type!(
     f32,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Float),
-    ScyllaDBArgument::Float
+    ScyllaDBArgumentNative::Float
 );
 
 impl_native_array_type!(
     f32,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Float),
-    ScyllaDBArgument::FloatArray
+    ScyllaDBArgumentNativeArray::Float
 );
 
 impl_native_type!(
     f64,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Double),
-    ScyllaDBArgument::Double
+    ScyllaDBArgumentNative::Double
 );
 
 impl_native_array_type!(
     f64,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Double),
-    ScyllaDBArgument::DoubleArray
+    ScyllaDBArgumentNativeArray::Double
 );
 
 #[cfg(test)]
@@ -35,9 +35,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_float() -> Result<(), BoxDynError> {

@@ -10,7 +10,9 @@ use sqlx_core::{
 use crate::{
     ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
     ScyllaDBValueRef,
-    arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer},
+    arguments::{
+        ScyllaDBArgumentBuffer, ScyllaDBArgumentNativeArrayBlob, ScyllaDBArgumentNativeBlob,
+    },
 };
 
 impl<const N: usize> Type<ScyllaDB> for [u8; N] {
@@ -46,7 +48,7 @@ impl<const N: usize> Encode<'_, ScyllaDB> for [u8; N] {
 
 impl Encode<'_, ScyllaDB> for [u8] {
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Blob(self.to_vec());
+        let argument = ScyllaDBArgumentNativeBlob::Blob(self.to_vec()).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -73,7 +75,7 @@ impl Encode<'_, ScyllaDB> for Arc<[u8]> {
 
 impl Encode<'_, ScyllaDB> for Vec<u8> {
     fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        buf.push(ScyllaDBArgument::Blob(self));
+        buf.push(ScyllaDBArgumentNativeBlob::Blob(self).into());
         Ok(IsNull::No)
     }
 
@@ -119,7 +121,7 @@ impl<const N: usize> Encode<'_, ScyllaDB> for [[u8; N]] {
         for blob in self.iter() {
             blobs.push(blob.to_vec());
         }
-        let argument = ScyllaDBArgument::BlobArray(blobs);
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(blobs).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -150,7 +152,7 @@ impl<const N: usize> Encode<'_, ScyllaDB> for [&[u8]; N] {
         for blob in self.iter() {
             blobs.push(blob.to_vec());
         }
-        let argument = ScyllaDBArgument::BlobArray(blobs);
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(blobs).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -163,7 +165,7 @@ impl Encode<'_, ScyllaDB> for [&[u8]] {
         for blob in self.iter() {
             blobs.push(blob.to_vec());
         }
-        let argument = ScyllaDBArgument::BlobArray(blobs);
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(blobs).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -200,7 +202,7 @@ impl Encode<'_, ScyllaDB> for [Vec<u8>] {
         for blob in self.iter() {
             blobs.push(blob.to_vec());
         }
-        let argument = ScyllaDBArgument::BlobArray(blobs);
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(blobs).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -227,12 +229,12 @@ impl Encode<'_, ScyllaDB> for &[Vec<u8>] {
 
 impl Encode<'_, ScyllaDB> for Vec<Vec<u8>> {
     fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        buf.push(ScyllaDBArgument::BlobArray(self));
+        buf.push(ScyllaDBArgumentNativeArrayBlob::Blob(self).into());
         Ok(IsNull::No)
     }
 
     fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::BlobArray(self.clone());
+        let argument = ScyllaDBArgumentNativeArrayBlob::Blob(self.clone()).into();
         buf.push(argument);
 
         Ok(IsNull::No)
@@ -252,7 +254,9 @@ mod secrecy {
     use crate::{
         ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
         ScyllaDBValueRef,
-        arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer},
+        arguments::{
+            ScyllaDBArgumentBuffer, ScyllaDBArgumentNativeArrayBlob, ScyllaDBArgumentNativeBlob,
+        },
     };
 
     impl Type<ScyllaDB> for SecretVec<u8> {
@@ -274,7 +278,7 @@ mod secrecy {
 
             let value = self.expose_secret().to_vec();
             let value = SecretVec::new(value);
-            let argument = ScyllaDBArgument::Blob_Secrecy08(value);
+            let argument = ScyllaDBArgumentNativeBlob::Secrecy08(value).into();
             buf.push(argument);
 
             Ok(IsNull::No)
@@ -322,7 +326,7 @@ mod secrecy {
                 let item = SecretVec::new(value.to_vec());
                 items.push(item);
             }
-            let argument = ScyllaDBArgument::BlobArray_Secrecy08(items);
+            let argument = ScyllaDBArgumentNativeArrayBlob::Secrecy08(items).into();
             buf.push(argument);
 
             Ok(IsNull::No)

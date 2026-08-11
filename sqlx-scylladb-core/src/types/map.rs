@@ -4,9 +4,9 @@ use std::{
     sync::{LazyLock, RwLock},
 };
 
+use rustc_hash::FxHashMap;
 use scylla::cluster::metadata::ColumnType;
 use scylla::{deserialize::value::DeserializeValue, serialize::value::SerializeValue};
-use rustc_hash::FxHashMap;
 use sqlx_core::{
     decode::Decode, encode::Encode, ext::ustr::UStr, type_info::TypeInfo, types::Type,
 };

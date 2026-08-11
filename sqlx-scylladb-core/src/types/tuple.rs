@@ -3,8 +3,8 @@ use std::{
     sync::{LazyLock, RwLock},
 };
 
-use scylla::cluster::metadata::ColumnType;
 use rustc_hash::FxHashMap;
+use scylla::cluster::metadata::ColumnType;
 use sqlx_core::{ext::ustr::UStr, type_info::TypeInfo};
 
 use crate::{ScyllaDBError, ScyllaDBTypeInfo};

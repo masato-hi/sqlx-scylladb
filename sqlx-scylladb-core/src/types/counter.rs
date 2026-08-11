@@ -25,9 +25,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBValueRef, types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_decode_counter() -> Result<(), BoxDynError> {

@@ -3,8 +3,8 @@ use std::{borrow::Cow, sync::Arc};
 use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, types::Type};
 
 use crate::{
-    ScyllaDB, ScyllaDBArgument, ScyllaDBHasArrayType, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-    ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef,
+    ScyllaDB, ScyllaDBArgumentNativeArrayText, ScyllaDBArgumentNativeText, ScyllaDBHasArrayType,
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef,
 };
 
 impl Decode<'_, ScyllaDB> for String {
@@ -32,7 +32,7 @@ impl Encode<'_, ScyllaDB> for &str {
         &self,
         buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Cow::Owned(self.to_string()));
+        let argument = ScyllaDBArgumentNativeText::Text(Cow::Owned(self.to_string())).into();
         buf.push(argument);
 
         Ok(sqlx_core::encode::IsNull::No)
@@ -50,7 +50,7 @@ impl Encode<'_, ScyllaDB> for Cow<'static, str> {
         self,
         buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(self);
+        let argument = ScyllaDBArgumentNativeText::Text(self).into();
         buf.push(argument);
         Ok(sqlx_core::encode::IsNull::No)
     }
@@ -74,7 +74,7 @@ impl Encode<'_, ScyllaDB> for String {
         self,
         buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text(Cow::Owned(self));
+        let argument = ScyllaDBArgumentNativeText::Text(Cow::Owned(self)).into();
         buf.push(argument);
         Ok(sqlx_core::encode::IsNull::No)
     }
@@ -98,7 +98,7 @@ impl Encode<'_, ScyllaDB> for Arc<str> {
         self,
         buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text_ArcStr(self);
+        let argument = ScyllaDBArgumentNativeText::ArcStr(self).into();
         buf.push(argument);
         Ok(sqlx_core::encode::IsNull::No)
     }
@@ -107,7 +107,7 @@ impl Encode<'_, ScyllaDB> for Arc<str> {
         &self,
         buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
-        let argument = ScyllaDBArgument::Text_ArcStr(self.clone());
+        let argument = ScyllaDBArgumentNativeText::ArcStr(self.clone()).into();
         buf.push(argument);
         Ok(sqlx_core::encode::IsNull::No)
     }
@@ -124,11 +124,7 @@ impl Encode<'_, ScyllaDB> for Vec<String> {
         self,
         buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
-        let strings = self
-            .into_iter()
-            .map(crate::types::IntoScyllaText::into_scylla_text)
-            .collect();
-        let argument = ScyllaDBArgument::TextArray(strings);
+        let argument = ScyllaDBArgumentNativeArrayText::Text(self).into();
         buf.push(argument);
         Ok(sqlx_core::encode::IsNull::No)
     }
@@ -154,7 +150,7 @@ impl Encode<'_, ScyllaDB> for [&'static str] {
         buf: &mut <ScyllaDB as sqlx_core::database::Database>::ArgumentBuffer,
     ) -> Result<sqlx_core::encode::IsNull, BoxDynError> {
         let strings = self.iter().map(|value| (*value).to_owned()).collect();
-        let argument = ScyllaDBArgument::TextArray(strings);
+        let argument = ScyllaDBArgumentNativeArrayText::Text(strings).into();
         buf.push(argument);
         Ok(sqlx_core::encode::IsNull::No)
     }
@@ -191,7 +187,9 @@ pub mod secrecy {
     use crate::{
         ScyllaDB, ScyllaDBHasArrayType, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
         ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef,
-        arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer},
+        arguments::{
+            ScyllaDBArgumentBuffer, ScyllaDBArgumentNativeArrayText, ScyllaDBArgumentNativeText,
+        },
     };
 
     impl Type<ScyllaDB> for SecretString {
@@ -222,7 +220,7 @@ pub mod secrecy {
 
     impl Encode<'_, ScyllaDB> for SecretString {
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
-            let argument = ScyllaDBArgument::Text_Secrecy08(self.clone());
+            let argument = ScyllaDBArgumentNativeText::Secrecy08(self.clone()).into();
             buf.push(argument);
 
             Ok(IsNull::No)
@@ -245,7 +243,7 @@ pub mod secrecy {
                 let value = SecretString::new(value.to_string());
                 strings.push(value);
             }
-            let argument = ScyllaDBArgument::TextArray_Secrecy08(strings);
+            let argument = ScyllaDBArgumentNativeArrayText::Secrecy08(strings).into();
             buf.push(argument);
 
             Ok(IsNull::No)

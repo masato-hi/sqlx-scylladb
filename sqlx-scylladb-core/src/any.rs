@@ -19,7 +19,8 @@ use sqlx_core::{
 };
 
 use crate::{
-    ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArguments, ScyllaDBColumn,
+    ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArgumentNative,
+    ScyllaDBArgumentNativeBlob, ScyllaDBArgumentNativeText, ScyllaDBArguments, ScyllaDBColumn,
     ScyllaDBConnectOptions, ScyllaDBConnection, ScyllaDBQueryResult, ScyllaDBRow,
     ScyllaDBTransactionManager, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
 };
@@ -255,35 +256,39 @@ fn map_arguments(args: AnyArguments) -> ScyllaDBArguments {
             AnyValueKind::Null(_) => (ScyllaDBTypeInfo::Null, ScyllaDBArgument::Null),
             AnyValueKind::Bool(b) => (
                 ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Boolean),
-                ScyllaDBArgument::Boolean(b),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Boolean(b)),
             ),
             AnyValueKind::SmallInt(i) => (
                 ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::SmallInt),
-                ScyllaDBArgument::SmallInt(i),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::SmallInt(i)),
             ),
             AnyValueKind::Integer(i) => (
                 ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Int),
-                ScyllaDBArgument::Int(i),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Int(i)),
             ),
             AnyValueKind::BigInt(i) => (
                 ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::BigInt),
-                ScyllaDBArgument::BigInt(i),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::BigInt(i)),
             ),
             AnyValueKind::Real(r) => (
                 ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Float),
-                ScyllaDBArgument::Float(r),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Float(r)),
             ),
             AnyValueKind::Double(d) => (
                 ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Double),
-                ScyllaDBArgument::Double(d),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Double(d)),
             ),
             AnyValueKind::Text(t) => (
                 ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text),
-                ScyllaDBArgument::Text(std::borrow::Cow::Owned(t.to_string())),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Text(
+                    ScyllaDBArgumentNativeText::Text(std::borrow::Cow::Owned(t.to_string())),
+                )),
             ),
             AnyValueKind::Blob(b) => (
                 ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob),
-                ScyllaDBArgument::Blob(b.to_vec()),
+                ScyllaDBArgument::Native(ScyllaDBArgumentNative::Blob(
+                    ScyllaDBArgumentNativeBlob::Blob(b.to_vec()),
+                )),
             ),
             // AnyValueKind is `#[non_exhaustive]` but we should have covered everything
             _ => unreachable!("BUG: missing mapping for {val:?}"),

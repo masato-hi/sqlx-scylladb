@@ -1,18 +1,18 @@
 use crate::{
     ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
-    arguments::ScyllaDBArgument,
+    arguments::{ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray},
 };
 
 impl_native_type!(
     bool,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Boolean),
-    ScyllaDBArgument::Boolean
+    ScyllaDBArgumentNative::Boolean
 );
 
 impl_native_array_type!(
     bool,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Boolean),
-    ScyllaDBArgument::BooleanArray
+    ScyllaDBArgumentNativeArray::Boolean
 );
 
 #[cfg(test)]
@@ -24,9 +24,7 @@ mod tests {
     use sqlx_core::ext::ustr::UStr;
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_bool() -> Result<(), BoxDynError> {

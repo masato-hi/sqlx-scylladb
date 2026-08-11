@@ -1,19 +1,20 @@
 use scylla::value::CqlDate;
 
 use crate::{
-    ScyllaDBArgument, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    ScyllaDBArgumentNativeArrayDate, ScyllaDBArgumentNativeDate, ScyllaDBTypeInfo,
+    ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
 };
 
 impl_native_type!(
     CqlDate,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Date),
-    |value| { ScyllaDBArgument::Date(value) }
+    ScyllaDBArgumentNativeDate::Date
 );
 
 impl_native_array_type!(
     CqlDate,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Date),
-    ScyllaDBArgument::DateArray
+    ScyllaDBArgumentNativeArrayDate::Date
 );
 
 #[cfg(feature = "chrono-04")]
@@ -21,13 +22,13 @@ pub mod chrono {
     impl_native_type!(
         chrono_04::NaiveDate,
         crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Date),
-        |value| crate::ScyllaDBArgument::Date_Chrono04(value)
+        crate::ScyllaDBArgumentNativeDate::Chrono04
     );
 
     impl_native_array_type!(
         chrono_04::NaiveDate,
         crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Date),
-        crate::ScyllaDBArgument::DateArray_Chrono04
+        crate::ScyllaDBArgumentNativeArrayDate::Chrono04
     );
 }
 
@@ -36,13 +37,13 @@ pub mod time {
     impl_native_type!(
         time_03::Date,
         crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Date),
-        |value| { crate::ScyllaDBArgument::Date_Time03(value) }
+        crate::ScyllaDBArgumentNativeDate::Time03
     );
 
     impl_native_array_type!(
         time_03::Date,
         crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Date),
-        crate::ScyllaDBArgument::DateArray_Time03
+        crate::ScyllaDBArgumentNativeArrayDate::Time03
     );
 }
 

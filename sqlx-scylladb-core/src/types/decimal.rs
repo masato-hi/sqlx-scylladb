@@ -3,13 +3,13 @@ pub mod bigdecimal {
     impl_native_type!(
         bigdecimal_04::BigDecimal,
         crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Decimal),
-        crate::ScyllaDBArgument::Decimal
+        crate::ScyllaDBArgumentNativeDecimal::Decimal
     );
 
     impl_native_array_type!(
         bigdecimal_04::BigDecimal,
         crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Decimal),
-        crate::ScyllaDBArgument::DecimalArray
+        crate::ScyllaDBArgumentNativeArrayDecimal::Decimal
     );
 }
 

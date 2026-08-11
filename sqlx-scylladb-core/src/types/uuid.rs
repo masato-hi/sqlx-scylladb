@@ -3,31 +3,31 @@ use uuid::Uuid;
 
 use crate::{
     ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
-    arguments::ScyllaDBArgument,
+    arguments::{ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray},
 };
 
 impl_native_type!(
     Uuid,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Uuid),
-    ScyllaDBArgument::Uuid
+    ScyllaDBArgumentNative::Uuid
 );
 
 impl_native_array_type!(
     Uuid,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Uuid),
-    ScyllaDBArgument::UuidArray
+    ScyllaDBArgumentNativeArray::Uuid
 );
 
 impl_native_type!(
     CqlTimeuuid,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Timeuuid),
-    ScyllaDBArgument::Timeuuid
+    ScyllaDBArgumentNative::Timeuuid
 );
 
 impl_native_array_type!(
     CqlTimeuuid,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Timeuuid),
-    ScyllaDBArgument::TimeuuidArray
+    ScyllaDBArgumentNativeArray::Timeuuid
 );
 
 #[cfg(test)]
@@ -39,9 +39,7 @@ mod tests {
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
     use uuid::Uuid;
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_uuid() -> Result<(), BoxDynError> {

@@ -1,54 +1,54 @@
 use crate::{
     ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
-    arguments::ScyllaDBArgument,
+    arguments::{ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray},
 };
 
 impl_native_type!(
     i8,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::TinyInt),
-    ScyllaDBArgument::TinyInt
+    ScyllaDBArgumentNative::TinyInt
 );
 
 impl_native_array_type!(
     i8,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::TinyInt),
-    ScyllaDBArgument::TinyIntArray
+    ScyllaDBArgumentNativeArray::TinyInt
 );
 
 impl_native_type!(
     i16,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::SmallInt),
-    ScyllaDBArgument::SmallInt
+    ScyllaDBArgumentNative::SmallInt
 );
 
 impl_native_array_type!(
     i16,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::SmallInt),
-    ScyllaDBArgument::SmallIntArray
+    ScyllaDBArgumentNativeArray::SmallInt
 );
 
 impl_native_type!(
     i32,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Int),
-    ScyllaDBArgument::Int
+    ScyllaDBArgumentNative::Int
 );
 
 impl_native_array_type!(
     i32,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Int),
-    ScyllaDBArgument::IntArray
+    ScyllaDBArgumentNativeArray::Int
 );
 
 impl_native_type!(
     i64,
     ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::BigInt),
-    ScyllaDBArgument::BigInt
+    ScyllaDBArgumentNative::BigInt
 );
 
 impl_native_array_type!(
     i64,
     ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::BigInt),
-    ScyllaDBArgument::BigIntArray
+    ScyllaDBArgumentNativeArray::BigInt
 );
 
 #[cfg(test)]
@@ -59,9 +59,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_tinyint() -> Result<(), BoxDynError> {

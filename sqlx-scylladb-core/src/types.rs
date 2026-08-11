@@ -1,33 +1,5 @@
-pub(crate) trait IntoScyllaText {
-    fn into_scylla_text(self) -> String;
-}
-
-impl IntoScyllaText for String {
-    fn into_scylla_text(self) -> String {
-        self
-    }
-}
-
-impl<'a> IntoScyllaText for &'a str {
-    fn into_scylla_text(self) -> String {
-        self.to_owned()
-    }
-}
-
-impl<'a> IntoScyllaText for std::borrow::Cow<'a, str> {
-    fn into_scylla_text(self) -> String {
-        self.into_owned()
-    }
-}
-
-impl IntoScyllaText for std::sync::Arc<str> {
-    fn into_scylla_text(self) -> String {
-        self.to_string()
-    }
-}
-
 macro_rules! impl_native_type {
-    ($typ:ty, $typ_info:expr, $arg_typ:expr) => {
+    ($typ:ty, $typ_info:expr, $arg_typ:path) => {
         impl ::sqlx_core::types::Type<$crate::ScyllaDB> for $typ {
             fn type_info() -> $crate::ScyllaDBTypeInfo {
                 $typ_info
@@ -39,7 +11,7 @@ macro_rules! impl_native_type {
                 self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                buf.push(($arg_typ)(self));
+                buf.push($arg_typ(self).into());
                 Ok(::sqlx_core::encode::IsNull::No)
             }
 
@@ -47,7 +19,7 @@ macro_rules! impl_native_type {
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                let argument = ($arg_typ)(self.clone());
+                let argument = $arg_typ(self.clone()).into();
                 buf.push(argument);
 
                 Ok(::sqlx_core::encode::IsNull::No)
@@ -90,7 +62,7 @@ macro_rules! impl_native_array_type {
                 &self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                let argument = $arg_typ(self.to_vec());
+                let argument = $arg_typ(self.to_vec()).into();
                 buf.push(argument);
 
                 Ok(::sqlx_core::encode::IsNull::No)
@@ -111,7 +83,7 @@ macro_rules! impl_native_array_type {
                 self,
                 buf: &mut $crate::ScyllaDBArgumentBuffer,
             ) -> Result<::sqlx_core::encode::IsNull, ::sqlx_core::error::BoxDynError> {
-                buf.push($arg_typ(self));
+                buf.push($arg_typ(self).into());
                 Ok(::sqlx_core::encode::IsNull::No)
             }
 

@@ -21,7 +21,20 @@ mod type_info;
 mod types;
 mod value;
 
-pub use arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArguments};
+#[cfg(feature = "bigdecimal-04")]
+pub use arguments::ScyllaDBArgumentNativeArrayDecimal;
+#[cfg(feature = "bigdecimal-04")]
+pub use arguments::ScyllaDBArgumentNativeDecimal;
+pub use arguments::{
+    ScyllaDBArgument, ScyllaDBArgumentBuffer, ScyllaDBArgumentNative, ScyllaDBArgumentNativeArray,
+    ScyllaDBArgumentNativeBlob, ScyllaDBArgumentNativeDate, ScyllaDBArgumentNativeText,
+    ScyllaDBArgumentNativeTime, ScyllaDBArgumentNativeTimestamp, ScyllaDBArguments,
+};
+pub use arguments::{
+    ScyllaDBArgumentNativeArrayBlob, ScyllaDBArgumentNativeArrayDate,
+    ScyllaDBArgumentNativeArrayText, ScyllaDBArgumentNativeArrayTime,
+    ScyllaDBArgumentNativeArrayTimestamp,
+};
 pub use column::ScyllaDBColumn;
 pub use connection::ScyllaDBConnection;
 pub use database::ScyllaDB;
