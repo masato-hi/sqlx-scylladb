@@ -6,10 +6,10 @@ async fn it_can_connect_by_rustls(
     connect_options: ScyllaDBConnectOptions,
 ) -> anyhow::Result<()> {
     let connect_options = connect_options
-        .port(9142) // set tls port.
-        .tls_rootcert("tests/certs/ca-cert.pem")
-        .tls_cert("tests/certs/client-cert.pem")
-        .tls_key("tests/certs/client-key.pem");
+        .set_port(9142) // set tls port.
+        .set_tls_rootcert("tests/certs/ca-cert.pem")
+        .set_tls_cert("tests/certs/client-cert.pem")
+        .set_tls_key("tests/certs/client-key.pem");
 
     let pool = pool_options.connect_with(connect_options).await?;
 

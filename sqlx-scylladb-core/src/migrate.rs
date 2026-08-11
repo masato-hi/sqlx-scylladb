@@ -28,21 +28,22 @@ fn parse_for_maintenance(
 > {
     let mut options = ScyllaDBConnectOptions::from_str(url)?;
 
-    let replication_options = if let Some(replication_strategy) = options.replication_strategy {
-        (replication_strategy, options.replication_factor)
+    let replication_options = if let Some(replication_strategy) = options.get_replication_strategy()
+    {
+        (replication_strategy, options.get_replication_factor())
     } else {
         return Err(Error::Configuration(
             "replication_strategy is required.".into(),
         ));
     };
 
-    let keyspace = if let Some(keyspace) = &options.keyspace {
-        keyspace.clone()
+    let keyspace = if let Some(keyspace) = options.get_keyspace() {
+        keyspace.to_owned()
     } else {
         return Err(Error::Configuration("keyspace is required.".into()));
     };
 
-    options.keyspace = None;
+    options = options.set_keyspace_option(None);
 
     Ok((options, replication_options, keyspace))
 }

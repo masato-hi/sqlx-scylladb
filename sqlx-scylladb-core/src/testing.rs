@@ -87,8 +87,8 @@ async fn test_context(args: &TestArgs) -> Result<TestContext<ScyllaDB>, Error> {
             );
 
             assert_eq!(
-                existing.connect_options().keyspace,
-                pool.connect_options().keyspace,
+                existing.connect_options().get_keyspace(),
+                pool.connect_options().get_keyspace(),
                 "DATABASE_URL changed at runtime, database differs"
             );
 
@@ -143,7 +143,7 @@ async fn test_context(args: &TestArgs) -> Result<TestContext<ScyllaDB>, Error> {
             .connect_options()
             .deref()
             .clone()
-            .keyspace(&db_name),
+            .set_keyspace(&db_name),
         db_name,
     })
 }
