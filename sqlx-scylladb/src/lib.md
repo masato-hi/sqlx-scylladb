@@ -1,8 +1,8 @@
 # sqlx-scylladb
 
-A database driver for ScyllaDB to be used with the Rust [sqlx](https://github.com/launchbadge/sqlx) framework.
+A ScyllaDB database driver for the Rust [sqlx](https://github.com/launchbadge/sqlx) framework.
 
-Wrap the [scylla-rust-driver](https://github.com/scylladb/scylla-rust-driver) using the sqlx interface.
+This crate adapts the [scylla-rust-driver](https://github.com/scylladb/scylla-rust-driver) to the sqlx interface.
 
 ## Basic Usage
 
@@ -35,8 +35,8 @@ async fn main() -> anyhow::Result<()> {
 
 ### Features
 
-- Standard type binding and fetching.
-- Support for user-defined type macros.
-- [`#[sqlx::test]`](https://docs.rs/sqlx/latest/sqlx/attr.test.html) macro support.
-- Migration support using the `sqlx-scylladb` command-line tool.
-- TLS support.
+- Binding and fetching for ScyllaDB native types and supported Rust types.
+- User-defined types through the `UserDefinedType` derive macro.
+- Support for the [`#[sqlx::test]`](https://docs.rs/sqlx/latest/sqlx/attr.test.html) macro.
+- Migrations through the `sqlx-scylladb` command-line tool.
+- TLS support through the `openssl-010` and `rustls-023` features.

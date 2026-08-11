@@ -1,9 +1,11 @@
-/// Query execution result.
+/// The result of executing one or more ScyllaDB statements.
 #[derive(Debug, Default)]
 pub struct ScyllaDBQueryResult {
-    /// Number of retrieved items. Or the number of items in the light-weight transaction.
+    /// Number of rows returned by the query, or the number of rows returned by a lightweight transaction.
     pub rows_num: u64,
-    /// Only valid when using a light-weight transaction.
+    /// Number of rows affected by a lightweight transaction.
+    ///
+    /// This field is meaningful only for lightweight transactions.
     pub rows_affected: u64,
 }
 

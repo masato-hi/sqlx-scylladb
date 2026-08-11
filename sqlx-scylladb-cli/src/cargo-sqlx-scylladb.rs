@@ -3,7 +3,7 @@ use console::style;
 use sqlx_cli::Opt;
 use sqlx_scylladb_core::any::DRIVER;
 
-/// Cargo invokes this binary as `cargo-sqlx-exasol sqlx-exasol <args>`
+/// Cargo invokes this binary as `cargo sqlx-scylladb <args>`.
 #[derive(Parser, Debug)]
 #[clap(bin_name = "cargo")]
 enum Cli {

@@ -3,7 +3,7 @@ use sqlx_core::{column::Column, ext::ustr::UStr};
 
 use crate::{ScyllaDB, ScyllaDBTypeInfo};
 
-/// Implementation of [sqlx::Column] for ScyllaDB.
+/// A ScyllaDB column exposed through the sqlx row interface.
 #[derive(Debug)]
 pub struct ScyllaDBColumn {
     pub(crate) ordinal: usize,

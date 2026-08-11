@@ -1,14 +1,14 @@
 # sqlx-scylladb
 
-A database driver for ScyllaDB to be used with the Rust [sqlx](https://github.com/launchbadge/sqlx) framework.
+A ScyllaDB database driver for the Rust [sqlx](https://github.com/launchbadge/sqlx) framework.
 
-Wrap the [scylla-rust-driver](https://github.com/scylladb/scylla-rust-driver) using the sqlx interface.
+This crate adapts the [scylla-rust-driver](https://github.com/scylladb/scylla-rust-driver) to the sqlx interface, allowing sqlx queries, connection pools, migrations, tests, and type conversions to be used with ScyllaDB.
 
 ## Why not use the scylla-rust-driver directly?
 
-sqlx has excellent testing and migration features.
+sqlx provides testing and migration features that are useful when working with a database-backed application.
 
-It is better to use these features rather than creating your own testing or migration functionality.
+Using those features through this driver avoids having to maintain separate testing and migration infrastructure.
 
 ## Usage
 
@@ -43,7 +43,7 @@ async fn main() -> anyhow::Result<()> {
 
 ## Connection URL
 
-In addition to DATABASE_URL, it also supports SCYLLADB_URL as an environment variable.
+The driver reads the connection URL from `DATABASE_URL` and also supports `SCYLLADB_URL`.
 
 ### Example
 
@@ -55,10 +55,10 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 | Part     | Required | Example     | Explanation                                   |
 |----------|----------|-------------|-----------------------------------------------|
-| schema   | Required | scylladb    | Only `scylladb` can be specified.             |
+| scheme   | Required | scylladb    | Must be `scylladb`.                           |
 | username | Optional | myname      | Specify the username for user authentication. |
 | password | Optional | mypassword  | Specify the password for user authentication. |
-| host     | Required | localhost   | Specify the hostname of the primary node.     |
+| host     | Required | localhost   | The hostname of the initial node to contact.  |
 | port     | Optional | 9042        | Specify the port number. The default is 9042. |
 | path     | Required | my_keyspace | Specify the keyspace.                         |
 
@@ -66,16 +66,16 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 | Name                 | Example                         | Explanation                                                                                                                                                  |
 |----------------------|---------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| nodes                | example.test,example2.test:9043 | Specify additional nodes separated by commas.                                                                                                                |
-| tcp_nodelay          |                                 | When using tcp_nodelay, specify the key. No value is required.                                                                                               |
-| tcp_keepalive        | 40                              | When using tcp_keepalive, specify the keepalive interval in seconds.                                                                                         |
-| compression          | lz4                             | Specify when compressing communication data. Supported values are `lz4` or `snappy`.                                                                         |
-| replication_strategy | SimpleStrategy                  | Specifies the replication strategy when creating a keyspace. Supported values are `simple`, `network_topology`, `SimpleStrategy`, `NetworkTopologyStrategy`. |
-| replication_factor   | 2                               | Specify the replication factor when creating a keyspace.                                                                                                     |
-| page_size            | 10                              | Specify the number of results to retrieve per page when receiving query results.                                                                             |
-| tls_rootcert         | /etc/certs/ca.crt               | Specify the path to the root CA certificate when establishing a TLS connection.                                                                              |
-| tls_cert             | /etc/certs/client.crt           | Specify the path to the client certificate when establishing a TLS connection                                                                                |
-| tls_key              | /etc/certs/client.key           | Specify the path to the client private key when establishing a TLS connection                                                                                |
+| nodes                | example.test,example2.test:9043 | Additional nodes to contact, separated by commas.                                                                                                           |
+| tcp_nodelay          |                                 | Enables TCP_NODELAY. This is a key-only option and does not require a value.                                                                                |
+| tcp_keepalive        | 40                              | TCP keepalive interval, in seconds.                                                                                                                          |
+| compression          | lz4                             | Compression for protocol traffic. Supported values are `lz4` and `snappy`.                                                                                 |
+| replication_strategy | SimpleStrategy                  | Replication strategy used when the migration support creates a keyspace. Supported values are `simple`, `network_topology`, `SimpleStrategy`, and `NetworkTopologyStrategy`. |
+| replication_factor   | 2                               | Replication factor used when the migration support creates a keyspace.                                                                                       |
+| page_size            | 10                              | Maximum number of rows requested in each page of a paged query.                                                                                              |
+| tls_rootcert         | /etc/certs/ca.crt               | Path to the root CA certificate used for TLS server verification.                                                                                            |
+| tls_cert             | /etc/certs/client.crt           | Path to the client certificate used for TLS client authentication.                                                                                          |
+| tls_key              | /etc/certs/client.key           | Path to the private key corresponding to `tls_cert`.                                                                                                         |
 
 ## Features
 
@@ -154,36 +154,35 @@ scylladb://myname:mypassword@localhost:9042/my_keyspace?nodes=example.test,examp
 
 ### User defined type
 
-- Definition using the derive macro. (See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/sqlx-scylladb/examples/user_defined_type.rs) for usage.)
+- Define a Rust type with the `UserDefinedType` derive macro. See the [example](https://github.com/masato-hi/sqlx-scylladb/blob/main/sqlx-scylladb/examples/user_defined_type.rs).
 
 ### Testing
 
-- You can use #[sqlx::test] macro.
+- Use the [`#[sqlx::test]`](https://docs.rs/sqlx/latest/sqlx/attr.test.html) macro for database-backed tests.
 
 ### Migration
 
-- Implemented sqlx::migrate::Migrator trait.
-- Support migrations in #[sqlx::test] macro.
-- You can use the command-line tool.
-  - To install it, run `cargo install --git https://github.com/masato-hi/sqlx-scylladb/tree/main/sqlx-scylladb-cli`
+- Implements the `sqlx::migrate::Migrator` integration.
+- Supports migrations used by `#[sqlx::test]`.
+- Provides a command-line tool. Install it with `cargo install --git https://github.com/masato-hi/sqlx-scylladb --path sqlx-scylladb-cli`.
 
 ### TLS
 
-- TLS (Enable with the `openssl-010` or `rustls-023` feature)
+- TLS is available when the `openssl-010` or `rustls-023` feature is enabled.
 
 ### Transaction
 
-Transaction are implemented using batch statement.
+Transactions are implemented by collecting data-changing statements and executing them as a ScyllaDB batch when the transaction is committed.
 
-Please carefully read the documentation on batch operations in ScyllaDB before using them.
+Because of this implementation, read the ScyllaDB documentation on batch operations before relying on transactions. Batch statements have different performance and atomicity characteristics from transactions in traditional relational databases.
 
 [BATCH | ScyllaDB Docs](https://enterprise.docs.scylladb.com/stable/cql/dml/batch.html)
 
 ## Performance
 
-Compared to using the scylla-rust-driver, performance decreases by approximately 10%.
+In the benchmark included in this repository, performance is approximately 10% lower than when using the scylla-rust-driver directly.
 
-However, this equates to a reduction of about 50 milliseconds for 10,000 operations.
+For the benchmark shown below, that difference is approximately 50 milliseconds over 10,000 operations. Actual results depend on the workload and environment.
 
 <!-- markdownlint-disable MD033 -->
 

@@ -3,7 +3,7 @@
 
 pub use sqlx_scylladb_core::*;
 
-/// Re-exported external crates.
+/// External crates re-exported for use by generated code and integrations.
 pub mod ext {
     pub use ::scylla;
     pub use ::scylla_cql;
@@ -11,13 +11,13 @@ pub mod ext {
     pub use ::sqlx_core::ext::ustr;
 }
 
-/// Runtime-generic database driver. `any` feature is required.
+/// Runtime-generic ScyllaDB driver. Requires the `any` feature.
 #[cfg(feature = "any")]
 pub mod any {
     pub use sqlx_scylladb_core::any::*;
 }
 
-/// `macros` feature is required.
+/// Procedural macros provided by this crate. Requires the `macros` feature.
 #[cfg(feature = "macros")]
 pub mod macros {
     pub use sqlx_scylladb_macros::*;

@@ -12,7 +12,7 @@ const DEFAULT_PORT: u16 = 9042;
 const DEFAULT_PAGE_SIZE: i32 = 5000;
 const DEFAULT_STATEMENT_CACHE_CAPACITY: usize = 128;
 
-/// Options and flags which can be used to configure a ScyllaDB connection.
+/// Options for configuring a ScyllaDB connection.
 #[derive(Debug, Clone)]
 pub struct ScyllaDBConnectOptions {
     host: String,
@@ -118,7 +118,7 @@ impl ScyllaDBConnectOptions {
 }
 
 impl ScyllaDBConnectOptions {
-    /// Create a default set of connection options.
+    /// Creates connection options with the driver's default values.
     pub fn new() -> Self {
         Self {
             host: String::from("localhost"),
@@ -149,200 +149,204 @@ impl ScyllaDBConnectOptions {
         nodes
     }
 
-    /// Add the node to connect to.
+    /// Adds an additional node to contact when establishing a connection.
     pub fn add_node(mut self, node: impl Into<String>) -> Self {
         self.nodes.push(node.into());
         self
     }
 
-    /// Get the nodes.
+    /// Returns the additional nodes configured for the connection.
     pub fn get_nodes(&self) -> &[String] {
         &self.nodes
     }
 
-    /// Get the current keyspace.
+    /// Returns the configured keyspace, if one was specified.
     pub fn get_keyspace(&self) -> Option<&str> {
         self.keyspace.as_deref()
     }
 
-    /// Get the host of the primary node.
+    /// Returns the host of the primary node.
     pub fn get_host(&self) -> &str {
         &self.host
     }
 
-    /// Get the port of the primary node.
+    /// Returns the port of the primary node.
     pub fn get_port(&self) -> u16 {
         self.port
     }
 
-    /// Get the statement cache capacity.
+    /// Returns the statement cache capacity.
     pub fn get_statement_cache_capacity(&self) -> usize {
         self.statement_cache_capacity
     }
 
-    /// Get the connection log settings.
+    /// Returns the connection log settings.
     pub fn get_log_settings(&self) -> &LogSettings {
         &self.log_settings
     }
 
-    /// Get whether TCP_NODELAY is enabled.
+    /// Returns whether TCP_NODELAY is enabled.
     pub fn get_tcp_nodelay(&self) -> bool {
         self.tcp_nodelay
     }
 
-    /// Get the username used for authentication.
+    /// Returns the username used for authentication.
     pub fn get_username(&self) -> Option<&str> {
         self.username.as_deref()
     }
 
-    /// Get the password used for authentication.
+    /// Returns the password used for authentication.
     pub fn get_password(&self) -> Option<&str> {
         self.password.as_deref()
     }
 
-    /// Get the replication strategy.
+    /// Returns the replication strategy used when migrations create a keyspace.
     pub fn get_replication_strategy(&self) -> Option<ScyllaDBReplicationStrategy> {
         self.replication_strategy
     }
 
-    /// Get the replication factor.
+    /// Returns the replication factor used when migrations create a keyspace.
     pub fn get_replication_factor(&self) -> usize {
         self.replication_factor
     }
 
-    /// Get the compression method.
+    /// Returns the compression method.
     pub fn get_compression(&self) -> Option<ScyllaDBCompression> {
         self.compression
     }
 
-    /// Get the path to the RootCA certificate.
+    /// Returns the path to the root CA certificate.
     pub fn get_tls_rootcert(&self) -> Option<&str> {
         self.tls_rootcert.as_deref()
     }
 
-    /// Get the path to the client certificate.
+    /// Returns the path to the client certificate.
     pub fn get_tls_cert(&self) -> Option<&str> {
         self.tls_cert.as_deref()
     }
 
-    /// Get the path to the client private key.
+    /// Returns the path to the client's private key.
     pub fn get_tls_key(&self) -> Option<&str> {
         self.tls_key.as_deref()
     }
 
-    /// Get the TCP keepalive interval.
+    /// Returns the TCP keepalive interval.
     pub fn get_tcp_keepalive(&self) -> Option<Duration> {
         self.tcp_keepalive
     }
 
-    /// Get the page size used for pagination.
+    /// Returns the page size used for paginated queries.
     pub fn get_page_size(&self) -> i32 {
         self.page_size
     }
 
-    /// Set the host of the primary node to connect to.
+    /// Sets the host of the primary node to contact.
     pub fn set_host(mut self, host: &str) -> Self {
         host.clone_into(&mut self.host);
         self
     }
 
-    /// Set the port of the primary node to connect to.
+    /// Sets the port of the primary node to contact.
     pub fn set_port(mut self, port: u16) -> Self {
         self.port = port;
         self
     }
 
-    /// Set the nodes to connect to.
+    /// Sets the additional nodes to contact when establishing a connection.
     pub fn set_nodes(mut self, nodes: Vec<String>) -> Self {
         self.nodes = nodes;
         self
     }
 
-    /// Set the keyspace to use.
+    /// Sets the keyspace to use.
     pub fn set_keyspace(mut self, keyspace: impl Into<String>) -> Self {
         self.keyspace = Some(keyspace.into());
         self
     }
 
-    /// Set or clear the keyspace to use.
+    /// Sets or clears the keyspace to use.
     pub fn set_keyspace_option(mut self, keyspace: Option<String>) -> Self {
         self.keyspace = keyspace;
         self
     }
 
-    /// Set the statement cache capacity.
+    /// Sets the statement cache capacity.
     pub fn set_statement_cache_capacity(mut self, capacity: usize) -> Self {
         self.statement_cache_capacity = capacity;
         self
     }
 
-    /// Set the connection log settings.
+    /// Sets the connection log settings.
     pub fn set_log_settings(mut self, settings: LogSettings) -> Self {
         self.log_settings = settings;
         self
     }
 
-    /// Set whether TCP_NODELAY is enabled.
+    /// Sets whether TCP_NODELAY is enabled.
     pub fn set_tcp_nodelay(mut self, enabled: bool) -> Self {
         self.tcp_nodelay = enabled;
         self
     }
 
-    /// Set the username for authentication.
+    /// Sets the username used for authentication.
     pub fn set_username(mut self, username: &str) -> Self {
         self.username = Some(username.to_string());
         self
     }
 
-    /// Set the password for authentication.
+    /// Sets the password used for authentication.
     pub fn set_password(mut self, password: &str) -> Self {
         self.password = Some(password.to_string());
         self
     }
 
-    /// Set the replication strategy.
+    /// Sets the replication strategy used when migrations create a keyspace.
+    ///
+    /// This option is not required for ordinary connections.
     pub fn set_replication_strategy(mut self, strategy: ScyllaDBReplicationStrategy) -> Self {
         self.replication_strategy = Some(strategy);
         self
     }
 
-    /// Set the replication factor.
+    /// Sets the replication factor used when migrations create a keyspace.
+    ///
+    /// This option is not required for ordinary connections.
     pub fn set_replication_factor(mut self, factor: usize) -> Self {
         self.replication_factor = factor;
         self
     }
 
-    /// Set the compression method.
+    /// Sets the compression method.
     pub fn set_compression(mut self, compression: ScyllaDBCompression) -> Self {
         self.compression = Some(compression);
         self
     }
 
-    /// Set the path to the RootCA certificate.
+    /// Sets the path to the root CA certificate used to verify the TLS server.
     pub fn set_tls_rootcert(mut self, root_cert: &str) -> Self {
         self.tls_rootcert = Some(root_cert.to_string());
         self
     }
 
-    /// Set the path to the client certificate.
+    /// Sets the path to the client certificate used for TLS client authentication.
     pub fn set_tls_cert(mut self, cert: &str) -> Self {
         self.tls_cert = Some(cert.to_string());
         self
     }
 
-    /// Set the path to the client private key.
+    /// Sets the path to the private key corresponding to the client certificate.
     pub fn set_tls_key(mut self, key: &str) -> Self {
         self.tls_key = Some(key.to_string());
         self
     }
 
-    /// Set the TCP keepalive interval in seconds.
+    /// Sets the TCP keepalive interval in seconds.
     pub fn set_tcp_keepalive(mut self, secs: u64) -> Self {
         self.tcp_keepalive = Some(Duration::from_secs(secs));
         self
     }
 
-    /// Set the size per page for data retrieval pagination.
+    /// Sets the maximum number of rows requested in each page of a paged query.
     pub fn set_page_size(mut self, page_size: i32) -> Self {
         self.page_size = page_size;
         self
@@ -441,13 +445,13 @@ impl FromStr for ScyllaDBConnectOptions {
     }
 }
 
-/// Replication strategy classes.
+/// Replication strategies supported when creating a keyspace.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum ScyllaDBReplicationStrategy {
-    /// Simple
+    /// Uses `SimpleStrategy`.
     #[default]
     SimpleStrategy,
-    /// Network topology
+    /// Uses `NetworkTopologyStrategy`.
     NetworkTopologyStrategy,
 }
 
@@ -482,12 +486,12 @@ impl Display for ScyllaDBReplicationStrategy {
     }
 }
 
-/// Compression methods.
+/// Compression algorithms supported for protocol communication.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ScyllaDBCompression {
-    /// Compress with lz4.
+    /// Compresses traffic with LZ4.
     LZ4Compressor,
-    /// Compress with snappy.
+    /// Compresses traffic with Snappy.
     SnappyCompressor,
 }
 

@@ -9,7 +9,7 @@ use sqlx_core::{Error, connection::Connection, transaction::Transaction};
 
 use crate::{ScyllaDB, ScyllaDBConnectOptions, connection::transaction::ScyllaDBTransaction};
 
-/// Implementation of [sqlx::Connection] for ScyllaDB.
+/// A connection to a ScyllaDB cluster.
 pub struct ScyllaDBConnection {
     pub(crate) caching_session: CachingSession,
     pub(crate) page_size: i32,
