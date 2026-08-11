@@ -30,8 +30,8 @@ dotenvy = { workspace = true }
 tokio = { workspace = true, features = ["signal"] }
 chrono-04 = { workspace = true }
 
-clap = { version = "4.6.0", features = ["derive", "env", "wrap_help"] }
-console = "0.16.3"
+clap = { version = "4.6", features = ["derive", "env", "wrap_help"] }
+console = "0.16"
 dialoguer = { version = "0.12", default-features = false }
-futures-util = "0.3.32"
-backoff = { version = "0.4.0", features = ["futures", "tokio"] }
+futures-util = "0.3"
+backoff = { version = "0.4", features = ["futures", "tokio"] }
