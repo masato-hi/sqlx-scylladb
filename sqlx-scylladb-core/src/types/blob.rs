@@ -273,6 +273,13 @@ mod secrecy {
     }
 
     impl Encode<'_, ScyllaDB> for SecretVec<u8> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let argument = ScyllaDBArgumentNativeBlob::Secrecy08(self).into();
+            buf.push(argument);
+
+            Ok(IsNull::No)
+        }
+
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
             use secrecy_08::ExposeSecret;
 
@@ -340,6 +347,13 @@ mod secrecy {
     }
 
     impl Encode<'_, ScyllaDB> for Vec<SecretVec<u8>> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let argument = ScyllaDBArgumentNativeArrayBlob::Secrecy08(self).into();
+            buf.push(argument);
+
+            Ok(IsNull::No)
+        }
+
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
             <_ as ::sqlx_core::encode::Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
         }

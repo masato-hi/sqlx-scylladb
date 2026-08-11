@@ -219,6 +219,13 @@ pub mod secrecy {
     }
 
     impl Encode<'_, ScyllaDB> for SecretString {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let argument = ScyllaDBArgumentNativeText::Secrecy08(self).into();
+            buf.push(argument);
+
+            Ok(IsNull::No)
+        }
+
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
             let argument = ScyllaDBArgumentNativeText::Secrecy08(self.clone()).into();
             buf.push(argument);
@@ -257,6 +264,13 @@ pub mod secrecy {
     }
 
     impl Encode<'_, ScyllaDB> for Vec<secrecy_08::SecretString> {
+        fn encode(self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
+            let argument = ScyllaDBArgumentNativeArrayText::Secrecy08(self).into();
+            buf.push(argument);
+
+            Ok(IsNull::No)
+        }
+
         fn encode_by_ref(&self, buf: &mut ScyllaDBArgumentBuffer) -> Result<IsNull, BoxDynError> {
             <_ as Encode<'_, ScyllaDB>>::encode_by_ref(self.as_slice(), buf)
         }
