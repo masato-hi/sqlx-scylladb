@@ -29,8 +29,7 @@ mod tests {
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
     use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
+        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value,
     };
 
     #[test]
@@ -138,7 +137,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_duration"),
-            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Duration),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -179,7 +178,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_duration"),
-            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Duration),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );

@@ -271,10 +271,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_string() -> Result<(), BoxDynError> {
@@ -294,7 +291,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -311,7 +308,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -334,7 +331,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -357,7 +354,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -373,10 +370,7 @@ mod tests {
         use secrecy_08::{ExposeSecret, SecretString};
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-        use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-            ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
-        };
+        use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
         #[test]
         fn it_can_encode_secret_string() -> Result<(), BoxDynError> {
@@ -412,7 +406,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_text"),
-                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -438,7 +432,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_text"),
-                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );

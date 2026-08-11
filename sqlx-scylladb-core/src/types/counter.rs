@@ -26,8 +26,7 @@ mod tests {
     use sqlx_core::{decode::Decode, error::BoxDynError, ext::ustr::UStr};
 
     use crate::{
-        ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBValueRef,
-        types::serialize_value,
+        ScyllaDB, ScyllaDBValueRef, types::serialize_value,
     };
 
     #[test]
@@ -37,7 +36,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_counter"),
-            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Counter),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );

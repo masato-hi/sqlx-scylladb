@@ -351,10 +351,7 @@ mod tests {
     use sqlx_core::ext::ustr::UStr;
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_blob() -> Result<(), BoxDynError> {
@@ -561,7 +558,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_blob"),
-            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -587,7 +584,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_blob"),
-            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -609,10 +606,7 @@ mod tests {
         use secrecy_08::{ExposeSecret, SecretVec};
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-        use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-            ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
-        };
+        use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
         #[test]
         fn it_can_encode_secret_blob() -> Result<(), BoxDynError> {
@@ -650,7 +644,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_blob"),
-                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -676,7 +670,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_blob"),
-                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );

@@ -24,10 +24,7 @@ mod tests {
 
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-        use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-            ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
-        };
+        use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
         #[test]
         fn it_can_encode_bigdecimal() -> Result<(), BoxDynError> {
@@ -80,7 +77,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_decimal"),
-                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Decimal),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -106,7 +103,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_decimal"),
-                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Decimal),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );

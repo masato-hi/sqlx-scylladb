@@ -25,8 +25,7 @@ mod tests {
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError};
 
     use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
+        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value,
     };
 
     #[test]
@@ -50,7 +49,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_boolean"),
-            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Boolean),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -70,7 +69,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_boolean"),
-            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );

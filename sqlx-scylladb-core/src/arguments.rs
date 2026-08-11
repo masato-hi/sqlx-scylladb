@@ -1,6 +1,5 @@
 use std::{
     borrow::Cow,
-    collections::HashMap,
     net::IpAddr,
     ops::{Deref, DerefMut},
     sync::Arc,
@@ -237,32 +236,14 @@ pub enum ScyllaDBArgument {
     /// array of `time` type implemented with [chrono_04] crate.
     #[cfg(feature = "chrono-04")]
     TimeArray_Chrono04(Vec<chrono_04::NaiveTime>),
+    /// any map type.
+    Map(Box<dyn SerializeValue + Send + Sync>),
     /// any tuple type.
     Tuple(Box<dyn SerializeValue + Send + Sync>),
     /// user-defined type.
     UserDefinedType(Box<dyn SerializeValue + Send + Sync>),
     /// array of user-defined type.
     UserDefinedTypeArray(Vec<Box<dyn SerializeValue + Send + Sync>>),
-    /// map type for `text` and `text`.
-    TextTextMap(HashMap<String, String>),
-    /// map type for `text` and `boolean`.
-    TextBooleanMap(HashMap<String, bool>),
-    /// map type for `text` and `tinyint`.
-    TextTinyIntMap(HashMap<String, i8>),
-    /// map type for `text` and `smallint`.
-    TextSmallIntMap(HashMap<String, i16>),
-    /// map type for `text` and `int`.
-    TextIntMap(HashMap<String, i32>),
-    /// map type for `text` and `bigint`.
-    TextBigIntMap(HashMap<String, i64>),
-    /// map type for `text` and `float`.
-    TextFloatMap(HashMap<String, f32>),
-    /// map type for `text` and `double`.
-    TextDoubleMap(HashMap<String, f64>),
-    /// map type for `text` and `uuid`.
-    TextUuidMap(HashMap<String, Uuid>),
-    /// map type for `text` and `inet`.
-    TextIpAddrMap(HashMap<String, IpAddr>),
 }
 
 impl SerializeValue for ScyllaDBArgument {
@@ -375,21 +356,12 @@ impl SerializeValue for ScyllaDBArgument {
             Self::TimeArray_Time03(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             #[cfg(feature = "chrono-04")]
             Self::TimeArray_Chrono04(value) => <_ as SerializeValue>::serialize(value, typ, writer),
+            Self::Map(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::Tuple(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::UserDefinedType(value) => <_ as SerializeValue>::serialize(value, typ, writer),
             Self::UserDefinedTypeArray(value) => {
                 <_ as SerializeValue>::serialize(value, typ, writer)
             }
-            Self::TextTextMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextBooleanMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextTinyIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextSmallIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextBigIntMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextFloatMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextDoubleMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextUuidMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
-            Self::TextIpAddrMap(value) => <_ as SerializeValue>::serialize(value, typ, writer),
         }
     }
 }

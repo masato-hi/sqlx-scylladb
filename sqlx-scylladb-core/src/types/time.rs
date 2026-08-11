@@ -58,10 +58,7 @@ mod tests {
 
     use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-    use crate::{
-        ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-        ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
-    };
+    use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
     #[test]
     fn it_can_encode_time() -> Result<(), BoxDynError> {
@@ -91,7 +88,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_time"),
-            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Time),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -111,7 +108,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_time"),
-            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Time),
+            (&column_type).try_into()?,
             &raw_value,
             &column_type,
         );
@@ -130,10 +127,7 @@ mod tests {
 
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
 
-        use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-            ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
-        };
+        use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
         #[test]
         fn it_can_encode_chrono_naive_time() -> Result<(), BoxDynError> {
@@ -190,7 +184,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_time"),
-                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Time),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -216,7 +210,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_time"),
-                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Time),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -242,10 +236,7 @@ mod tests {
         use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, ext::ustr::UStr};
         use time_03::Time;
 
-        use crate::{
-            ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
-            ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef, types::serialize_value,
-        };
+        use crate::{ScyllaDB, ScyllaDBArgumentBuffer, ScyllaDBValueRef, types::serialize_value};
 
         #[test]
         fn it_can_encode_time_time() -> Result<(), BoxDynError> {
@@ -289,7 +280,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_time"),
-                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Time),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
@@ -312,7 +303,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_time"),
-                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Time),
+                (&column_type).try_into()?,
                 &raw_value,
                 &column_type,
             );
