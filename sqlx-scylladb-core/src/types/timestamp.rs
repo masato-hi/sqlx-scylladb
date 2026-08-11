@@ -1,14 +1,18 @@
 use scylla::value::CqlTimestamp;
 
-use crate::{ScyllaDBArgument, ScyllaDBTypeInfo};
+use crate::{
+    ScyllaDBArgument, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+};
 
-impl_native_type!(CqlTimestamp, ScyllaDBTypeInfo::Timestamp, |value| {
-    ScyllaDBArgument::Timestamp(value)
-});
+impl_native_type!(
+    CqlTimestamp,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Timestamp),
+    |value| { ScyllaDBArgument::Timestamp(value) }
+);
 
 impl_native_array_type!(
     CqlTimestamp,
-    ScyllaDBTypeInfo::TimestampArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Timestamp),
     ScyllaDBArgument::TimestampArray
 );
 
@@ -16,13 +20,13 @@ impl_native_array_type!(
 pub mod chrono {
     impl_native_type!(
         chrono_04::DateTime<chrono_04::Utc>,
-        crate::ScyllaDBTypeInfo::Timestamp,
+        crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Timestamp),
         |value| crate::ScyllaDBArgument::Timestamp_Chrono04(value)
     );
 
     impl_native_array_type!(
         chrono_04::DateTime<chrono_04::Utc>,
-        crate::ScyllaDBTypeInfo::TimestampArray,
+        crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Timestamp),
         crate::ScyllaDBArgument::TimestampArray_Chrono04
     );
 }
@@ -31,13 +35,13 @@ pub mod chrono {
 pub mod time {
     impl_native_type!(
         time_03::OffsetDateTime,
-        crate::ScyllaDBTypeInfo::Timestamp,
+        crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Timestamp),
         |value| crate::ScyllaDBArgument::Timestamp_Time03(value)
     );
 
     impl_native_array_type!(
         time_03::OffsetDateTime,
-        crate::ScyllaDBTypeInfo::TimestampArray,
+        crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Timestamp),
         crate::ScyllaDBArgument::TimestampArray_Time03
     );
 }
@@ -100,7 +104,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_timestamp"),
-            ScyllaDBTypeInfo::Timestamp,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Timestamp),
             &raw_value,
             &column_type,
         );
@@ -123,7 +127,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_timestamp"),
-            ScyllaDBTypeInfo::TimestampArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Timestamp),
             &raw_value,
             &column_type,
         );
@@ -207,7 +211,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_timestamp"),
-                ScyllaDBTypeInfo::Timestamp,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Timestamp),
                 &raw_value,
                 &column_type,
             );
@@ -233,7 +237,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_timestamp"),
-                ScyllaDBTypeInfo::TimestampArray,
+                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Timestamp),
                 &raw_value,
                 &column_type,
             );
@@ -321,7 +325,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_timestamp"),
-                ScyllaDBTypeInfo::Timestamp,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Timestamp),
                 &raw_value,
                 &column_type,
             );
@@ -347,7 +351,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_timestamp"),
-                ScyllaDBTypeInfo::TimestampArray,
+                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Timestamp),
                 &raw_value,
                 &column_type,
             );

@@ -1,12 +1,19 @@
 use std::net::IpAddr;
 
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::ScyllaDBArgument,
+};
 
-impl_native_type!(IpAddr, ScyllaDBTypeInfo::Inet, ScyllaDBArgument::Inet);
+impl_native_type!(
+    IpAddr,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Inet),
+    ScyllaDBArgument::Inet
+);
 
 impl_native_array_type!(
     IpAddr,
-    ScyllaDBTypeInfo::InetArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Inet),
     ScyllaDBArgument::InetArray
 );
 
@@ -74,7 +81,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_inet"),
-            ScyllaDBTypeInfo::Inet,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Inet),
             &raw_value,
             &column_type,
         );
@@ -100,7 +107,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_inet"),
-            ScyllaDBTypeInfo::InetArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Inet),
             &raw_value,
             &column_type,
         );

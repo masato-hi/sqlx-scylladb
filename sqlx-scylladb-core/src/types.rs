@@ -27,7 +27,7 @@ impl IntoScyllaText for std::sync::Arc<str> {
 }
 
 macro_rules! impl_native_type {
-    ($typ:ty, $typ_info:path, $arg_typ:expr) => {
+    ($typ:ty, $typ_info:expr, $arg_typ:expr) => {
         impl ::sqlx_core::types::Type<$crate::ScyllaDB> for $typ {
             fn type_info() -> $crate::ScyllaDBTypeInfo {
                 $typ_info
@@ -66,7 +66,7 @@ macro_rules! impl_native_type {
 }
 
 macro_rules! impl_native_array_type {
-    ($typ:ty, $typ_info:path, $arg_typ:path) => {
+    ($typ:ty, $typ_info:expr, $arg_typ:path) => {
         impl $crate::ScyllaDBHasArrayType for $typ {
             fn array_type_info() -> $crate::ScyllaDBTypeInfo {
                 $typ_info

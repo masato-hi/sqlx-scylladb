@@ -1,16 +1,19 @@
 use scylla::value::CqlDuration;
 
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::ScyllaDBArgument,
+};
 
 impl_native_type!(
     CqlDuration,
-    ScyllaDBTypeInfo::Duration,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Duration),
     ScyllaDBArgument::Duration
 );
 
 impl_native_array_type!(
     CqlDuration,
-    ScyllaDBTypeInfo::DurationArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Duration),
     ScyllaDBArgument::DurationArray
 );
 
@@ -135,7 +138,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_duration"),
-            ScyllaDBTypeInfo::Duration,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Duration),
             &raw_value,
             &column_type,
         );
@@ -176,7 +179,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_duration"),
-            ScyllaDBTypeInfo::DurationArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Duration),
             &raw_value,
             &column_type,
         );

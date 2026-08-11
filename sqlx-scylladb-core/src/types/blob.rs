@@ -8,25 +8,26 @@ use sqlx_core::{
 };
 
 use crate::{
-    ScyllaDB, ScyllaDBTypeInfo, ScyllaDBValueRef,
+    ScyllaDB, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    ScyllaDBValueRef,
     arguments::{ScyllaDBArgument, ScyllaDBArgumentBuffer},
 };
 
 impl<const N: usize> Type<ScyllaDB> for [u8; N] {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
 impl Type<ScyllaDB> for [u8] {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
 impl Type<ScyllaDB> for Vec<u8> {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
@@ -83,19 +84,19 @@ impl Encode<'_, ScyllaDB> for Vec<u8> {
 
 impl<const N: usize, const M: usize> Type<ScyllaDB> for [[u8; N]; M] {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
 impl<const N: usize> Type<ScyllaDB> for [[u8; N]] {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Blob
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
     }
 }
 
 impl Type<ScyllaDB> for Vec<Vec<u8>> {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::BlobArray
+        ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob)
     }
 }
 
@@ -255,7 +256,7 @@ mod secrecy {
 
     impl Type<ScyllaDB> for SecretVec<u8> {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Blob
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
         }
     }
 
@@ -281,19 +282,19 @@ mod secrecy {
 
     impl<const N: usize> Type<ScyllaDB> for [SecretVec<u8>; N] {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Blob
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
         }
     }
 
     impl Type<ScyllaDB> for [SecretVec<u8>] {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Blob
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob)
         }
     }
 
     impl Type<ScyllaDB> for Vec<SecretVec<u8>> {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::BlobArray
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob)
         }
     }
 
@@ -559,7 +560,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_blob"),
-            ScyllaDBTypeInfo::Blob,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob),
             &raw_value,
             &column_type,
         );
@@ -585,7 +586,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_blob"),
-            ScyllaDBTypeInfo::BlobArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob),
             &raw_value,
             &column_type,
         );
@@ -648,7 +649,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_blob"),
-                ScyllaDBTypeInfo::Blob,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Blob),
                 &raw_value,
                 &column_type,
             );
@@ -674,7 +675,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_blob"),
-                ScyllaDBTypeInfo::BlobArray,
+                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Blob),
                 &raw_value,
                 &column_type,
             );

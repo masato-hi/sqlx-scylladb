@@ -1,14 +1,18 @@
 use scylla::value::CqlDate;
 
-use crate::{ScyllaDBArgument, ScyllaDBTypeInfo};
+use crate::{
+    ScyllaDBArgument, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+};
 
-impl_native_type!(CqlDate, ScyllaDBTypeInfo::Date, |value| {
-    ScyllaDBArgument::Date(value)
-});
+impl_native_type!(
+    CqlDate,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Date),
+    |value| { ScyllaDBArgument::Date(value) }
+);
 
 impl_native_array_type!(
     CqlDate,
-    ScyllaDBTypeInfo::DateArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Date),
     ScyllaDBArgument::DateArray
 );
 
@@ -16,26 +20,28 @@ impl_native_array_type!(
 pub mod chrono {
     impl_native_type!(
         chrono_04::NaiveDate,
-        crate::ScyllaDBTypeInfo::Date,
+        crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Date),
         |value| crate::ScyllaDBArgument::Date_Chrono04(value)
     );
 
     impl_native_array_type!(
         chrono_04::NaiveDate,
-        crate::ScyllaDBTypeInfo::DateArray,
+        crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Date),
         crate::ScyllaDBArgument::DateArray_Chrono04
     );
 }
 
 #[cfg(feature = "time-03")]
 pub mod time {
-    impl_native_type!(time_03::Date, crate::ScyllaDBTypeInfo::Date, |value| {
-        crate::ScyllaDBArgument::Date_Time03(value)
-    });
+    impl_native_type!(
+        time_03::Date,
+        crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Date),
+        |value| { crate::ScyllaDBArgument::Date_Time03(value) }
+    );
 
     impl_native_array_type!(
         time_03::Date,
-        crate::ScyllaDBTypeInfo::DateArray,
+        crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Date),
         crate::ScyllaDBArgument::DateArray_Time03
     );
 }
@@ -84,7 +90,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_date"),
-            ScyllaDBTypeInfo::Date,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Date),
             &raw_value,
             &column_type,
         );
@@ -104,7 +110,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_date"),
-            ScyllaDBTypeInfo::DateArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Date),
             &raw_value,
             &column_type,
         );
@@ -183,7 +189,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_date"),
-                ScyllaDBTypeInfo::Date,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Date),
                 &raw_value,
                 &column_type,
             );
@@ -209,7 +215,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_date"),
-                ScyllaDBTypeInfo::DateArray,
+                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Date),
                 &raw_value,
                 &column_type,
             );
@@ -295,7 +301,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_date"),
-                ScyllaDBTypeInfo::Date,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Date),
                 &raw_value,
                 &column_type,
             );
@@ -321,7 +327,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_date"),
-                ScyllaDBTypeInfo::DateArray,
+                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Date),
                 &raw_value,
                 &column_type,
             );

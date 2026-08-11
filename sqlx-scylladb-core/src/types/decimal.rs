@@ -2,13 +2,13 @@
 pub mod bigdecimal {
     impl_native_type!(
         bigdecimal_04::BigDecimal,
-        crate::ScyllaDBTypeInfo::Decimal,
+        crate::ScyllaDBTypeInfo::Native(crate::ScyllaDBTypeInfoNative::Decimal),
         crate::ScyllaDBArgument::Decimal
     );
 
     impl_native_array_type!(
         bigdecimal_04::BigDecimal,
-        crate::ScyllaDBTypeInfo::DecimalArray,
+        crate::ScyllaDBTypeInfo::NativeArray(crate::ScyllaDBTypeInfoNativeArray::Decimal),
         crate::ScyllaDBArgument::DecimalArray
     );
 }
@@ -80,7 +80,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_decimal"),
-                ScyllaDBTypeInfo::Decimal,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Decimal),
                 &raw_value,
                 &column_type,
             );
@@ -106,7 +106,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_decimal"),
-                ScyllaDBTypeInfo::DecimalArray,
+                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Decimal),
                 &raw_value,
                 &column_type,
             );

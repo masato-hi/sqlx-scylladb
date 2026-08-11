@@ -5,89 +5,157 @@ use sqlx_core::{ext::ustr::UStr, type_info::TypeInfo};
 
 use crate::ScyllaDBError;
 
-/// The enum for the supported type.
-#[derive(Debug, Clone, PartialEq, Hash)]
-pub enum ScyllaDBTypeInfo {
+/// A native ScyllaDB type.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ScyllaDBTypeInfoNative {
     /// `ascii` type.
     Ascii,
-    /// array of `ascii` type.
-    AsciiArray,
     /// `boolean` type.
     Boolean,
-    /// array of `boolean` type.
-    BooleanArray,
     /// `blob` type.
     Blob,
-    /// array of `blob` type.
-    BlobArray,
     /// `counter` type.
     Counter,
     /// `decimal` type.
     Decimal,
-    /// array of `decimal` type.
-    DecimalArray,
     /// `date` type.
     Date,
-    /// array of `date` type.
-    DateArray,
     /// `double` type.
     Double,
-    /// array of `double` type.
-    DoubleArray,
     /// `duration` type.
     Duration,
-    /// array of `duration` type.
-    DurationArray,
-    /// NULL type.
-    Null,
     /// `float` type.
     Float,
-    /// array of `float` type.
-    FloatArray,
     /// `int` type.
     Int,
-    /// array of `int` type.
-    IntArray,
     /// `bigint` type.
     BigInt,
-    /// array of `bigint` type.
-    BigIntArray,
     /// `text` type.
     Text,
-    /// array of `text` type.
-    TextArray,
     /// `timestamp` type.
     Timestamp,
-    /// array of `timestamp` type.
-    TimestampArray,
     /// `inet` type.
     Inet,
-    /// array of `inet` type.
-    InetArray,
     /// `smallint` type.
     SmallInt,
-    /// array of `smallint` type.
-    SmallIntArray,
     /// `tinyint` type.
     TinyInt,
-    /// array of `tinyint` type.
-    TinyIntArray,
     /// `time` type.
     Time,
-    /// array of `time` type.
-    TimeArray,
     /// `timeuuid` type.
     Timeuuid,
-    /// array of `timeuuid` type.
-    TimeuuidArray,
-    /// Unset type.
-    Unset,
     /// `uuid` type.
     Uuid,
-    /// array of `uuid` type.
-    UuidArray,
     /// `variant` type.
     Variant,
+}
+
+impl ScyllaDBTypeInfoNative {
+    /// Returns the ScyllaDB type name.
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Ascii => "ASCII",
+            Self::Boolean => "BOOLEAN",
+            Self::Blob => "BLOB",
+            Self::Counter => "COUNTER",
+            Self::Decimal => "DECIMAL",
+            Self::Date => "DATE",
+            Self::Double => "DOUBLE",
+            Self::Duration => "DURATION",
+            Self::Float => "FLOAT",
+            Self::Int => "INT",
+            Self::BigInt => "BIGINT",
+            Self::Text => "TEXT",
+            Self::Timestamp => "TIMESTAMP",
+            Self::Inet => "INET",
+            Self::SmallInt => "SMALLINT",
+            Self::TinyInt => "TINYINT",
+            Self::Time => "TIME",
+            Self::Timeuuid => "TIMEUUID",
+            Self::Uuid => "UUID",
+            Self::Variant => "VARIANT",
+        }
+    }
+}
+
+/// An array of a native ScyllaDB type.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ScyllaDBTypeInfoNativeArray {
+    /// array of `ascii` type.
+    Ascii,
+    /// array of `boolean` type.
+    Boolean,
+    /// array of `blob` type.
+    Blob,
+    /// array of `decimal` type.
+    Decimal,
+    /// array of `date` type.
+    Date,
+    /// array of `double` type.
+    Double,
+    /// array of `duration` type.
+    Duration,
+    /// array of `float` type.
+    Float,
+    /// array of `int` type.
+    Int,
+    /// array of `bigint` type.
+    BigInt,
+    /// array of `text` type.
+    Text,
+    /// array of `timestamp` type.
+    Timestamp,
+    /// array of `inet` type.
+    Inet,
+    /// array of `smallint` type.
+    SmallInt,
+    /// array of `tinyint` type.
+    TinyInt,
+    /// array of `time` type.
+    Time,
+    /// array of `timeuuid` type.
+    Timeuuid,
+    /// array of `uuid` type.
+    Uuid,
+}
+
+impl ScyllaDBTypeInfoNativeArray {
+    /// Returns the ScyllaDB array type name.
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Ascii => "ASCII[]",
+            Self::Boolean => "BOOLEAN[]",
+            Self::Blob => "BLOB[]",
+            Self::Decimal => "DECIMAL[]",
+            Self::Date => "DATE[]",
+            Self::Double => "DOUBLE[]",
+            Self::Duration => "DURATION[]",
+            Self::Float => "FLOAT[]",
+            Self::Int => "INT[]",
+            Self::BigInt => "BIGINT[]",
+            Self::Text => "TEXT[]",
+            Self::Timestamp => "TIMESTAMP[]",
+            Self::Inet => "INET[]",
+            Self::SmallInt => "SMALLINT[]",
+            Self::TinyInt => "TINYINT[]",
+            Self::Time => "TIME[]",
+            Self::Timeuuid => "TIMEUUID[]",
+            Self::Uuid => "UUID[]",
+        }
+    }
+}
+
+/// The enum for the supported type.
+#[derive(Debug, Clone, PartialEq, Hash)]
+pub enum ScyllaDBTypeInfo {
+    /// A native type.
+    Native(ScyllaDBTypeInfoNative),
+    /// An array of a native type.
+    NativeArray(ScyllaDBTypeInfoNativeArray),
+    /// NULL type.
+    Null,
+    /// Unset type.
+    Unset,
     /// Any tuple type.
     Tuple(UStr),
     /// user-defined type.
@@ -151,46 +219,10 @@ impl TypeInfo for ScyllaDBTypeInfo {
 
     fn name(&self) -> &str {
         match self {
-            Self::Ascii => "ASCII",
-            Self::AsciiArray => "ASCII[]",
-            Self::Text => "TEXT",
-            Self::TextArray => "TEXT[]",
-            Self::Boolean => "BOOLEAN",
-            Self::BooleanArray => "BOOLEAN[]",
-            Self::Blob => "BLOB",
-            Self::BlobArray => "BLOB[]",
-            Self::BigInt => "BIGINT",
-            Self::BigIntArray => "BIGINT[]",
-            Self::Counter => "COUNTER",
-            Self::Decimal => "DECIMAL",
-            Self::DecimalArray => "DECIMAL[]",
-            Self::Date => "DATE",
-            Self::DateArray => "DATE[]",
-            Self::Double => "DOUBLE",
-            Self::DoubleArray => "DOUBLE[]",
-            Self::Duration => "DURATION",
-            Self::DurationArray => "DURATION[]",
+            Self::Native(native) => native.name(),
+            Self::NativeArray(native_array) => native_array.name(),
             Self::Null => "NULL",
-            Self::Float => "FLOAT",
-            Self::FloatArray => "FLOAT[]",
-            Self::Int => "INT",
-            Self::IntArray => "INT[]",
-            Self::Timestamp => "TIMESTAMP",
-            Self::TimestampArray => "TIMESTAMP[]",
-            Self::Inet => "INET",
-            Self::InetArray => "INET[]",
-            Self::SmallInt => "SMALLINT",
-            Self::SmallIntArray => "SMALLINT[]",
-            Self::TinyInt => "TINYINT",
-            Self::TinyIntArray => "TINYINT[]",
-            Self::Time => "TIME",
-            Self::TimeArray => "TIME[]",
             Self::Unset => "UNSET",
-            Self::Uuid => "UUID",
-            Self::UuidArray => "UUID[]",
-            Self::Timeuuid => "TIMEUUID",
-            Self::TimeuuidArray => "TIMEUUID[]",
-            Self::Variant => "VARIANT",
             Self::Tuple(name) => name,
             Self::UserDefinedType(name) => name,
             Self::UserDefinedTypeArray(name) => name,
@@ -226,13 +258,28 @@ impl TypeInfo for ScyllaDBTypeInfo {
         Self: Sized,
     {
         match self {
-            Self::Ascii | Self::Text => *other == Self::Ascii || *other == Self::Text,
-            Self::AsciiArray | Self::TextArray => {
-                *other == Self::AsciiArray || *other == Self::TextArray
+            Self::Native(ScyllaDBTypeInfoNative::Ascii)
+            | Self::Native(ScyllaDBTypeInfoNative::Text) => {
+                *other == Self::Native(ScyllaDBTypeInfoNative::Ascii)
+                    || *other == Self::Native(ScyllaDBTypeInfoNative::Text)
             }
-            Self::BigInt => *other == Self::Counter || *other == Self::BigInt,
-            Self::Uuid => *other == Self::Uuid || *other == Self::Timeuuid,
-            Self::UuidArray => *other == Self::UuidArray || *other == Self::TimeuuidArray,
+            Self::NativeArray(ScyllaDBTypeInfoNativeArray::Ascii)
+            | Self::NativeArray(ScyllaDBTypeInfoNativeArray::Text) => {
+                *other == Self::NativeArray(ScyllaDBTypeInfoNativeArray::Ascii)
+                    || *other == Self::NativeArray(ScyllaDBTypeInfoNativeArray::Text)
+            }
+            Self::Native(ScyllaDBTypeInfoNative::BigInt) => {
+                *other == Self::Native(ScyllaDBTypeInfoNative::Counter)
+                    || *other == Self::Native(ScyllaDBTypeInfoNative::BigInt)
+            }
+            Self::Native(ScyllaDBTypeInfoNative::Uuid) => {
+                *other == Self::Native(ScyllaDBTypeInfoNative::Uuid)
+                    || *other == Self::Native(ScyllaDBTypeInfoNative::Timeuuid)
+            }
+            Self::NativeArray(ScyllaDBTypeInfoNativeArray::Uuid) => {
+                *other == Self::NativeArray(ScyllaDBTypeInfoNativeArray::Uuid)
+                    || *other == Self::NativeArray(ScyllaDBTypeInfoNativeArray::Timeuuid)
+            }
             Self::AsciiAsciiMap | Self::AsciiTextMap | Self::TextTextMap | Self::TextAsciiMap => {
                 *other == Self::AsciiAsciiMap
                     || *other == Self::AsciiTextMap
@@ -296,50 +343,68 @@ impl ScyllaDBTypeInfo {
     pub(crate) fn from_column_type(column_type: &ColumnType) -> Result<Self, ScyllaDBError> {
         let type_info = match column_type {
             ColumnType::Native(native_type) => match native_type {
-                NativeType::Ascii => Self::Ascii,
-                NativeType::Boolean => Self::Boolean,
-                NativeType::Blob => Self::Blob,
-                NativeType::Counter => Self::Counter,
-                NativeType::Date => Self::Date,
-                NativeType::Decimal => Self::Decimal,
-                NativeType::Double => Self::Double,
-                NativeType::Duration => Self::Duration,
-                NativeType::Float => Self::Float,
-                NativeType::Int => Self::Int,
-                NativeType::BigInt => Self::BigInt,
-                NativeType::Text => Self::Text,
-                NativeType::Timestamp => Self::Timestamp,
-                NativeType::Inet => Self::Inet,
-                NativeType::SmallInt => Self::SmallInt,
-                NativeType::TinyInt => Self::TinyInt,
-                NativeType::Time => Self::Time,
-                NativeType::Timeuuid => Self::Timeuuid,
-                NativeType::Uuid => Self::Uuid,
-                NativeType::Varint => Self::Variant,
+                NativeType::Ascii => Self::Native(ScyllaDBTypeInfoNative::Ascii),
+                NativeType::Boolean => Self::Native(ScyllaDBTypeInfoNative::Boolean),
+                NativeType::Blob => Self::Native(ScyllaDBTypeInfoNative::Blob),
+                NativeType::Counter => Self::Native(ScyllaDBTypeInfoNative::Counter),
+                NativeType::Date => Self::Native(ScyllaDBTypeInfoNative::Date),
+                NativeType::Decimal => Self::Native(ScyllaDBTypeInfoNative::Decimal),
+                NativeType::Double => Self::Native(ScyllaDBTypeInfoNative::Double),
+                NativeType::Duration => Self::Native(ScyllaDBTypeInfoNative::Duration),
+                NativeType::Float => Self::Native(ScyllaDBTypeInfoNative::Float),
+                NativeType::Int => Self::Native(ScyllaDBTypeInfoNative::Int),
+                NativeType::BigInt => Self::Native(ScyllaDBTypeInfoNative::BigInt),
+                NativeType::Text => Self::Native(ScyllaDBTypeInfoNative::Text),
+                NativeType::Timestamp => Self::Native(ScyllaDBTypeInfoNative::Timestamp),
+                NativeType::Inet => Self::Native(ScyllaDBTypeInfoNative::Inet),
+                NativeType::SmallInt => Self::Native(ScyllaDBTypeInfoNative::SmallInt),
+                NativeType::TinyInt => Self::Native(ScyllaDBTypeInfoNative::TinyInt),
+                NativeType::Time => Self::Native(ScyllaDBTypeInfoNative::Time),
+                NativeType::Timeuuid => Self::Native(ScyllaDBTypeInfoNative::Timeuuid),
+                NativeType::Uuid => Self::Native(ScyllaDBTypeInfoNative::Uuid),
+                NativeType::Varint => Self::Native(ScyllaDBTypeInfoNative::Variant),
                 _ => column_type_not_supported!(column_type),
             },
             ColumnType::Collection { frozen: _, typ } => match typ {
                 CollectionType::List(inner) | CollectionType::Set(inner) => match &**inner {
                     ColumnType::Native(native_type) => match native_type {
-                        NativeType::Ascii => Self::AsciiArray,
-                        NativeType::Boolean => Self::BooleanArray,
-                        NativeType::Blob => Self::BlobArray,
+                        NativeType::Ascii => Self::NativeArray(ScyllaDBTypeInfoNativeArray::Ascii),
+                        NativeType::Boolean => {
+                            Self::NativeArray(ScyllaDBTypeInfoNativeArray::Boolean)
+                        }
+                        NativeType::Blob => Self::NativeArray(ScyllaDBTypeInfoNativeArray::Blob),
                         NativeType::Counter => column_type_not_supported!(column_type),
-                        NativeType::Date => Self::DateArray,
-                        NativeType::Decimal => Self::DecimalArray,
-                        NativeType::Double => Self::DoubleArray,
-                        NativeType::Duration => Self::DurationArray,
-                        NativeType::Float => Self::FloatArray,
-                        NativeType::Int => Self::IntArray,
-                        NativeType::BigInt => Self::BigIntArray,
-                        NativeType::Text => Self::TextArray,
-                        NativeType::Timestamp => Self::TimestampArray,
-                        NativeType::Inet => Self::InetArray,
-                        NativeType::SmallInt => Self::SmallIntArray,
-                        NativeType::TinyInt => Self::TinyIntArray,
-                        NativeType::Time => Self::TimeArray,
-                        NativeType::Timeuuid => Self::TimeuuidArray,
-                        NativeType::Uuid => Self::UuidArray,
+                        NativeType::Date => Self::NativeArray(ScyllaDBTypeInfoNativeArray::Date),
+                        NativeType::Decimal => {
+                            Self::NativeArray(ScyllaDBTypeInfoNativeArray::Decimal)
+                        }
+                        NativeType::Double => {
+                            Self::NativeArray(ScyllaDBTypeInfoNativeArray::Double)
+                        }
+                        NativeType::Duration => {
+                            Self::NativeArray(ScyllaDBTypeInfoNativeArray::Duration)
+                        }
+                        NativeType::Float => Self::NativeArray(ScyllaDBTypeInfoNativeArray::Float),
+                        NativeType::Int => Self::NativeArray(ScyllaDBTypeInfoNativeArray::Int),
+                        NativeType::BigInt => {
+                            Self::NativeArray(ScyllaDBTypeInfoNativeArray::BigInt)
+                        }
+                        NativeType::Text => Self::NativeArray(ScyllaDBTypeInfoNativeArray::Text),
+                        NativeType::Timestamp => {
+                            Self::NativeArray(ScyllaDBTypeInfoNativeArray::Timestamp)
+                        }
+                        NativeType::Inet => Self::NativeArray(ScyllaDBTypeInfoNativeArray::Inet),
+                        NativeType::SmallInt => {
+                            Self::NativeArray(ScyllaDBTypeInfoNativeArray::SmallInt)
+                        }
+                        NativeType::TinyInt => {
+                            Self::NativeArray(ScyllaDBTypeInfoNativeArray::TinyInt)
+                        }
+                        NativeType::Time => Self::NativeArray(ScyllaDBTypeInfoNativeArray::Time),
+                        NativeType::Timeuuid => {
+                            Self::NativeArray(ScyllaDBTypeInfoNativeArray::Timeuuid)
+                        }
+                        NativeType::Uuid => Self::NativeArray(ScyllaDBTypeInfoNativeArray::Uuid),
                         NativeType::Varint => column_type_not_supported!(column_type),
                         _ => column_type_not_supported!(column_type),
                     },

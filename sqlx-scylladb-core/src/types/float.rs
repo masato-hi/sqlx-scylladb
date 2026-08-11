@@ -1,18 +1,29 @@
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::ScyllaDBArgument,
+};
 
-impl_native_type!(f32, ScyllaDBTypeInfo::Float, ScyllaDBArgument::Float);
+impl_native_type!(
+    f32,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Float),
+    ScyllaDBArgument::Float
+);
 
 impl_native_array_type!(
     f32,
-    ScyllaDBTypeInfo::FloatArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Float),
     ScyllaDBArgument::FloatArray
 );
 
-impl_native_type!(f64, ScyllaDBTypeInfo::Double, ScyllaDBArgument::Double);
+impl_native_type!(
+    f64,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Double),
+    ScyllaDBArgument::Double
+);
 
 impl_native_array_type!(
     f64,
-    ScyllaDBTypeInfo::DoubleArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Double),
     ScyllaDBArgument::DoubleArray
 );
 
@@ -50,7 +61,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_float"),
-            ScyllaDBTypeInfo::Float,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Float),
             &raw_value,
             &column_type,
         );
@@ -70,7 +81,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_float"),
-            ScyllaDBTypeInfo::FloatArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Float),
             &raw_value,
             &column_type,
         );
@@ -101,7 +112,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_float"),
-            ScyllaDBTypeInfo::Double,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Double),
             &raw_value,
             &column_type,
         );
@@ -121,7 +132,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_float"),
-            ScyllaDBTypeInfo::DoubleArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Double),
             &raw_value,
             &column_type,
         );

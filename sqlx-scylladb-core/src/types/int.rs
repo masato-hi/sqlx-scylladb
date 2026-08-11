@@ -1,30 +1,53 @@
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::ScyllaDBArgument,
+};
 
-impl_native_type!(i8, ScyllaDBTypeInfo::TinyInt, ScyllaDBArgument::TinyInt);
+impl_native_type!(
+    i8,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::TinyInt),
+    ScyllaDBArgument::TinyInt
+);
 
 impl_native_array_type!(
     i8,
-    ScyllaDBTypeInfo::TinyIntArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::TinyInt),
     ScyllaDBArgument::TinyIntArray
 );
 
-impl_native_type!(i16, ScyllaDBTypeInfo::SmallInt, ScyllaDBArgument::SmallInt);
+impl_native_type!(
+    i16,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::SmallInt),
+    ScyllaDBArgument::SmallInt
+);
 
 impl_native_array_type!(
     i16,
-    ScyllaDBTypeInfo::SmallIntArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::SmallInt),
     ScyllaDBArgument::SmallIntArray
 );
 
-impl_native_type!(i32, ScyllaDBTypeInfo::Int, ScyllaDBArgument::Int);
+impl_native_type!(
+    i32,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Int),
+    ScyllaDBArgument::Int
+);
 
-impl_native_array_type!(i32, ScyllaDBTypeInfo::IntArray, ScyllaDBArgument::IntArray);
+impl_native_array_type!(
+    i32,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Int),
+    ScyllaDBArgument::IntArray
+);
 
-impl_native_type!(i64, ScyllaDBTypeInfo::BigInt, ScyllaDBArgument::BigInt);
+impl_native_type!(
+    i64,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::BigInt),
+    ScyllaDBArgument::BigInt
+);
 
 impl_native_array_type!(
     i64,
-    ScyllaDBTypeInfo::BigIntArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::BigInt),
     ScyllaDBArgument::BigIntArray
 );
 
@@ -62,7 +85,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_tinyint"),
-            ScyllaDBTypeInfo::TinyInt,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::TinyInt),
             &raw_value,
             &column_type,
         );
@@ -82,7 +105,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_tinyint"),
-            ScyllaDBTypeInfo::TinyIntArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::TinyInt),
             &raw_value,
             &column_type,
         );
@@ -113,7 +136,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_smallint"),
-            ScyllaDBTypeInfo::SmallInt,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::SmallInt),
             &raw_value,
             &column_type,
         );
@@ -133,7 +156,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_smallint"),
-            ScyllaDBTypeInfo::SmallIntArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::SmallInt),
             &raw_value,
             &column_type,
         );
@@ -164,7 +187,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_int"),
-            ScyllaDBTypeInfo::Int,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Int),
             &raw_value,
             &column_type,
         );
@@ -184,7 +207,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_int"),
-            ScyllaDBTypeInfo::IntArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Int),
             &raw_value,
             &column_type,
         );
@@ -215,7 +238,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_bigint"),
-            ScyllaDBTypeInfo::BigInt,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::BigInt),
             &raw_value,
             &column_type,
         );
@@ -235,7 +258,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_bigint"),
-            ScyllaDBTypeInfo::BigIntArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::BigInt),
             &raw_value,
             &column_type,
         );

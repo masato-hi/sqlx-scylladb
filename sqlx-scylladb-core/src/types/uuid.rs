@@ -1,25 +1,32 @@
 use scylla::value::CqlTimeuuid;
 use uuid::Uuid;
 
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::ScyllaDBArgument,
+};
 
-impl_native_type!(Uuid, ScyllaDBTypeInfo::Uuid, ScyllaDBArgument::Uuid);
+impl_native_type!(
+    Uuid,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Uuid),
+    ScyllaDBArgument::Uuid
+);
 
 impl_native_array_type!(
     Uuid,
-    ScyllaDBTypeInfo::UuidArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Uuid),
     ScyllaDBArgument::UuidArray
 );
 
 impl_native_type!(
     CqlTimeuuid,
-    ScyllaDBTypeInfo::Timeuuid,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Timeuuid),
     ScyllaDBArgument::Timeuuid
 );
 
 impl_native_array_type!(
     CqlTimeuuid,
-    ScyllaDBTypeInfo::TimeuuidArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Timeuuid),
     ScyllaDBArgument::TimeuuidArray
 );
 
@@ -68,7 +75,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_uuid"),
-            ScyllaDBTypeInfo::Uuid,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Uuid),
             &raw_value,
             &column_type,
         );
@@ -94,7 +101,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_uuid"),
-            ScyllaDBTypeInfo::FloatArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Float),
             &raw_value,
             &column_type,
         );

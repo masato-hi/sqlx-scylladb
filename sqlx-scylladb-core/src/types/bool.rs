@@ -1,10 +1,17 @@
-use crate::{ScyllaDBTypeInfo, arguments::ScyllaDBArgument};
+use crate::{
+    ScyllaDBTypeInfo, ScyllaDBTypeInfoNative, ScyllaDBTypeInfoNativeArray,
+    arguments::ScyllaDBArgument,
+};
 
-impl_native_type!(bool, ScyllaDBTypeInfo::Boolean, ScyllaDBArgument::Boolean);
+impl_native_type!(
+    bool,
+    ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Boolean),
+    ScyllaDBArgument::Boolean
+);
 
 impl_native_array_type!(
     bool,
-    ScyllaDBTypeInfo::BooleanArray,
+    ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Boolean),
     ScyllaDBArgument::BooleanArray
 );
 
@@ -43,7 +50,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_boolean"),
-            ScyllaDBTypeInfo::Boolean,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Boolean),
             &raw_value,
             &column_type,
         );
@@ -63,7 +70,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_boolean"),
-            ScyllaDBTypeInfo::TextArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text),
             &raw_value,
             &column_type,
         );

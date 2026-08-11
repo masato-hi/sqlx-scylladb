@@ -2,7 +2,10 @@ use std::{borrow::Cow, sync::Arc};
 
 use sqlx_core::{decode::Decode, encode::Encode, error::BoxDynError, types::Type};
 
-use crate::{ScyllaDB, ScyllaDBArgument, ScyllaDBHasArrayType, ScyllaDBTypeInfo, ScyllaDBValueRef};
+use crate::{
+    ScyllaDB, ScyllaDBArgument, ScyllaDBHasArrayType, ScyllaDBTypeInfo, ScyllaDBTypeInfoNative,
+    ScyllaDBTypeInfoNativeArray, ScyllaDBValueRef,
+};
 
 impl Decode<'_, ScyllaDB> for String {
     fn decode(value: ScyllaDBValueRef<'_>) -> Result<Self, BoxDynError> {
@@ -20,7 +23,7 @@ impl Decode<'_, ScyllaDB> for Vec<String> {
 
 impl Type<ScyllaDB> for &str {
     fn type_info() -> <ScyllaDB as sqlx_core::database::Database>::TypeInfo {
-        ScyllaDBTypeInfo::Text
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
     }
 }
 
@@ -38,7 +41,7 @@ impl Encode<'_, ScyllaDB> for &str {
 
 impl Type<ScyllaDB> for Cow<'static, str> {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Text
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
     }
 }
 
@@ -62,7 +65,7 @@ impl Encode<'_, ScyllaDB> for Cow<'static, str> {
 
 impl Type<ScyllaDB> for String {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Text
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
     }
 }
 
@@ -86,7 +89,7 @@ impl Encode<'_, ScyllaDB> for String {
 
 impl Type<ScyllaDB> for Arc<str> {
     fn type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::Text
+        ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
     }
 }
 
@@ -112,7 +115,7 @@ impl Encode<'_, ScyllaDB> for Arc<str> {
 
 impl ScyllaDBHasArrayType for String {
     fn array_type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::TextArray
+        ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text)
     }
 }
 
@@ -141,7 +144,7 @@ impl Encode<'_, ScyllaDB> for Vec<String> {
 
 impl ScyllaDBHasArrayType for &'static str {
     fn array_type_info() -> ScyllaDBTypeInfo {
-        ScyllaDBTypeInfo::TextArray
+        ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text)
     }
 }
 
@@ -192,13 +195,13 @@ pub mod secrecy {
 
     impl Type<ScyllaDB> for SecretString {
         fn type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::Text
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text)
         }
     }
 
     impl ScyllaDBHasArrayType for SecretString {
         fn array_type_info() -> ScyllaDBTypeInfo {
-            ScyllaDBTypeInfo::TextArray
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text)
         }
     }
 
@@ -290,7 +293,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::Text,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text),
             &raw_value,
             &column_type,
         );
@@ -307,7 +310,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::Text,
+            ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text),
             &raw_value,
             &column_type,
         );
@@ -330,7 +333,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::TextArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text),
             &raw_value,
             &column_type,
         );
@@ -353,7 +356,7 @@ mod tests {
 
         let value = ScyllaDBValueRef::new(
             UStr::new("my_text"),
-            ScyllaDBTypeInfo::TextArray,
+            ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text),
             &raw_value,
             &column_type,
         );
@@ -408,7 +411,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_text"),
-                ScyllaDBTypeInfo::Text,
+                ScyllaDBTypeInfo::Native(ScyllaDBTypeInfoNative::Text),
                 &raw_value,
                 &column_type,
             );
@@ -434,7 +437,7 @@ mod tests {
 
             let value = ScyllaDBValueRef::new(
                 UStr::new("my_text"),
-                ScyllaDBTypeInfo::TextArray,
+                ScyllaDBTypeInfo::NativeArray(ScyllaDBTypeInfoNativeArray::Text),
                 &raw_value,
                 &column_type,
             );
