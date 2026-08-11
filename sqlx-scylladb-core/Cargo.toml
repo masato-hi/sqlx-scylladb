@@ -49,7 +49,7 @@ bigdecimal-04 = { workspace = true, optional = true }
 secrecy-08 = { workspace = true, optional = true }
 secrecy-10 = { workspace = true, optional = true }
 
-openssl-010 = { version = "0.10.70", package = "openssl", optional = true }
+openssl-010 = { version = "0.10", package = "openssl", optional = true }
 rustls-023 = { version = "0.23", package = "rustls", optional = true }
 
 thiserror = "2.0"
@@ -59,12 +59,12 @@ rustc-hash = "2.1"
 bytes = "1.11"
 tracing = { version = "0.1", features = ["log"] }
 crc = { version = "3", optional = true }
-base32 = "0.5.1"
-sha2 = { version = "0.11.0", default-features = false }
+base32 = "0.5"
+sha2 = { version = "0.11", default-features = false }
 dotenvy = { workspace = true }
-futures-core = "0.3.32"
-futures-util = "0.3.32"
+futures-core = "0.3"
+futures-util = "0.3"
 
 [dev-dependencies]
 anyhow = { workspace = true }
-claims = { version = "0.8.0" }
+claims = { version = "0.8" }

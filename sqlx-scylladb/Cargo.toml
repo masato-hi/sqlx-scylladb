@@ -48,8 +48,8 @@ time-03 = { workspace = true }
 bigdecimal-04 = { workspace = true }
 secrecy-08 = { workspace = true }
 secrecy-10 = { workspace = true }
-criterion = { version = "0.8.2", features = ["async_tokio"] }
-pprof = { version = "0.15.0", features = ["protobuf", "protobuf-codec"] }
+criterion = { version = "0.8", features = ["async_tokio"] }
+pprof = { version = "0.15", features = ["protobuf", "protobuf-codec"] }
 rand = { version = "0.9" }
 
 [[example]]
