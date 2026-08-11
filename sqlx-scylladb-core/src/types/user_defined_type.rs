@@ -2,7 +2,6 @@ use scylla::{deserialize::value::DeserializeValue, serialize::value::SerializeVa
 use sqlx_core::{
     decode::Decode,
     encode::{Encode, IsNull},
-    ext::ustr::UStr,
 };
 
 use crate::{ScyllaDB, ScyllaDBArgument, ScyllaDBArgumentBuffer};
@@ -11,7 +10,6 @@ pub trait UserDefinedType<'r>:
     SerializeValue + DeserializeValue<'r, 'r> + Clone + Send + Sync
 {
     #![allow(missing_docs)]
-    fn type_name() -> UStr;
     fn box_cloned(&self) -> Box<dyn SerializeValue + Send + Sync>
     where
         Self: 'static,
