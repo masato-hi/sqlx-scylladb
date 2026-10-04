@@ -22,7 +22,7 @@ sqlx-scylladb-macros = { version = "=0.5.1", path = "sqlx-scylladb-macros" }
 sqlx-scylladb-macros-core = { version = "=0.5.1", path = "sqlx-scylladb-macros-core" }
 
 scylla = { version = "1.7" }
-scylla-cql = { version = "1.7" }
+scylla-cql = { version = "2.0" }
 sqlx = { version = "0.9", default-features = false, features = [
   "runtime-tokio",
 ] }
